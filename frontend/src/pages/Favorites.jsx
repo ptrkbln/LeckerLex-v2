@@ -223,52 +223,52 @@ function Favorites() {
   const filteredFavorites = favorites.filter(filterRecipe);
 
   return (
-    <div className="min-h-full bg-black text-gray-100 py-10">
-      {/* Filter Section */}
+    <div className="mx-auto max-w-screen-xl px-6 pb-12 min-h-full">
       {!selectedRecipeId && (
-        <main className="bg-gray-800 shadow-lg rounded-2xl w-full max-w-3xl mx-auto p-6 mb-8">
-          <div className="flex flex-wrap justify-around gap-6">
+        <main className="shadow-lg rounded-2xl w-full max-w-3xl mx-auto p-6 mb-2">
+          <h1 className="text-3xl font-bold mb-8 text-center text-orange-100">
+            Your Top Picks
+          </h1>
+          {/* Filter section */}
+          <div className="flex flex-wrap justify-center gap-6">
             {/** Cooking Time */}
             <label className="flex flex-col items-center">
-              <span className="mb-2">Cooking Time</span>
               <select
                 value={cookTime}
                 onChange={(e) => setCookTime(e.target.value)}
-                className="p-2 border border-gray-600 rounded-full bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors"
+                className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
               >
-                <option value="">Select...</option>
-                <option value="0-15">0 - 15 minutes</option>
-                <option value="15-30">15 - 30 minutes</option>
-                <option value="30-45">30 - 45 minutes</option>
-                <option value="45-60">45 - 60 minutes</option>
-                <option value="60+">60 or more</option>
+                <option value="">Cooking Time</option>
+                <option value="0-15">0 - 15 min</option>
+                <option value="15-30">15 - 30 min</option>
+                <option value="30-45">30 - 45 min</option>
+                <option value="45-60">45 - 60 min</option>
+                <option value="60+">60+ min</option>
               </select>
             </label>
             {/** Calories */}
             <label className="flex flex-col items-center">
-              <span className="mb-2">Calories</span>
               <select
                 value={calories}
                 onChange={(e) => setCalories(e.target.value)}
-                className="p-2 border border-gray-600 rounded-full bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors"
+                className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
               >
-                <option value="">Select...</option>
-                <option value="0-100">0 - 100 calories</option>
-                <option value="100-200">100 - 200 calories</option>
-                <option value="200-300">200 - 300 calories</option>
-                <option value="300-400">300 - 400 calories</option>
-                <option value="400+">400 or more calories</option>
+                <option value="">kcal per 100g</option>
+                <option value="0-100">0 - 100 kcal</option>
+                <option value="100-200">100 - 200 kcal</option>
+                <option value="200-300">200 - 300 kcal</option>
+                <option value="300-400">300 - 400 kcal</option>
+                <option value="400+">400+ kcal</option>
               </select>
             </label>
             {/** Nutrition */}
             <label className="flex flex-col items-center">
-              <span className="mb-2">Nutrition</span>
               <select
                 value={nutrition}
                 onChange={(e) => setNutrition(e.target.value)}
-                className="p-2 border border-gray-600 rounded-full bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors"
+                className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
               >
-                <option value="">Select...</option>
+                <option value="">Diet</option>
                 <option value="vegetarian">Vegetarian</option>
                 <option value="vegan">Vegan</option>
                 <option value="gluten-free">Gluten-free</option>
@@ -333,16 +333,6 @@ function Favorites() {
                           title="Contains Dairy"
                         />
                       )}
-                      {!recipe.diet?.vegetarian &&
-                        !recipe.diet?.vegan &&
-                        recipe.diet?.glutenFree &&
-                        recipe.diet?.dairyFree && (
-                          <FontAwesomeIcon
-                            icon={faUtensils}
-                            className="text-gray-400"
-                            title="No special diet"
-                          />
-                        )}
                     </div>
                     <div className="flex items-center gap-2">
                       <FontAwesomeIcon
@@ -482,22 +472,28 @@ function Favorites() {
         </div>
       ) : (
         /** Favorites Grid (using filteredFavorites) */
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 text-gray-100">
           {filteredFavorites.map((recipe) => (
             <div
               key={recipe.id}
               onClick={() => toggleDetails(recipe.id)}
-              className="bg-gray-800 rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300 cursor-pointer"
+              className="bg-gray-800 rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300 cursor-pointer flex flex-col"
             >
               <img
                 src={recipe.image}
                 alt={recipe.title}
-                className="w-full h-48 object-cover"
+                className="w-full h-52 object-cover"
               />
               <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2">{recipe.title}</h2>
+                <h2
+                  className={`${
+                    recipe.title.length > 36 ? "text-base" : "text-xl"
+                  } font-semibold mb-2`}
+                >
+                  {recipe.title}
+                </h2>
 
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between text-gray-300 mb-2">
                   <div className="flex items-center gap-2">
                     <FontAwesomeIcon
                       icon={faClock}
@@ -536,7 +532,7 @@ function Favorites() {
                     )}
                   </div>
                 </div>
-                <div className="mt-2 flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <FontAwesomeIcon
                     icon={faFire}
                     className="text-red-500 text-lg"
@@ -555,7 +551,7 @@ function Favorites() {
         <div className="flex justify-center mt-12">
           <button
             onClick={() => (window.location.href = "/home")}
-            className="px-8 py-3 bg-green-500 hover:bg-green-600 transition-colors rounded-full shadow text-xl"
+            className="px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300"
           >
             Back to Home
           </button>

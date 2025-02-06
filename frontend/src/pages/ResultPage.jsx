@@ -2,6 +2,19 @@ import React, { useContext, useState, useEffect } from "react";
 import { RecipeContext } from "../context/RecipeContext";
 import { FaLeaf } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faShoppingCart,
+  faTint,
+  faUtensils,
+  faWheatAlt,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+  faClock,
+  faLeaf,
+  faSeedling,
+  faFire,
+} from "@fortawesome/free-solid-svg-icons";
 
 function LazyImage({ src, alt, delay, className, ...rest }) {
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -83,7 +96,7 @@ function ResultPage() {
   };
 
   return (
-    <div className="mx-auto max-w-screen-lg p-6 pb-12 min-h-screen">
+    <div className="mx-auto max-w-screen-xl p-6 pb-12 min-h-full">
       <h1 className="text-3xl font-bold mb-8 text-center text-orange-100">
         Discover Delicious Recipes
       </h1>
@@ -93,65 +106,62 @@ function ResultPage() {
         <div className="flex flex-wrap justify-center gap-6">
           {/* Cooking Time */}
           <label className="flex flex-col items-center">
-            <span className="mb-1 text-center text-gray-200">Cooking Time</span>
             <select
               value={cookTime}
               onChange={(e) => setCookTime(e.target.value)}
-              className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors"
+              className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
             >
-              <option value="">Select...</option>
-              <option value="0-15">0 - 15 minutes</option>
-              <option value="15-30">15 - 30 minutes</option>
-              <option value="30-45">30 - 45 minutes</option>
-              <option value="45-60">45 - 60 minutes</option>
-              <option value="60+">60+ minutes</option>
+              <option value="">Cooking Time</option>
+              <option value="0-15">0 - 15 min</option>
+              <option value="15-30">15 - 30 min</option>
+              <option value="30-45">30 - 45 min</option>
+              <option value="45-60">45 - 60 min</option>
+              <option value="60+">60+ min</option>
             </select>
           </label>
 
           {/* Calories */}
           <label className="flex flex-col items-center">
-            <span className="mb-1 text-center text-gray-200">Calories</span>
             <select
               value={calories}
               onChange={(e) => setCalories(e.target.value)}
-              className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors"
+              className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
             >
-              <option value="">Select...</option>
-              <option value="0-100">0 - 100 calories</option>
-              <option value="100-200">100 - 200 calories</option>
-              <option value="200-300">200 - 300 calories</option>
-              <option value="300-400">300 - 400 calories</option>
-              <option value="400+">400+ calories</option>
+              <option value="">kcal per 100g</option>
+              <option value="0-100">0 - 100 kcal</option>
+              <option value="100-200">100 - 200 kcal</option>
+              <option value="200-300">200 - 300 kcal</option>
+              <option value="300-400">300 - 400 kcal</option>
+              <option value="400+">400+ kcal</option>
             </select>
           </label>
 
           {/* Nutrition */}
           <label className="flex flex-col items-center">
-            <span className="mb-1 text-center text-gray-200">Nutrition</span>
             <select
               value={nutrition}
               onChange={(e) => setNutrition(e.target.value)}
-              className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors"
+              className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
             >
-              <option value="">Select...</option>
+              <option value="">Diet</option>
               <option value="vegetarian">Vegetarian</option>
               <option value="vegan">Vegan</option>
-              <option value="gluten-free">Gluten-free</option>
-              <option value="dairy-free">Dairy-free</option>
+              <option value="glutenFree">Gluten-free</option>
+              <option value="dairyFree">Dairy-free</option>
             </select>
           </label>
         </div>
       </section>
 
       {/* Recipes Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {filteredRecipes.slice(0, visibleCount).map((recipe, idx) => (
           <div
             key={recipe.id}
             onClick={() =>
               recipe.id && navigate(`/home/recipe-details/${recipe.id}`)
             }
-            className="bg-gray-900 rounded-2xl overflow-hidden shadow-xl transform hover:scale-105 hover:shadow-2xl transition duration-300 cursor-pointer"
+            className="bg-gray-900 rounded-2xl overflow-hidden shadow-xl transform hover:scale-105 hover:shadow-2xl transition duration-300 cursor-pointer flex flex-col"
           >
             <LazyImage
               delay={idx * 100}
@@ -159,18 +169,60 @@ function ResultPage() {
               alt={recipe.title}
               className="w-full h-52 object-cover"
             />
-            <div className="p-4 bg-gray-800 h-auto flex flex-col justify-between">
-              <h2 className="text-xl font-semibold text-gray-100 mb-2">
+            <div className="p-4 bg-gray-800 h-auto flex flex-col justify-between flex-grow">
+              <h2
+                className={`${
+                  recipe.title.length > 36 ? "text-base" : "text-xl"
+                } font-semibold text-gray-100 mb-2`}
+              >
                 {recipe.title}
               </h2>
-              <div className="flex items-center justify-between">
-                <p className="text-gray-300 text-sm">
-                  {recipe.preparationTime} mins
-                </p>
-                {recipe.diet.vegan && <FaLeaf className="text-green-500" />}
-                <p className="text-gray-300 text-sm">
-                  {recipe.nutritionPer100g.calories} kcal
-                </p>
+              <div className="flex justify-between text-gray-300 mb-2">
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon
+                    icon={faClock}
+                    className="text-lg text-green-400"
+                  />
+                  <span>{recipe.preparationTime} min</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {recipe.diet?.vegetarian && (
+                    <FontAwesomeIcon
+                      icon={faLeaf}
+                      className="text-green-500"
+                      title="Vegetarian"
+                    />
+                  )}
+                  {recipe.diet?.vegan && (
+                    <FontAwesomeIcon
+                      icon={faSeedling}
+                      className="text-green-500"
+                      title="Vegan"
+                    />
+                  )}
+                  {!recipe.diet?.glutenFree && (
+                    <FontAwesomeIcon
+                      icon={faWheatAlt}
+                      className="text-yellow-500"
+                      title="Contains Gluten"
+                    />
+                  )}
+                  {!recipe.diet?.dairyFree && (
+                    <FontAwesomeIcon
+                      icon={faTint}
+                      className="text-blue-500"
+                      title="Contains Dairy"
+                    />
+                  )}
+                </div>
+              </div>
+              {/* Flex container for calories in a separate row */}
+              <div className="flex items-center gap-2 text-gray-300">
+                <FontAwesomeIcon
+                  icon={faFire}
+                  className="text-lg text-red-500"
+                />
+                <span>{recipe.nutritionPer100g?.calories || "N/A"} kcal</span>
               </div>
             </div>
           </div>

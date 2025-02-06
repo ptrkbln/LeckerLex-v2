@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import RecipeContextProvider from "./context/RecipeContext";
-import LandingPage from "./pages/landingpage/LandingPage";
+import LandingPage from "./pages/LandingPage";
 import HomePage from "./pages/HomePage";
 import Layout from "./layouts/Layout";
 import Favorites from "../src/pages/Favorites";
-import LoginPage from "./pages/loginpage/LoginPage";
-import RegisterPage from "./pages/registerpage/RegisterPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import ProfileWelcomePage from "./pages/profilepage/ProfileWelcomePage";
 import ResultPage from "./pages/ResultPage";
 import RecipeDetails from "./pages/RecipeDetails";

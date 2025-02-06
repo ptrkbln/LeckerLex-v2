@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Link } from "react-router-dom";
-import HintergrundVideo from "../../assets/videos/FallingTomatos.mp4";
+import HintergrundVideo from "../assets/videos/FallingTomatos.mp4";
 
 const containerVariants = {
   hidden: {},
