@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../context/AuthContext.jsx";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function LoginComponent() {
@@ -15,7 +15,7 @@ export default function LoginComponent() {
   const redirectTo = searchParams.get("redirectTo") || "/home";
 
   // state to control show/hide password
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleGuestLogin = () => {
     setIsGuest(true); // Gastmodus aktivieren
@@ -29,7 +29,7 @@ export default function LoginComponent() {
 
   const handleRedirectToRegister = () => {
     navigate(`/home/register?redirectTo=${redirectTo}`);
-  }
+  };
 
   useEffect(() => {
     const checkUserLogin = async () => {
@@ -41,7 +41,6 @@ export default function LoginComponent() {
         } else {
           navigate("/home");
         }
-
       }
     };
 
@@ -111,34 +110,34 @@ export default function LoginComponent() {
               <label className="block text-sm font-semibold text-gray-300">
                 Email:
               </label>
-              
+
               <div className="relative">
-              <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
-              />
-            </div>
+                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                />
+              </div>
             </div>
             <div className="mb-4">
               <label className="block text-sm font-semibold text-gray-300">
                 Password:
               </label>
               <div className="relative">
-              <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-               type={showPassword ? "text" : "password"}
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
-              />
-               <div
+                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                />
+                <div
                   className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                   onClick={() => setShowPassword(!showPassword)}
                 >
@@ -148,7 +147,7 @@ export default function LoginComponent() {
                     <FaEye className="text-gray-400" />
                   )}
                 </div>
-            </div>
+              </div>
             </div>
             {errorMessage && (
               <p className="text-red-500 text-center mt-4">{errorMessage}</p>
@@ -161,23 +160,23 @@ export default function LoginComponent() {
             </button>
           </form>
           <div className="text-center mt-4 text-sm text-gray-300">
-          <div className="text-center mt-4 text-sm text-gray-300"> 
+            <div className="text-center mt-4 text-sm text-gray-300">
               No profile?{" "}
               <button
-              className="text-blue-400 font-medium hover:underline"
-              onClick={handleRedirectToRegister}
+                className="text-blue-400 font-medium hover:underline"
+                onClick={handleRedirectToRegister}
               >
                 Register here
               </button>
-              </div>
-              <div className="text-center mt-8 text-md text-gray-300">
-                <button
+            </div>
+            <div className="text-center mt-8 text-md text-gray-300">
+              <button
                 className="text-blue-400 font-semibold hover:scale-105"
                 onClick={handleGuestLogin}
-                >
-                  Continue as Guest
-                </button>
-              </div>
+              >
+                Continue as Guest
+              </button>
+            </div>
           </div>
         </div>
       </div>

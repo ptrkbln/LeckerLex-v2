@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../context/AuthContext";
 import { FaEye, FaEyeSlash, FaEnvelope, FaUser, FaLock } from "react-icons/fa";
 
 export default function RegisterPage() {
@@ -47,7 +47,7 @@ export default function RegisterPage() {
       setErrorMessage("Please enter a valid email format.");
       return;
     }
-      
+
     if (!passwordRegex.test(password)) {
       setErrorMessage(
         "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&^#-=_+)."
@@ -94,12 +94,16 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        setErrorMessage(errorData.msg || "An error occurred. Please try again.");
+        setErrorMessage(
+          errorData.msg || "An error occurred. Please try again."
+        );
         return;
       }
 
       if (redirectTo) {
-        navigate(`/home/verify-email?redirectTo=${redirectTo}`, { replace: true });
+        navigate(`/home/verify-email?redirectTo=${redirectTo}`, {
+          replace: true,
+        });
       } else {
         navigate("/home/verify-email", { replace: true });
       }
