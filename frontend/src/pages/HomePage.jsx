@@ -139,13 +139,26 @@ export default function HomePage() {
         }
       );
       if (!response.ok) {
-        const errorData = await response.json();
-        setErrorMessage(errorData.msg || "Failed to fetch recipes");
+        let errorMessage = "Something went wrong. Please try again.";
+
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (error) {
+          console.error("Error parsing JSON response", error);
+        }
+        setErrorMessage(errorMessage);
         return;
       }
       const data = await response.json();
+
+      if (!Array.isArray(data.data)) {
+        setErrorMessage("API daily limit exceeded. Try again tomorrow.");
+        setRecipes([]); // Ensure it's an array to prevent .map() errors when limit exceeded
+        return;
+      }
+
       setRecipes(data.data); // Update the recipes state with the response from backend
-      console.log("recipes:", recipes); // debug log
       navigate("results"); // navigate to recipes page
     } catch (error) {
       console.error("Error fetching recipes", error); // debug log

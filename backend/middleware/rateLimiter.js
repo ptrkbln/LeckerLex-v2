@@ -1,0 +1,13 @@
+import { rateLimit } from "express-rate-limit";
+
+export const searchLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000, // 1 day
+  limit: 3,
+  handler: (req, res) => {
+    console.log("Rate limit hit by:", req.ip);
+    res.status(429).json({
+      error:
+        "For demo purposes only 3 requests allowed per day. Try again tomorrow.",
+    });
+  },
+});

@@ -18,12 +18,12 @@ export const searchRecipesAndDetails = async (req, res, next) => {
   if (!ingredientArray || ingredientArray.length < 2)
     return res
       .status(400)
-      .json({ msg: "Search is permitted with a minimum of 4 ingredients." });
+      .json({ msg: "Search is permitted with a minimum of 2 ingredients." });
 
   try {
     // Fetch basic recipe list based on ingredients: hard-coded salt, water, oil, sugar as something everyone has at home; parameters are set to prioritize minimising missing ingredients & limit to 5 results
     const response = await fetch(
-      `https://api.spoonacular.com/recipes/findByIngredients?ingredients=salt,water,oil,sugar,${ingredients}&ranking=2&ignorePantry=true&number=4`, // TODO eg. number=5, how many recipes to fetch
+      `https://api.spoonacular.com/recipes/findByIngredients?ingredients=salt,water,oil,sugar,${ingredients}&ranking=2&ignorePantry=true&number=1`, // TODO eg. number=5, how many recipes to fetch
       options
     );
     const recipes = await response.json();
@@ -135,6 +135,7 @@ export const searchRecipesAndDetails = async (req, res, next) => {
     // send the combined data as a single response used for search results and for each recipe details
     res.status(200).json({ data: detailedRecipes });
   } catch (error) {
+    console.log("Error:", error.message);
     next(error);
   }
 };
