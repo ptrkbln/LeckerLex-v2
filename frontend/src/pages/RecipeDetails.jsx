@@ -143,9 +143,9 @@ function RecipeDetails() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto relative bg-[#11151E] min-h-screen font-medium rounded-2xl text-gray-200">
+    <div className="p-6 max-w-6xl mx-auto relative bg-[#11151E] min-h-full font-medium rounded-2xl text-gray-200 mb-6 md:mb-0">
       {/* Recipe Image Section */}
-      <div className="relative mx-auto w-full sm:w-8/12 lg:w-6/12 h-72 sm:h-80 lg:h-96 mt-16 rounded-2xl">
+      <div className="relative mx-auto sm:w-8/12 lg:w-6/12 h-72 sm:h-80 lg:h-96 mt-16 rounded-2xl">
         <img
           src={recipe.image}
           alt={recipe.title}
@@ -246,10 +246,10 @@ function RecipeDetails() {
       </div>
 
       {/* Section Content */}
-      {/* Ingredients */}
-      <div className="mt-10 space-y-8">
+      <div className="mt-10 space-y-8 mx-auto md:w-3/4 ">
+        {/* Ingredients */}
         {visibleSection === "ingredients" && (
-          <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-xl">
+          <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-xl mx-auto md:w-2/3">
             <h3 className="text-2xl text-center font-bold mb-8">
               Ingredients {servingsText}
             </h3>
@@ -313,7 +313,7 @@ function RecipeDetails() {
                 return (
                   <li
                     key={index}
-                    className="py-2 flex justify-around items-center"
+                    className="py-2 flex justify-between items-center"
                   >
                     <span className="font-semibold text-gray-200">
                       {displayAmount} {ingredient.unit}
@@ -326,8 +326,8 @@ function RecipeDetails() {
           </div>
         )}
         {visibleSection === "nutrition" && (
-          <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-xl">
-            <h3 className="text-2xl font-bold mb-4">
+          <div className="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-xl mx-auto md:w-2/3">
+            <h3 className="text-2xl font-bold mb-4 text-center">
               Nutritional Values (per 100g)
             </h3>
             <ul className="list-disc pl-6 space-y-2 text-gray-300">
@@ -364,7 +364,7 @@ function RecipeDetails() {
         )}
       </div>
 
-      {/* Fenster für fehlende Zutaten mit Animation*/}
+      {/* Fenster für fehlende Zutaten*/}
       {showMissingIngredients &&
         recipe.missedIngredients &&
         recipe.missedIngredients.length > 0 && (

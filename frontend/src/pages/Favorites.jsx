@@ -28,6 +28,7 @@ function Favorites() {
   const [missingIngredients, setMissingIngredients] = useState({});
   const [pendingShoppingListUpdate, setPendingShoppingListUpdate] =
     useState(null);
+  const [showShoppingListModal, setShowShoppingListModal] = useState(false);
 
   const toggleDetails = (id) => {
     setSelectedRecipeId((prevId) => (prevId === id ? null : id));
@@ -151,6 +152,8 @@ function Favorites() {
               : fav
           )
         );
+        setShowShoppingListModal(true);
+        setTimeout(() => setShowShoppingListModal(false), 3000);
       } else {
         console.log("Failed to update shopping list.");
       }
@@ -222,8 +225,22 @@ function Favorites() {
   // Only show filtered recipes in the grid view.
   const filteredFavorites = favorites.filter(filterRecipe);
 
+  if (favorites.length < 1) {
+    return (
+      <div className="flex flex-col justify-center items-center p-10 m-2 text-gray-50">
+        <p className="text-2xl pb-10 ">No recipes added yet... 😔</p>
+        <button
+          onClick={() => (window.location.href = "/home")}
+          className="px-4 py-2 bg-green-500 hover:bg-green-600 transition-colors rounded-full shadow text-md"
+        >
+          Back to Home
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-screen-xl px-6 pb-12 min-h-full">
+    <div className="mx-auto w-screen md:max-w-screen-xl md:px-6 pb-12 min-h-full">
       {!selectedRecipeId && (
         <main className="shadow-lg rounded-2xl w-full max-w-3xl mx-auto p-6 mb-2">
           <h1 className="text-3xl font-bold mb-8 text-center text-orange-100">
@@ -281,27 +298,24 @@ function Favorites() {
 
       {/* Recipe Details Section */}
       {selectedRecipeId ? (
-        <div className="max-w-4xl mx-auto bg-gray-800 p-6 rounded-2xl shadow-lg">
+        <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-6 rounded-2xl shadow-lg text-gray-200">
           {favorites
             .filter((recipe) => recipe.id === selectedRecipeId)
             .map((recipe) => (
               <div key={recipe.id}>
                 {/** Recipe Header */}
-                <div className="bg-gray-900 rounded-2xl overflow-hidden shadow-md mb-6">
+                <div className="bg-gray-900 rounded-2xl overflow-hidden shadow-md mb-6 relative">
                   <img
                     src={recipe.image}
                     alt={recipe.title}
-                    className="w-full h-64 object-contain"
+                    className="w-full h-64 object-contain rounded-xl overflow-hidden"
                   />
                   <div className="p-4 text-center">
                     <h2 className="text-2xl font-bold">{recipe.title}</h2>
                   </div>
                   <div className="flex justify-around items-center p-4 border-t border-gray-600">
                     <div className="flex items-center gap-2">
-                      <FontAwesomeIcon
-                        icon={faClock}
-                        className="text-lg text-green-400"
-                      />
+                      <FontAwesomeIcon icon={faClock} className="text-lg" />
                       <span>{recipe.preparationTime} min</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -346,7 +360,7 @@ function Favorites() {
 
                 {/** Servings Adjuster */}
                 <div className="bg-gray-900 rounded-3xl p-6 flex items-center justify-between mb-6">
-                  <h3 className="text-md font-semibold">Servings</h3>
+                  <h3 className="text-xl font-semibold">Servings</h3>
                   <div className="flex items-center gap-4">
                     <button
                       onClick={handleDecreaseServings}
@@ -367,7 +381,7 @@ function Favorites() {
 
                 {/** Ingredients List */}
                 <div className="bg-gray-900 rounded-3xl p-6 shadow-md mb-6">
-                  <h3 className="text-lg text-cen font-semibold mb-6">
+                  <h3 className="text-xl text-cen font-semibold mb-6">
                     Ingredients
                   </h3>
                   <p className="text-md text-green-400 mb-4">
@@ -415,26 +429,53 @@ function Favorites() {
                       )
                     )}
                   </ul>
-                  <button
-                    onClick={addMissingToShoppingList}
-                    className="flex items-center gap-2 bg-green-500 hover:bg-green-600 transition-colors px-4 py-2 rounded-full shadow"
-                  >
-                    <FontAwesomeIcon
-                      icon={faShoppingCart}
-                      className="text-xl"
-                    />
-                    <span>Add to Shopping List</span>
-                  </button>
-                </div>
+                  <div className="flex items-center gap-2 relative">
+                    <button
+                      onClick={addMissingToShoppingList}
+                      className="flex items-center gap-2 bg-green-500 hover:bg-green-600 transition-colors px-4 py-2 rounded-full shadow"
+                    >
+                      <FontAwesomeIcon
+                        icon={faShoppingCart}
+                        className="text-xl"
+                      />
+                    </button>
 
+                    {showShoppingListModal && (
+                      <div className="absolute  left-20 ml-2 z-50 bg-green-600 text-white px-4 py-2 rounded-full shadow-md animate-fadeIn ">
+                        Added to Shopping List!
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* "Added to ShoppingList!" Modal */}
+                {showShoppingListModal && (
+                  <div className="absolute top-0 left-full ml-2 z-50 bg-green-600 text-white px-4 py-2 rounded-full shadow-md animate-fadeIn">
+                    Added to Shopping List!
+                  </div>
+                )}
                 {/** Preparation */}
                 <div className="bg-gray-900 rounded-3xl p-6 shadow-md mb-6">
-                  <h3 className="text-xl font-semibold mb-3">Preparation</h3>
-                  <ol className="list-decimal ml-6 space-y-2">
-                    {recipe.preparation.map((step, index) => (
-                      <li key={index}>{step}</li>
-                    ))}
-                  </ol>
+                  <h3 className="text-xl font-semibold mb-6">
+                    Preparation Steps
+                  </h3>
+                  <div className="relative pl-10">
+                    <div className="absolute left-5 top-0 bottom-0 w-px bg-gray-600"></div>
+
+                    <ol className="list-decimal space-y-2">
+                      {recipe.preparation.map((step, index) => (
+                        <div key={index} className=" flex items-start">
+                          {/* Number Badge */}
+                          <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-green-600 text-white font-bold text-lg text-center mb-3">
+                            {index + 1}
+                          </div>
+                          {/* Step Description */}
+                          <div className="ml-4">
+                            <p className="text-gray-300 text-lg">{step}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </ol>
+                  </div>
                 </div>
 
                 {/** Nutrition */}

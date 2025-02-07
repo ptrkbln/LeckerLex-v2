@@ -45,8 +45,8 @@ function Sidebar({
       {/* Sidebar Container */}
       <div
         className={`
-          fixed bottom-0 left-0 w-full h-64 md:h-full md:w-64 
-          bg-gray-900 text-white border-t md:border-t-0 md:border-r border-blue-700 z-20
+          fixed bottom-0 left-0 w-full h-64 md:h-full md:w-64
+          bg-gray-900 text-white border-t md:border-t-0 md:border-r border-blue-700 md:z-30 
           overflow-y-auto md:overflow-x-hidden transition-transform duration-500
           ${
             isSidebarOpen
@@ -67,7 +67,7 @@ function Sidebar({
               <span>{ingredient}</span>
               <button
                 onClick={handleRemoveIngredientClick(index)}
-                className="text-red-400 hover:text-red-500 transition-colors"
+                className="text-red-400 hover:text-red-500 transition-colors px-2"
               >
                 X
               </button>
@@ -75,19 +75,31 @@ function Sidebar({
           ))}
         </ul>
         {selectedIngredients.length > 0 && (
-          <button
-            className="bg-red-600 hover:bg-red-500 text-white w-full m-4 py-2 px-4 rounded-lg transition-transform hover:scale-105"
-            onClick={handleRemoveAllClick}
-          >
-            Remove All
-          </button>
+          <div className="flex justify-center items-center w-full">
+            <button
+              className="bg-red-600 hover:bg-red-500 text-white w-11/12 m-4 mb-14 md:mb-4 py-2 px-4 rounded-lg transition-transform hover:scale-105"
+              onClick={handleRemoveAllClick}
+            >
+              Remove All
+            </button>
+          </div>
         )}
       </div>
 
       {/* Desktop Toggle Button */}
-      <div className="hidden md:block fixed left-4 bottom-16 transition-all duration-500 z-20">
+      <div
+        className={`
+          hidden md:block fixed transition-all duration-500 z-40
+          ${
+            isSidebarOpen
+              ? "left-64" // Position next to sidebar when open
+              : "left-4" // Position near left edge when closed
+          }
+          bottom-16
+        `}
+      >
         <button
-          className="bg-green-500 hover:bg-green-600 text-white rounded-full p-3 shadow-xl transition-all duration-300"
+          className="bg-green-500 hover:bg-green-600 text-white rounded-full p-3 shadow-xl transition-all duration-300 ml-2"
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         >
           {isSidebarOpen ? <FaChevronLeft /> : <FaChevronRight />}
