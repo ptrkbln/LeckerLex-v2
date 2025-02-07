@@ -2,7 +2,7 @@ import { rateLimit } from "express-rate-limit";
 
 export const searchLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000, // 1 day
-  limit: 3,
+  limit: 5,
   handler: (req, res) => {
     console.log("Rate limit hit by:", req.ip);
     res.status(429).json({
