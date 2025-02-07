@@ -13,7 +13,23 @@ const PORT = process.env.PORT;
 
 const app = express();
 
-app.use(cors({ credentials: true, origin: "http://localhost:5173" })); // TODO mit .env variable ersetzen
+const allowedOrigins = [
+  "https://lecker-lex-v2.vercel.app",
+  "http://localhost:5173", // For local development
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.use(cookieParser());
 app.use(express.json());
