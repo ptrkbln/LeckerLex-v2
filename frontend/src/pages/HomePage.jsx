@@ -13,12 +13,15 @@ export default function HomePage() {
 
     const registerGuestVisit = async () => {
       try {
-        const response = await fetch("http://localhost:3000/guests/add-visit", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/guests/add-visit`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -37,12 +40,15 @@ export default function HomePage() {
 
     const fetchGuestCount = async () => {
       try {
-        const response = await fetch("http://localhost:3000/guests/count", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/guests/count`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -100,7 +106,6 @@ export default function HomePage() {
 
   // Convert formattedIngredients to a query string
   const ingredientQuery = formattedIngredients.join(","); // join ingredients with comma
-  console.log("Ingredient Query:", ingredientQuery); // works!
 
   const navigate = useNavigate();
 
@@ -133,7 +138,9 @@ export default function HomePage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/search/recipes?ingredients=${ingredientQuery}`, // TODO pfad mit .env variable ersetzen
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/search/recipes?ingredients=${ingredientQuery}`, // TODO pfad mit .env variable ersetzen
         {
           credentials: "include", // include cors credentials
         }
@@ -179,14 +186,7 @@ export default function HomePage() {
     setSearchText("");
   };
 
-  useEffect(() => {
-    console.log("HomePage mounted");
-    return () => {
-      console.log("HomePage unmounted");
-    };
-  }, []);
-
-  // IMPORTANT Handle adding ingredients manually from the SearchBar
+  // Handle adding ingredients manually from the SearchBar
   const handleAddIngredient = (ingredients) => {
     console.log("Ingredients to Add:", ingredients);
     setSelectedIngredients((prev) => {
@@ -209,7 +209,7 @@ export default function HomePage() {
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
           selectedIngredients={selectedIngredients}
-          handleAddIngredient={handleAddIngredient} // IMPORTANT
+          handleAddIngredient={handleAddIngredient}
         />
       </div>
       {errorMessage && (

@@ -262,7 +262,6 @@ export default function Ingredients({
     { src: Worcestershire_Sauce, alt: "Worcestershire" },
   ];
 
-
   // Function to handle the click event on an ingredient image
   const handleImageClick = (ingredientName) => {
     // check if the ingredient is already selected
@@ -271,7 +270,7 @@ export default function Ingredients({
         selectedIngredients.filter((item) => item !== ingredientName)
       : // if not selected, add it to the list
         [...selectedIngredients, ingredientName];
-    
+
     // update the state with the new list of selected ingredients
     setSelectedIngredients(updated);
 
@@ -283,9 +282,6 @@ export default function Ingredients({
 
   // Convert the typed text into a list of ingredients (case-insensitive)
   useEffect(() => {
-    console.log("searchText:", searchText);
-    console.log("selectedIngredients before update:", selectedIngredients);
-
     // if there is no search text, exit the effect
     if (!searchText) return;
 
@@ -320,33 +316,19 @@ export default function Ingredients({
       .filter((h) => typed.includes(h.alt.toLowerCase()))
       .map(
         (ingredient) =>
-          ingredient.alt.charAt(0).toUpperCase() + ingredient.alt.slice(1).toLowerCase()
+          ingredient.alt.charAt(0).toUpperCase() +
+          ingredient.alt.slice(1).toLowerCase()
       );
 
     const uniqueIngredients = Array.from(
       new Set([...selectedIngredients, ...matched])
     );
 
-    console.log(
-      "Matched",
-      JSON.stringify(matched),
-      "Selected Ingredients",
-      JSON.stringify(selectedIngredients),
-      "Searched Text",
-      searchText
-    );
-
-    console.log("matched:", matched);
-
-   
-
     // Update selectedIngredients if changed
     if (
       JSON.stringify(uniqueIngredients) !== JSON.stringify(selectedIngredients)
     ) {
-      console.log("Updating selectedIngredients to:", matched);
       setSelectedIngredients(uniqueIngredients);
-      // TODO logik weiter
     }
   }, [searchText, selectedIngredients]);
 

@@ -1,15 +1,10 @@
 import React, { useContext, useState, useEffect } from "react";
 import { RecipeContext } from "../context/RecipeContext";
-import { FaLeaf } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faShoppingCart,
   faTint,
-  faUtensils,
   faWheatAlt,
-} from "@fortawesome/free-solid-svg-icons";
-import {
   faClock,
   faLeaf,
   faSeedling,
