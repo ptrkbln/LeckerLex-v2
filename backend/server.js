@@ -9,13 +9,11 @@ import cors from "cors";
 
 connectDB();
 
-const PORT = process.env.PORT;
-
 const app = express();
 
 const allowedOrigins = [
-  "https://lecker-lex-v2.vercel.app",
-  "http://localhost:5173", // For local development
+  `${process.env.FRONTEND_PRODUCTION_URL}`, // production environment
+  `${process.env.FRONTEND_BASE_URL}`, // local development
 ];
 
 app.use(
@@ -50,6 +48,6 @@ app.use((error, req, res, next) => {
   res.status(500).json({ msg: error.message || "Internal server error" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is listening on port: ${PORT}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server is listening on port: ${process.env.PORT}`);
 });

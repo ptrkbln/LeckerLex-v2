@@ -45,11 +45,14 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
     formData.append("recipeId", recipeId);
 
     try {
-      const response = await fetch("http://localhost:3000/journal", {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/journal`,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        }
+      );
 
       if (response.ok) {
         console.log("Journal entry successfully saved.");

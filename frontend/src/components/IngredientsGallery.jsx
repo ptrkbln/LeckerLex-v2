@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { FaCheckCircle } from "react-icons/fa";
 
 function IngredientsGallery({
   herbsAndSpices,
@@ -102,13 +101,6 @@ function IngredientsGallery({
               >
                 <span className="font-medium text-center ">{item.alt}</span>
               </div>
-
-              {/* Uncomment if you want to show a check icon when selected:
-              {isSelected && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <FaCheckCircle className="text-green-400 text-2xl" />
-                </div>
-              )} */}
             </div>
           );
         })}

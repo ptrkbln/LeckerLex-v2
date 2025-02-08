@@ -90,7 +90,7 @@ function RecipeDetails() {
           item.name.trim().toLowerCase()
         );
         const response = await fetch(
-          "http://localhost:3000/users/update-shoppinglist",
+          `${import.meta.env.VITE_BACKEND_URL}/users/update-shoppinglist`,
           {
             method: "PATCH",
             body: JSON.stringify({
@@ -133,13 +133,7 @@ function RecipeDetails() {
   }`;
 
   if (!recipe) {
-    return (
-      <div className="bg-gray-900 min-h-screen flex items-center justify-center">
-        <p className="text-center text-2xl font-semibold text-orange-200">
-          Recipe not found 😔
-        </p>
-      </div>
-    );
+    navigate("/home");
   }
 
   return (

@@ -26,16 +26,6 @@ function Sidebar({
     setIsSidebarOpen(false);
   };
 
-  // Optional logging
-  useEffect(() => {
-    console.log("Sidebar mounted");
-    return () => console.log("Sidebar unmounted");
-  }, []);
-
-  useEffect(() => {
-    console.log("Selected ingredients in Sidebar:", selectedIngredients);
-  }, [selectedIngredients]);
-
   const handleRemoveIngredientClick = (ingredientIndex) => () => {
     handleRemoveIngredient(ingredientIndex);
   };

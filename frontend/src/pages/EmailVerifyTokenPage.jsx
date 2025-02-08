@@ -18,7 +18,7 @@ export default function EmailVerifyTokenPage() {
         setMessage(""); // clear any previous message
 
         const response = await fetch(
-          `http://localhost:3000/users/verify-email/${token}`, // TODO: replace path with .env variable
+          `${import.meta.env.VITE_BACKEND_URL}/users/verify-email/${token}`, // TODO: replace path with .env variable
           { credentials: "include" }
         );
 

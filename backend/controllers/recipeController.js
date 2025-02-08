@@ -139,24 +139,3 @@ export const searchRecipesAndDetails = async (req, res, next) => {
     next(error);
   }
 };
-
-/* // just for (spoonacular endpoints) testing purposes
-export const testController = async (req, res, next) => {
-  const url =
-    "https://api.spoonacular.com/recipes/716429/information?includeNutrition=true";
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.SPONACULAR_API_KEY,
-      },
-    });
-    const result = await response.json();
-    console.log(result);
-    res.status(200).json(result);
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-}; */
