@@ -123,7 +123,7 @@ function Favorites() {
 
     try {
       const response = await fetch(
-        "http://localhost:3000/users/update-shoppinglist",
+        `${import.meta.env.VITE_BACKEND_URL}/users/update-shoppinglist`,
         {
           method: "PATCH",
           body: JSON.stringify({

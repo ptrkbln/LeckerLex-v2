@@ -19,7 +19,7 @@ function MyShoppingList() {
       setLoading(true);
       try {
         const response = await fetch(
-          "http://localhost:3000/users/shoppinglist",
+          `${import.meta.env.VITE_BACKEND_URL}/users/shoppinglist`,
           {
             credentials: "include",
           }
@@ -45,7 +45,7 @@ function MyShoppingList() {
   const saveShoppingList = async (updatedList) => {
     try {
       const response = await fetch(
-        "http://localhost:3000/users/update-shoppinglist",
+        `${import.meta.env.VITE_BACKEND_URL}/users/update-shoppinglist`,
         {
           method: "PATCH",
           headers: {

@@ -11,9 +11,12 @@ export default function MyCulinaryJournal() {
     setLoading(true);
     const getJournalHistory = async () => {
       try {
-        const response = await fetch("http://localhost:3000/journal/history", {
-          credentials: "include",
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/journal/history`,
+          {
+            credentials: "include",
+          }
+        );
 
         if (!response.ok) {
           setError("Failed to fetch journal history.");

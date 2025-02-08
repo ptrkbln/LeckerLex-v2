@@ -1,5 +1,7 @@
 import { rateLimit } from "express-rate-limit";
 
+// Limit to 3 recipe search requests per day per IP
+
 export const searchLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000, // 1 day
   limit: 5,
