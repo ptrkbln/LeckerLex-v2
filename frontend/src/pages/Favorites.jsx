@@ -86,6 +86,7 @@ function Favorites() {
             return originalIngredient
               ? {
                   ...ingredient,
+
                   /* amount: (originalIngredient.amount * servings).toFixed(1) */
                   amount: Number.isInteger(ingredient.amount * servings)
                     ? ingredient.amount * servings // Ganze Zahl ohne Dezimalstellen
@@ -104,7 +105,6 @@ function Favorites() {
       const storedMissing =
         favorites.find((fav) => fav.id === selectedRecipeId)
           ?.missingIngredients || [];
-
       setMissingIngredients((prev) => ({
         ...prev,
         [selectedRecipeId]: storedMissing,
@@ -173,12 +173,11 @@ function Favorites() {
           ...prevList,
           ...pendingShoppingListUpdate,
         ]);
-
         return [...updatedList];
       });
       setPendingShoppingListUpdate(null);
     }
-  }, [pendingShoppingListUpdate, setShoppingList, hasInitialized]);
+  }, [pendingShoppingListUpdate, setShoppingList]);
 
   const servingsText = `for ${servings} ${
     servings === 1 || servings === 0.5 ? "serving" : "servings"
@@ -240,6 +239,7 @@ function Favorites() {
   }
 
   return (
+
     <div className="mx-auto w-screen md:max-w-screen-xl md:px-6 pb-12 min-h-full">
       {!selectedRecipeId && (
         <main className="shadow-lg rounded-2xl w-full max-w-3xl mx-auto p-6 mb-2">
@@ -294,6 +294,7 @@ function Favorites() {
             </label>
           </div>
         </main>
+
       )}
 
       {/* Recipe Details Section */}
@@ -304,7 +305,9 @@ function Favorites() {
             .map((recipe) => (
               <div key={recipe.id}>
                 {/** Recipe Header */}
+
                 <div className="bg-gray-900 rounded-2xl overflow-hidden shadow-md mb-6 relative">
+
                   <img
                     src={recipe.image}
                     alt={recipe.title}
@@ -455,6 +458,7 @@ function Favorites() {
                 )}
                 {/** Preparation */}
                 <div className="bg-gray-900 rounded-3xl p-6 shadow-md mb-6">
+
                   <h3 className="text-xl font-semibold mb-6">
                     Preparation Steps
                   </h3>
@@ -466,6 +470,7 @@ function Favorites() {
                         <div key={index} className=" flex items-start">
                           {/* Number Badge */}
                           <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-green-600 text-white font-bold text-lg text-center mb-3">
+
                             {index + 1}
                           </div>
                           {/* Step Description */}
@@ -476,6 +481,8 @@ function Favorites() {
                       ))}
                     </ol>
                   </div>
+
+
                 </div>
 
                 {/** Nutrition */}
@@ -485,7 +492,7 @@ function Favorites() {
                   </h3>
                   <ul className="ml-6 space-y-1">
                     {Object.entries(recipe.nutrition).map(([key, value]) => (
-                      <li key={key}>
+                      <li key={key} className="list-disc">
                         <span className="capitalize">{key}</span>: {value}
                         {key === "calories"
                           ? " kcal"
@@ -592,7 +599,9 @@ function Favorites() {
         <div className="flex justify-center mt-12">
           <button
             onClick={() => (window.location.href = "/home")}
+
             className="px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300"
+
           >
             Back to Home
           </button>

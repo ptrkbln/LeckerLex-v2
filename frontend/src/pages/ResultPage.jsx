@@ -44,6 +44,7 @@ function ResultPage() {
 
   const { recipes } = useContext(RecipeContext);
 
+
   const [visibleCount, setVisibleCount] = useState(8);
 
   const navigate = useNavigate();
@@ -111,7 +112,9 @@ function ResultPage() {
               onChange={(e) => setCookTime(e.target.value)}
               className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
             >
+
               <option value="">Cooking Time</option>
+
               <option value="0-15">0 - 15 min</option>
               <option value="15-30">15 - 30 min</option>
               <option value="30-45">30 - 45 min</option>
@@ -127,7 +130,9 @@ function ResultPage() {
               onChange={(e) => setCalories(e.target.value)}
               className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
             >
+
               <option value="">kcal per 100g</option>
+
               <option value="0-100">0 - 100 kcal</option>
               <option value="100-200">100 - 200 kcal</option>
               <option value="200-300">200 - 300 kcal</option>
@@ -136,8 +141,9 @@ function ResultPage() {
             </select>
           </label>
 
-          {/* Nutrition */}
+          {/* Diet */}
           <label className="flex flex-col items-center">
+
             <select
               value={nutrition}
               onChange={(e) => setNutrition(e.target.value)}
@@ -161,7 +167,9 @@ function ResultPage() {
             onClick={() =>
               recipe.id && navigate(`/home/recipe-details/${recipe.id}`)
             }
+
             className="bg-gray-900 rounded-2xl overflow-hidden shadow-xl transform hover:scale-105 hover:shadow-2xl transition duration-300 cursor-pointer flex flex-col"
+
           >
             <LazyImage
               delay={idx * 100}
