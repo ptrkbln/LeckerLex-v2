@@ -47,7 +47,7 @@ export default function LoginComponent() {
     checkUserLogin();
   }, [loading, isLoggedIn, navigate]);
 
-  const handleSignUp = async (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault(); // Prevent default form submission
 
     if (!email || !password) {
@@ -100,17 +100,18 @@ export default function LoginComponent() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black">
+    /* TODO: fix min-h so its full and centers & problem with centering on small screen */
+    <div className="flex min-h-[84vh] justify-center items-center flex-grow">
       {/* Main Content */}
       <div className="flex-grow flex items-center justify-center">
-        {/* Registration Form */}
+        {/* Sign-in Form */}
         <div className="max-w-md w-full bg-gray-900 p-8 shadow-lg rounded-3xl">
-          <form onSubmit={handleSignUp}>
+          <form onSubmit={handleSignIn}>
             <h2 className="text-2xl font-bold text-white text-center mb-6">
               Login
             </h2>
             <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-300">
+              <label className="block text-sm font-semibold text-gray-300 pb-1">
                 Email:
               </label>
 
@@ -127,7 +128,7 @@ export default function LoginComponent() {
               </div>
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-300">
+              <label className="block text-sm font-semibold text-gray-300 pb-1">
                 Password:
               </label>
               <div className="relative">
