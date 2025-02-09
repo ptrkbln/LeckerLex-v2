@@ -4,10 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faShoppingCart,
   faTint,
-  faUtensils,
   faWheatAlt,
-} from "@fortawesome/free-solid-svg-icons";
-import {
   faClock,
   faLeaf,
   faSeedling,
