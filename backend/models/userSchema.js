@@ -19,7 +19,7 @@ const userSchema = new Schema(
     email: {
       type: String,
       required: [true, "Email field is missing."],
-      unique: [true, "Email already exists."],
+      unique: true,
       trim: true,
       match: [
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -51,7 +51,10 @@ const userSchema = new Schema(
         ref: "Recipes",
       },
     ],
-    shoppingList: [String],
+    shoppingList: {
+      type: [String],
+      default: [],
+    },
     validationToken: String,
     isEmailValidated: {
       type: Boolean,

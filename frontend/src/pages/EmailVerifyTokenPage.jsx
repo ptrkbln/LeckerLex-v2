@@ -64,7 +64,7 @@ export default function EmailVerifyTokenPage() {
   }, [token]);
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex flex-col justify-center items-center">
+    <div className="min-h-full flex flex-col justify-center items-center text-gray-200">
       {loading ? (
         <p className="text-xl font-bold text-gray-700">
           Verifying your email...
