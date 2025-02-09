@@ -33,10 +33,13 @@ function Navbar() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:3000/users/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/users/logout`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
         const errorMessage = await response.json();
