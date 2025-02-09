@@ -126,7 +126,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center mt-10 font-sans">
+    // TODO: fix min-h so its full and centered & problem with centering on small screen
+    <div className="min-h-[80vh] flex items-center justify-center">
       {/* Form Card */}
       <div className="bg-[#11151E] p-8 rounded-3xl border border-gray-700 shadow-2xl max-w-lg w-full">
         {/* Header */}
@@ -188,7 +189,11 @@ export default function RegisterPage() {
                 className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                {showPassword ? (
+                  <FaEyeSlash className="text-gray-400" />
+                ) : (
+                  <FaEye className="text-gray-400" />
+                )}
               </div>
             </div>
           </div>
@@ -210,7 +215,11 @@ export default function RegisterPage() {
                 className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                {showConfirmPassword ? (
+                  <FaEyeSlash className="text-gray-400" />
+                ) : (
+                  <FaEye className="text-gray-400" />
+                )}
               </div>
             </div>
           </div>

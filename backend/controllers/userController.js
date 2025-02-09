@@ -17,9 +17,16 @@ const transporter = nodemailer.createTransport({
 });
 
 // Register new user
-export const registerUser = async (req, res, next) => {
+export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
+    const userAlreadyExists = await User.findOne({ email });
+    if (userAlreadyExists) {
+      return res.status(400).json({
+        msg: "This email address is already in use. Please try a different email.",
+      });
+    }
 
     // Create new user and generate verification token
     const newUser = new User({ name, email, password });
@@ -93,17 +100,10 @@ export const registerUser = async (req, res, next) => {
     });
   } catch (error) {
     console.log(error);
-    if (error.code === 11000) {
-      // Duplicate key error (email already in use)
-      res.status(400).json({
-        msg: "This email address is already in use. Please try a different email.",
-      });
-    } else {
-      // Other errors
-      res
-        .status(500)
-        .json({ msg: "An unexpected error occurred. Please try again later." });
-    }
+
+    res
+      .status(500)
+      .json({ msg: "An unexpected error occurred. Please try again later." });
   }
 };
 
@@ -230,7 +230,7 @@ export const updateUsersShoppingList = async (req, res, next) => {
   }
 };
 
-export const getUsersShoppingList = async (req, res, next) => {
+export const getUsersShoppingList = async (req, res) => {
   try {
     const user = await User.findOne(req.user.userId);
     if (!user) {
