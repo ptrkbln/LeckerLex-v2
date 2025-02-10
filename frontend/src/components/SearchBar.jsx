@@ -50,7 +50,7 @@ function SearchBar({
           <input
             id="ingredient-search"
             type="text"
-            className="w-full p-2 rounded-full focus:ring-4 focus:ring-blue-800 bg-orange-50 transition font-normal placeholder-black"
+            className="w-full p-2 rounded-full focus:ring-4 focus:ring-blue-800 bg-orange-50 transition font-normal placeholder-black placeholder:text-sm placeholder:sm:text-base"
             placeholder={placeholder}
             value={searchText}
             onChange={handleInputChange}

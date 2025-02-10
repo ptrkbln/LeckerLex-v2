@@ -74,7 +74,7 @@ function IngredientsGallery({
       className="max-w-screen-lg mx-auto sm:my-16 md:px-4 lg:px-24 py-0 rounded-3xl lg:rounded-full shadow-lg"
       style={{ background: "#11151E" }}
     >
-      <div className="grid gap-6 p-4 grid-cols-5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+      <div className="grid gap-6 p-4 grid-cols-5 sm:grid-cols-7 lg:grid-cols-8">
         {itemsToDisplay.map((item, idx) => {
           const isSelected = selectedIngredients.includes(item.alt);
           const delay = idx * 80;

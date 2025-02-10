@@ -49,8 +49,7 @@ export const getAllUserJournalEntries = async (req, res, next) => {
       _id: { $in: user.journal },
     });
 
-    if (allUserJournalEntries.length === 0)
-      return res.status(404).json({ msg: "No reviews from this user found" });
+    if (allUserJournalEntries.length === 0) return res.status(204).end();
 
     return res.status(200).json(allUserJournalEntries);
   } catch (error) {
