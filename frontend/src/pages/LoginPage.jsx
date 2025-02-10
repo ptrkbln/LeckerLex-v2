@@ -101,9 +101,9 @@ export default function LoginComponent() {
 
   return (
     /* TODO: fix min-h so its full and centers & problem with centering on small screen */
-    <div className="flex min-h-[84vh] justify-center items-center flex-grow">
+    <div className="flex-grow">
       {/* Main Content */}
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex justify-center">
         {/* Sign-in Form */}
         <div className="max-w-md w-full bg-gray-900 p-8 shadow-lg rounded-3xl">
           <form onSubmit={handleSignIn}>
