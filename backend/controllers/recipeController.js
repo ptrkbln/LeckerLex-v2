@@ -27,6 +27,7 @@ export const searchRecipesAndDetails = async (req, res, next) => {
       options
     );
     const recipes = await response.json();
+    console.log(recipes);
 
     // Fetch detailed data for each recipe
     const detailedRecipes = await Promise.all(
