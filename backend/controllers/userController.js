@@ -255,7 +255,8 @@ export const logoutUser = async (req, res, next) => {
       .status(200)
       .cookie("jwt", "", {
         httpOnly: true,
-        // secure: true,
+        sameSite: "none",
+        secure: true,
         expires: new Date(0), // expires immediately by setting to a past date
       })
       .json({ msg: "Successfully logged out." });

@@ -68,7 +68,7 @@ export default function HomePage() {
   }, []); // stellt sicher, dass dies nur einmal ausgeführt wird, wenn die Komponente bereitgestellt wird
 
   // access setRecipes from context to store fetched recipes
-  const { recipes, setRecipes } = useContext(RecipeContext);
+  const { setRecipes } = useContext(RecipeContext);
 
   // manage error message text
   const [errorMessage, setErrorMessage] = useState("");
