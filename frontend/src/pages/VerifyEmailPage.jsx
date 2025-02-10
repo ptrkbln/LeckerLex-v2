@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 export default function VerifyEmailPage() {
   const navigate = useNavigate();
   return (
-    <div className="flex flex-col items-center text-gray-200 pt-52">
+    <div className="flex flex-col items-center text-gray-200">
       <div className="text-center px-4">
         <h2 className="text-2xl sm:text-3xl font-semibold mb-6">
           Registration Successful! 🎉
