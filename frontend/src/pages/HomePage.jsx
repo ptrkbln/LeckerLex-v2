@@ -112,21 +112,21 @@ export default function HomePage() {
   // List of all categories
 
   const categories = [
-    { id: "Fruits", name: "Fruits" },
-    { id: "Vegetables", name: "Vegetables" },
-    { id: "Dairy Products", name: "Dairy Products" },
+    { id: "Fruits", name: "Fruit" },
+    { id: "Vegetables", name: "Veggies" },
+    { id: "Dairy Products", name: "Dairy" },
     { id: "Meat", name: "Meat" },
     { id: "Seafood", name: "Seafood" },
     {
       id: "Flour and Baking Ingredients",
-      name: "Baking Ingredients",
+      name: "Baking",
     },
-    { id: "Grains and Legumes", name: "Grains and Legumes" },
-    { id: "Eggs and Proteins", name: "Eggs and Proteins" },
-    { id: "Canned Goods and Sauces", name: "Goods and Sauces" },
-    { id: "Herbs and Spices", name: "Herbs and Spices" },
-    { id: "Oils and Fats", name: "Oils and Fats" },
-    { id: "Snacks and Side Dishes", name: "Snacks and Side Dishes" },
+    { id: "Grains and Legumes", name: "Grains/Legumes" },
+    { id: "Eggs and Proteins", name: "Eggs/Proteins" },
+    { id: "Canned Goods and Sauces", name: "Goods/Sauces" },
+    { id: "Herbs and Spices", name: "Herbs/Spices" },
+    { id: "Oils and Fats", name: "Oils/Fats" },
+    { id: "Snacks and Side Dishes", name: "Snacks/Sides" },
   ];
 
   const handleSearch = async () => {
@@ -200,7 +200,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-full bg-black">
+    <div className="min-h-full min-w-full bg-black">
       <div className="flex justify-center items-center">
         <SearchBar
           searchText={searchText}

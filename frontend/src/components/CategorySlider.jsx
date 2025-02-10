@@ -13,8 +13,8 @@ function CategorySlider({ categories, selectedCategory, setSelectedCategory }) {
         type="button"
         onClick={onClick}
         aria-label="Previous Slide"
-        className="absolute -left-12 top-1/2 transform -translate-y-1/2 z-10 
-                   bg-green-600 text-white rounded-full p-3 shadow-md 
+        className="absolute -left-5 top-1/2 transform -translate-y-1/2 z-10
+                   text-white rounded-full p-[7px] shadow-md 
                    hover:bg-green-500 hover:scale-105 transition duration-200 focus:outline-none"
       >
         <IoIosArrowBack size={24} />
@@ -30,8 +30,8 @@ function CategorySlider({ categories, selectedCategory, setSelectedCategory }) {
         type="button"
         onClick={onClick}
         aria-label="Next Slide"
-        className="absolute -right-12 top-1/2 transform -translate-y-1/2 z-10 
-                   bg-green-600 text-white rounded-full p-3 shadow-md 
+        className="absolute -right-5 top-1/2 transform -translate-y-1/2 z-10 
+                   text-white rounded-full p-[7px] shadow-md
                    hover:bg-green-500 hover:scale-105 transition duration-200 focus:outline-none"
       >
         <IoIosArrowForward size={24} />
@@ -99,7 +99,7 @@ function CategorySlider({ categories, selectedCategory, setSelectedCategory }) {
             <div
               role="button"
               tabIndex={0}
-              className={`
+              className={`p-1
                 md:p-2 rounded-full cursor-pointer shadow-md text-center text-md
                 transition-transform focus:outline-none
                 ${

@@ -91,7 +91,7 @@ function ResultPage() {
   };
 
   return (
-    <div className="mx-auto max-w-screen-xl p-6 pb-12 min-h-full">
+    <div className="mx-auto max-w-screen-xl p-6 pb-12">
       <h1 className="text-3xl font-bold mb-8 text-center text-orange-100">
         Discover Delicious Recipes
       </h1>

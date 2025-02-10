@@ -137,7 +137,7 @@ function RecipeDetails() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto relative bg-[#11151E] min-h-full font-medium rounded-2xl text-gray-200 mb-6 md:mb-0">
+    <div className="p-6 max-w-6xl mx-auto relative bg-[#11151E] flex-grow font-medium rounded-2xl text-gray-200 mb-6 md:mb-0">
       {/* Recipe Image Section */}
       <div className="relative mx-auto sm:w-8/12 lg:w-6/12 h-72 sm:h-80 lg:h-96 mt-16 rounded-2xl">
         <img

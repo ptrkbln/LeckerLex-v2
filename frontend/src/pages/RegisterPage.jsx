@@ -127,7 +127,7 @@ export default function RegisterPage() {
 
   return (
     // TODO: fix min-h so its full and centered & problem with centering on small screen
-    <div className="min-h-[80vh] flex items-center justify-center">
+    <div className="flex flex-grow justify-center">
       {/* Form Card */}
       <div className="bg-[#11151E] p-8 rounded-3xl border border-gray-700 shadow-2xl max-w-lg w-full">
         {/* Header */}
