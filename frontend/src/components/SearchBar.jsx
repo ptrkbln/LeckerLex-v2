@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
+import { RiInformation2Fill } from "react-icons/ri";
 
 function SearchBar({
   searchText,
@@ -8,9 +9,7 @@ function SearchBar({
   handleAddIngredient,
   selectedIngredients,
 }) {
-  const [placeholder, setPlaceholder] = useState(
-    "Enter ingredients, comma-separated"
-  );
+  const [placeholder, setPlaceholder] = useState("Add ingredients");
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -46,16 +45,16 @@ function SearchBar({
         <label htmlFor="ingredient-search" className="sr-only">
           Search for recipes by ingredients
         </label>
-        <div className="relative w-full max-w-sm sm:mb-6">
+        <div className="relative w-full max-w-72">
           <input
             id="ingredient-search"
             type="text"
-            className="w-full p-2 rounded-full focus:ring-4 focus:ring-blue-800 bg-orange-50 transition font-normal placeholder-black placeholder:text-sm placeholder:sm:text-base"
+            className="w-full p-2 rounded-full focus:ring-4 focus:ring-blue-800 bg-orange-50 transition font-normal placeholder-gray-600 placeholder:text-sm placeholder:pl-2 placeholder:sm:text-base"
             placeholder={placeholder}
             value={searchText}
             onChange={handleInputChange}
             onFocus={() => setPlaceholder("")}
-            onBlur={() => setPlaceholder("Enter ingredients, comma-separated")}
+            onBlur={() => setPlaceholder("Add ingredients")}
             aria-label="Search for recipes by ingredients"
           />
           <button
@@ -65,6 +64,29 @@ function SearchBar({
           >
             <FaSearch />
           </button>
+          <div className="text-orange-200 absolute right-[-25px] bottom-[-4px] p-1 group">
+            <div className="relative">
+              <RiInformation2Fill />
+              <div
+                className="invisible group-hover:visible absolute 
+      bottom-8 lg:bottom-auto lg:top-0 
+      right-0 lg:left-8 
+      w-[330px] bg-gray-800 text-white p-2 rounded-2xl text-sm shadow-lg z-50"
+              >
+                Add ingredients to the list by typing them, using a comma after
+                each one ( eg.{" "}
+                <span className="text-orange-200">chicken, rice,</span> ) or by
+                clicking the ingredient images below.
+                <div
+                  className="absolute 
+        -bottom-[2px] lg:bottom-auto lg:top-2
+        right-2 lg:-left-1 
+        w-4 h-3 bg-gray-800 
+        rotate-45 lg:rotate-[-45deg]"
+                ></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

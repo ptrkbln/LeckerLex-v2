@@ -66,7 +66,7 @@ function Navbar() {
         </NavLink>
       </div>
       {/* Increase horizontal gap between navlinks */}
-      <div className="flex items-center space-x-8">
+      <div className="flex items-center space-x-5 lg:space-x-8">
         {isLoggedIn && (
           <NavLink
             to="/home/profile"

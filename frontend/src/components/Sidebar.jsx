@@ -35,17 +35,17 @@ function Sidebar({
       {/* Sidebar Container */}
       <div
         className={`
-          fixed bottom-0 left-0 w-full h-64 md:h-full md:w-64
-          bg-gray-900 text-white border-t md:border-t-0 md:border-r border-blue-700 md:z-30 
-          overflow-y-auto md:overflow-x-hidden transition-transform duration-500
+          fixed bottom-0 left-0 w-full h-64 lg:h-full lg:w-60
+          bg-gray-900 text-white border-t lg:border-t-0 lg:border-r border-blue-700 lg:z-30 
+          overflow-y-auto lg:overflow-x-hidden transition-transform duration-500
           ${
             isSidebarOpen
-              ? "translate-y-0 md:translate-x-0"
-              : "translate-y-full md:-translate-x-full"
+              ? "translate-y-0 lg:translate-x-0"
+              : "translate-y-full lg:-translate-x-full"
           }
         `}
       >
-        <h2 className="p-4 text-xl font-semibold border-b border-gray-700">
+        <h2 className="p-4 text-lg font-semibold border-b border-gray-700">
           Chosen Ingredients ({selectedIngredients.length})
         </h2>
         <ul>
@@ -67,7 +67,7 @@ function Sidebar({
         {selectedIngredients.length > 0 && (
           <div className="flex justify-center items-center w-full">
             <button
-              className="bg-red-600 hover:bg-red-500 text-white w-11/12 m-4 mb-14 md:mb-4 py-2 px-4 rounded-lg transition-transform hover:scale-105"
+              className="bg-red-600 hover:bg-red-500 text-white w-11/12 m-4 mb-14 lg:mb-4 py-2 px-4 rounded-lg transition-transform hover:scale-105"
               onClick={handleRemoveAllClick}
             >
               Remove All
@@ -79,7 +79,7 @@ function Sidebar({
       {/* Desktop Toggle Button */}
       <div
         className={`
-          hidden md:block fixed transition-all duration-500 z-40
+          hidden lg:block fixed transition-all duration-500 z-40
           ${
             isSidebarOpen
               ? "left-64" // Position next to sidebar when open
@@ -99,7 +99,7 @@ function Sidebar({
       {/* Mobile Toggle Button */}
       <div
         className={`
-          block md:hidden fixed left-1/2 transform -translate-x-1/2 transition-all duration-500 z-20
+          block lg:hidden fixed left-1/2 transform -translate-x-1/2 transition-all duration-500 z-20
           ${isSidebarOpen ? "bottom-64" : "bottom-10"}
         `}
       >

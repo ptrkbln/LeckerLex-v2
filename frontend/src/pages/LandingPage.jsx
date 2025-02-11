@@ -80,7 +80,7 @@ export default function LandingPage() {
 
   return (
     <motion.div
-      className="relative w-full h-screen overflow-hidden font-sans flex flex-col items-center justify-center"
+      className="relative w-full h-screen overflow-hidden flex flex-col items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
@@ -124,10 +124,10 @@ export default function LandingPage() {
         exit={{ opacity: 0, x: 50 }}
         transition={{ duration: 1, delay: 2 }}
       >
-        <motion.p className="text-orange-200 text-2xl md:text-4xl font-medium text-center mb-8">
+        <motion.p className="text-orange-200 flex justify-center text-xl md:text-4xl font-medium text-center mb-8 px-1">
           <AnimatedLetters text="Discover culinary delights" />
         </motion.p>
-        <motion.p className="text-orange-200 text-2xl md:text-4xl font-medium text-center">
+        <motion.p className="text-orange-200 flex justify-center text-xl md:text-4xl font-medium text-center">
           <AnimatedLetters text="with ingredients you already have." />
         </motion.p>
       </motion.div>
