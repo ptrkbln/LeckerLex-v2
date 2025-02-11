@@ -100,14 +100,14 @@ function CategorySlider({ categories, selectedCategory, setSelectedCategory }) {
               role="button"
               tabIndex={0}
               className={`p-1
-                md:p-2 rounded-full cursor-pointer shadow-md text-center text-md
-                transition-transform focus:outline-none
+                md:p-2 rounded-full cursor-pointer shadow-md text-center text-sm md:text-base bg-orange-50 
+                transition-transform 
                 ${
                   selectedCategory === category.id
-                    ? "bg-green-800 text-gray-100"
-                    : "bg-orange-50"
+                    ? "ring-2 ring-orange-300"
+                    : ""
                 }
-                hover:text-gray-800 hover:scale-105 hover:ring-2 hover:ring-orange-700 hover:ring-offset-2
+                hover:text-gray-800 hover:scale-105 hover:ring-2 hover:ring-orange-200 
               `}
               onClick={() => setSelectedCategory(category.id)}
               onKeyDown={(e) => {
