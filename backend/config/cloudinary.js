@@ -16,7 +16,7 @@ const storage = new CloudinaryStorage({
   params: {
     folder: "LeckerLex-Review-Images", // Folder name in Cloudinary
     allowed_formats: ["jpeg", "png", "jpg", "webp", "avif"], // Accepted formats
-    public_id: (req) => `${req.user.userId}-${crypto.randomUUID()}`, // Use today's date as the public ID
+    public_id: (req) => `${req.user.userId}-${crypto.randomUUID()}`,
   },
 });
 

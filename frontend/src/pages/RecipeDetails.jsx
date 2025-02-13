@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, replace } from "react-router-dom";
 import { RecipeContext } from "../context/RecipeContext";
 import { AuthContext } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -28,8 +28,13 @@ function RecipeDetails() {
   const navigate = useNavigate();
 
   // Finde das Rezept mit der passenden ID
-
   const recipe = recipes.find((x) => x.id === Number(id));
+
+  // Prevent breaking app by refresh
+  if (!recipe) {
+    navigate("/home", { replace: true });
+    return;
+  }
 
   // State declarations.
   const [showMissingIngredients, setShowMissingIngredients] = useState(true);
