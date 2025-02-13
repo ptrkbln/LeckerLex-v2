@@ -61,8 +61,8 @@ function MyShoppingList() {
       if (!response.ok) {
         throw new Error("Failed to update shopping list.");
       }
-      const result = await response.json();
-      console.log("Shopping list saved:", result);
+      /*  const result = await response.json(); */
+
       setShowSaveButton(false);
     } catch (error) {
       console.error("Error saving shopping list:", error);
