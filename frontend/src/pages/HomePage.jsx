@@ -7,66 +7,6 @@ import SearchBar from "../components/SearchBar";
 import Sidebar from "../components/Sidebar";
 
 export default function HomePage() {
-  const [guestCount, setGuestCount] = useState(0);
-  useEffect(() => {
-    // Funktion zum Registrieren des Gastbesuchs
-
-    const registerGuestVisit = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/guests/add-visit`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log("failed to register guest visit:", errorData.message);
-          return;
-        }
-
-        const data = await response.json();
-        console.log("Guest visit registered successfully:", data);
-      } catch (error) {
-        console.log("Error registering guest visit:", error.message);
-      }
-    };
-
-    // Funktion, um die Anzahl der Gäste abzurufen
-
-    const fetchGuestCount = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/guests/count`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.log("Failed to fetch guests count:", errorData.message);
-          return;
-        }
-        const data = await response.json();
-        setGuestCount(data.count);
-        console.log("Guest count fetched successfully:", data);
-      } catch (error) {
-        console.log("Error fetching guest count:", error.message);
-      }
-    };
-
-    registerGuestVisit(); // gastbesuch registrieren
-    fetchGuestCount(); // Gastanzahl abrufen
-  }, []); // stellt sicher, dass dies nur einmal ausgeführt wird, wenn die Komponente bereitgestellt wird
-
   // access setRecipes from context to store fetched recipes
   const { setRecipes } = useContext(RecipeContext);
 
@@ -99,7 +39,7 @@ export default function HomePage() {
   // Update the formatted ingredients whenever selectedIngredients changes
   useEffect(() => {
     const formatted = selectedIngredients.map((ingredient) =>
-      ingredient.replace(/\s+/g, "_")
+      ingredient.replace(/\s+/g, "_"),
     );
     setFormattedIngredients(formatted); // Update formatted ingredients state
   }, [selectedIngredients]);
@@ -143,7 +83,7 @@ export default function HomePage() {
         }/search/recipes?ingredients=${ingredientQuery}`, // TODO pfad mit .env variable ersetzen
         {
           credentials: "include", // include cors credentials
-        }
+        },
       );
       if (!response.ok) {
         let errorMessage = "Something went wrong. Please try again.";

@@ -18,7 +18,7 @@ export default function ProtectedRoute({ children }) {
             Loading...
           </h2>
           <p className="text-lg sm:text-xl mb-8 leading-relaxed">
-            We're checking your authentication status. Please wait a moment.
+            We are checking your authentication status. Please wait a moment.
           </p>
         </div>
       </div>
