@@ -7,7 +7,7 @@ export default function LoginComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const { isLoggedIn, setIsLoggedIn, loading, setIsGuest } =
+  const { isLoggedIn, setIsLoggedIn, setIsGuest, setIsAuthChecked } =
     useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -32,7 +32,7 @@ export default function LoginComponent() {
     if (isLoggedIn) {
       navigate(redirectTo || "/home");
     }
-  }, [loading, isLoggedIn, redirectTo, navigate]);
+  }, [isLoggedIn, redirectTo, navigate]);
 
   const handleSignIn = async (e) => {
     e.preventDefault(); // Prevent default form submission
@@ -64,7 +64,7 @@ export default function LoginComponent() {
         return;
       }
       setIsLoggedIn(true);
-      /* navigate("/home"); */
+      setIsAuthChecked(true);
 
       if (redirectTo) {
         navigate(redirectTo);
@@ -78,13 +78,6 @@ export default function LoginComponent() {
       );
     }
   };
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
 
   return (
     <div className="flex-grow">

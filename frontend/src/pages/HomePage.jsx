@@ -140,7 +140,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-full min-w-full bg-black">
+    <div className="min-w-full bg-black">
       <div className="flex justify-center items-center">
         <SearchBar
           searchText={searchText}

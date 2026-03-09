@@ -3,23 +3,21 @@ import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children }) {
-  const { isLoggedIn, checkLoginStatus, loading } = useContext(AuthContext);
+  const { isLoggedIn, checkLoginStatus, loading, isAuthChecked } =
+    useContext(AuthContext);
   const location = useLocation();
 
   useEffect(() => {
-    if (!isLoggedIn) checkLoginStatus();
-  }, [isLoggedIn, checkLoginStatus]);
+    if (!isAuthChecked) checkLoginStatus();
+  }, [isAuthChecked, checkLoginStatus]);
 
-  if (loading)
+  if (loading || !isAuthChecked)
     return (
-      <div className="flex flex-col items-center text-gray-800 pt-52">
+      <div className="flex flex-col items-center text-gray-800">
         <div className="text-center px-4 text-gray-200">
           <h2 className="text-2xl sm:text-3xl font-semibold mb-6">
             Loading...
           </h2>
-          <p className="text-lg sm:text-xl mb-8 leading-relaxed">
-            We are checking your authentication status. Please wait a moment.
-          </p>
         </div>
       </div>
     );

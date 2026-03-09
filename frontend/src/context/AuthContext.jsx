@@ -7,6 +7,7 @@ export default function AuthContextProvider({ children }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   const checkLoginStatus = useCallback(async () => {
     setLoading(true);
@@ -32,8 +33,9 @@ export default function AuthContextProvider({ children }) {
       setErrorMessage("An error occured. Please try again later.");
     } finally {
       setLoading(false);
+      setIsAuthChecked(true);
     }
-  });
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -47,6 +49,8 @@ export default function AuthContextProvider({ children }) {
         setLoading,
         isGuest,
         setIsGuest,
+        isAuthChecked,
+        setIsAuthChecked,
       }}
     >
       {children}
