@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import { useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { FaUser, FaHeart, FaSignOutAlt, FaCartArrowDown } from "react-icons/fa";
@@ -12,24 +12,9 @@ const HoverEffect = () => (
 );
 
 function Navbar() {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
-  const dropdownRef = useRef(null);
+  const { isLoggedIn, setIsLoggedIn, setIsAuthChecked } =
+    useContext(AuthContext);
   const navigate = useNavigate();
-
-  // Close the dropdown menu if clicking outside of it.
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownRef]);
 
   const handleLogout = async () => {
     try {
@@ -38,7 +23,7 @@ function Navbar() {
         {
           method: "POST",
           credentials: "include",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -47,8 +32,10 @@ function Navbar() {
         return;
       }
       navigate("/");
-      setIsDropdownOpen(false);
-      setTimeout(() => setIsLoggedIn(false), 0);
+      setTimeout(() => {
+        setIsAuthChecked(false);
+        (setIsLoggedIn(false), 0);
+      });
     } catch (error) {
       console.error("Error logging out:", error);
     }
@@ -110,7 +97,7 @@ function Navbar() {
             className="relative group text-orange-100 text-md w-max flex items-center"
           >
             <FaSignOutAlt className="mr-2" />
-            Log Out
+            Logout
             <HoverEffect />
           </button>
         ) : (
@@ -119,7 +106,7 @@ function Navbar() {
             className="relative group text-orange-100 text-md w-max flex items-center"
           >
             <FaUser className="mr-2" />
-            Log In
+            Login
             <HoverEffect />
           </NavLink>
         )}
