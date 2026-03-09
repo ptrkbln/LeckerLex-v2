@@ -12,7 +12,8 @@ const HoverEffect = () => (
 );
 
 function Navbar() {
-  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn, setIsLoggedIn, setIsAuthChecked } =
+    useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -31,7 +32,10 @@ function Navbar() {
         return;
       }
       navigate("/");
-      setTimeout(() => setIsLoggedIn(false), 0);
+      setTimeout(() => {
+        setIsAuthChecked(false);
+        (setIsLoggedIn(false), 0);
+      });
     } catch (error) {
       console.error("Error logging out:", error);
     }
