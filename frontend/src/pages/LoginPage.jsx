@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect, useContext } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -7,15 +7,12 @@ export default function LoginComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const { isLoggedIn, setIsLoggedIn, checkLoginStatus, loading, setIsGuest } =
+  const { isLoggedIn, setIsLoggedIn, loading, setIsGuest } =
     useContext(AuthContext);
-  const navigate = useNavigate(); // React Router's navigate function for redirection
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-
-  const redirectTo = searchParams.get("redirectTo") || "/home";
-
-  // state to control show/hide password
   const [showPassword, setShowPassword] = useState(false);
+  const redirectTo = searchParams.get("redirectTo") || "/home";
 
   const handleGuestLogin = () => {
     setIsGuest(true); // Gastmodus aktivieren
@@ -28,24 +25,14 @@ export default function LoginComponent() {
   };
 
   const handleRedirectToRegister = () => {
-    navigate(`/home/register?redirectTo=${redirectTo}`);
+    navigate(`/home/register?redirectTo=${encodeURIComponent(redirectTo)}`);
   };
 
   useEffect(() => {
-    const checkUserLogin = async () => {
-      if (loading) return; // Prevent execution while loading
-      if (isLoggedIn) {
-        /* navigate("/home"); */
-        if (redirectTo) {
-          navigate(redirectTo);
-        } else {
-          navigate("/home");
-        }
-      }
-    };
-
-    checkUserLogin();
-  }, [loading, isLoggedIn, navigate]);
+    if (isLoggedIn) {
+      navigate(redirectTo || "/home");
+    }
+  }, [loading, isLoggedIn, redirectTo, navigate]);
 
   const handleSignIn = async (e) => {
     e.preventDefault(); // Prevent default form submission
@@ -68,7 +55,7 @@ export default function LoginComponent() {
             "Content-Type": "application/json",
           },
           credentials: "include",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -87,11 +74,11 @@ export default function LoginComponent() {
     } catch (error) {
       console.error("Error by login", error); // debug log
       setErrorMessage(
-        "An error occured while trying to login. Please try again later."
+        "An error occured while trying to login. Please try again later.",
       );
     }
   };
-  if (loading || isLoggedIn) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         Loading...
@@ -100,7 +87,6 @@ export default function LoginComponent() {
   }
 
   return (
-    /* TODO: fix min-h so its full and centers & problem with centering on small screen */
     <div className="flex-grow">
       {/* Main Content */}
       <div className="flex justify-center">

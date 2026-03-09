@@ -1,13 +1,14 @@
-import React, { useContext, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { useContext, useEffect } from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children }) {
   const { isLoggedIn, checkLoginStatus, loading } = useContext(AuthContext);
+  const location = useLocation();
 
   useEffect(() => {
     if (!isLoggedIn) checkLoginStatus();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, checkLoginStatus]);
 
   if (loading)
     return (
@@ -23,5 +24,14 @@ export default function ProtectedRoute({ children }) {
       </div>
     );
 
-  return !isLoggedIn ? <Navigate to="/home/login" replace /> : children;
+  return !isLoggedIn ? (
+    <Navigate
+      to={`/home/login?redirectTo=${encodeURIComponent(
+        location.pathname + location.search,
+      )}`}
+      replace
+    />
+  ) : (
+    children
+  );
 }
