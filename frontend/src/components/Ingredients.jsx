@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import IngredientsGallery from "./IngredientsGallery";
 
 // Images - Herbs and Spices
@@ -292,7 +292,7 @@ export default function Ingredients({
         item
           .trim()
           .toLowerCase()
-          .replace(/^\w/, (c) => c.toUpperCase())
+          .replace(/^\w/, (c) => c.toUpperCase()),
       )
       .filter((ingredient) => ingredient); // filter out any empty strings
 
@@ -317,11 +317,11 @@ export default function Ingredients({
       .map(
         (ingredient) =>
           ingredient.alt.charAt(0).toUpperCase() +
-          ingredient.alt.slice(1).toLowerCase()
+          ingredient.alt.slice(1).toLowerCase(),
       );
 
     const uniqueIngredients = Array.from(
-      new Set([...selectedIngredients, ...matched])
+      new Set([...selectedIngredients, ...matched]),
     );
 
     // Update selectedIngredients if changed

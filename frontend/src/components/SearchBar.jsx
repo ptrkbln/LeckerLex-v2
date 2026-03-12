@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { RiInformation2Fill } from "react-icons/ri";
 
@@ -9,8 +8,6 @@ function SearchBar({
   handleAddIngredient,
   selectedIngredients,
 }) {
-  const [placeholder, setPlaceholder] = useState("Add ingredients");
-
   // Handle input changes
   const handleInputChange = (e) => {
     const newSearchText = e.target.value;
@@ -24,13 +21,13 @@ function SearchBar({
           ingredient
             .trim()
             .toLowerCase()
-            .replace(/^\w/, (c) => c.toUpperCase())
+            .replace(/^\w/, (c) => c.toUpperCase()),
         )
         .filter((ingredient) => ingredient); // Filter out empty strings
 
-      const uniqueIngredients = Array.from(
-        new Set([...selectedIngredients, ...ingredientsToAdd])
-      );
+      const uniqueIngredients = [
+        ...new Set([...selectedIngredients, ...ingredientsToAdd]),
+      ];
       handleAddIngredient(ingredientsToAdd);
       setSearchText("");
     }
@@ -50,11 +47,9 @@ function SearchBar({
             id="ingredient-search"
             type="text"
             className="w-full p-2 rounded-full focus:ring-4 focus:ring-blue-800 bg-orange-50 transition font-normal placeholder-gray-600 placeholder:text-sm placeholder:pl-2 placeholder:sm:text-base"
-            placeholder={placeholder}
+            placeholder="Add ingredients"
             value={searchText}
             onChange={handleInputChange}
-            onFocus={() => setPlaceholder("")}
-            onBlur={() => setPlaceholder("Add ingredients")}
             aria-label="Search for recipes by ingredients"
           />
           <button
