@@ -5,6 +5,7 @@ import CategorySlider from "../components/CategorySlider";
 import Ingredients from "../components/Ingredients";
 import SearchBar from "../components/SearchBar";
 import Sidebar from "../components/Sidebar";
+import toast from "react-hot-toast";
 
 export default function HomePage() {
   // access setRecipes from context to store fetched recipes
@@ -38,6 +39,7 @@ export default function HomePage() {
 
   // Update the formatted ingredients whenever selectedIngredients changes
   useEffect(() => {
+    toast.error("Loading...");
     const formatted = selectedIngredients.map((ingredient) =>
       ingredient.replace(/\s+/g, "_"),
     );

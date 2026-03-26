@@ -28,10 +28,12 @@ export default function LoginComponent() {
 
   const handleSignIn = async (e) => {
     e.preventDefault();
+
     if (!email || !password) {
       setErrorMessage("Please enter your email and password.");
       return;
     }
+
     setErrorMessage(""); // clean previous errors
     const genericLoginError =
       "An error occurred while trying to log in. Please try again later.";
