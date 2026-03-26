@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { RecipeContext } from "../context/RecipeContext";
 import CategorySlider from "../components/CategorySlider";
@@ -30,6 +30,8 @@ export default function HomePage() {
   // State to hold the formatted ingredients
   const [formattedIngredients, setFormattedIngredients] = useState([]);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   /*   // selectedIngredients query format
   const formattedIngredients = selectedIngredients.map((ingredient) =>
     ingredient.replace(/\s+/g, "_")
@@ -39,7 +41,6 @@ export default function HomePage() {
 
   // Update the formatted ingredients whenever selectedIngredients changes
   useEffect(() => {
-    toast.error("Loading...");
     const formatted = selectedIngredients.map((ingredient) =>
       ingredient.replace(/\s+/g, "_"),
     );
@@ -72,11 +73,16 @@ export default function HomePage() {
   ];
 
   const handleSearch = async () => {
-    if (selectedIngredients.length < 2) {
-      setErrorMessage("Please select at least 2 ingredients.");
+    if (selectedIngredients.length < 3) {
+      setErrorMessage("Pick at least 3 ingredients to start your search.");
       return;
     }
+    if (isLoading) return;
+    setIsLoading(true);
     setErrorMessage(""); // clear previous errors
+    const toastId = toast.loading("Searching recipes...", {
+      duration: Infinity,
+    });
 
     try {
       const response = await fetch(
@@ -87,31 +93,55 @@ export default function HomePage() {
           credentials: "include", // include cors credentials
         },
       );
-      if (!response.ok) {
-        let errorMessage = "Something went wrong. Please try again.";
 
+      if (!response.ok) {
+        if (response.status === 429) {
+          setErrorMessage(
+            "Recipe search limit reached for today. Try again tomorrow.",
+          );
+          setRecipes([]);
+          toast.dismiss(toastId);
+          return;
+        }
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
+          console.log("Recipe search failed:", errorData);
         } catch (error) {
-          console.error("Error parsing JSON response", error);
+          console.error(
+            "Recipe search failed: could not parse error response",
+            error,
+          );
         }
-        setErrorMessage(errorMessage);
+        toast.error("Couldn't load recipes.", {
+          id: toastId,
+        });
         return;
       }
+
       const data = await response.json();
 
-      if (!Array.isArray(data.data)) {
-        setErrorMessage("API daily limit exceeded. Try again tomorrow.");
-        setRecipes([]); // Ensure it's an array to prevent .map() errors when limit exceeded
+      if (Array.isArray(data.data)) {
+        setRecipes(data.data); // Update the recipes state with the response from backend
+      } else {
+        console.error(
+          "Response from backend on recipe search is not in correct shape:",
+          data.data,
+        );
+        toast.error("Couldn't load recipes.", {
+          id: toastId,
+        });
         return;
       }
 
-      setRecipes(data.data); // Update the recipes state with the response from backend
+      toast.dismiss(toastId);
       navigate("results"); // navigate to recipes page
     } catch (error) {
       console.error("Error fetching recipes", error); // debug log
-      setErrorMessage("An error occured. Please try again later.");
+      toast.error("Connection failed.", {
+        id: toastId,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -142,7 +172,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-w-full bg-black">
+    <div className="min-w-full bg-black relative">
       <div className="flex justify-center items-center">
         <SearchBar
           searchText={searchText}
@@ -152,10 +182,13 @@ export default function HomePage() {
           setIsSidebarOpen={setIsSidebarOpen}
           selectedIngredients={selectedIngredients}
           handleAddIngredient={handleAddIngredient}
+          isLoading={isLoading}
         />
       </div>
       {errorMessage && (
-        <p className="text-red-500 text-center mt-4">{errorMessage}</p>
+        <p className="text-red-500 text-center absolute left-1/2 -translate-x-1/2 text-sm md:text-base w-full">
+          {errorMessage}
+        </p>
       )}
       <CategorySlider
         categories={categories}

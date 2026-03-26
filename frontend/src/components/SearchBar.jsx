@@ -1,5 +1,6 @@
 import { FaSearch } from "react-icons/fa";
 import { RiInformation2Fill } from "react-icons/ri";
+import { ImSpinner2 } from "react-icons/im";
 
 function SearchBar({
   searchText,
@@ -7,6 +8,7 @@ function SearchBar({
   handleSearch,
   handleAddIngredient,
   selectedIngredients,
+  isLoading,
 }) {
   // Handle input changes
   const handleInputChange = (e) => {
@@ -15,6 +17,7 @@ function SearchBar({
 
     //Handle adding the manually typed ingredient to the selected list
     if (newSearchText.includes(",")) {
+      //TODO check if searchText should be
       const ingredientsToAdd = searchText
         .split(",")
         .map((ingredient) =>
@@ -25,6 +28,7 @@ function SearchBar({
         )
         .filter((ingredient) => ingredient); // Filter out empty strings
 
+      // TODO CHECK WHY THIS IS UNUSUED
       const uniqueIngredients = [
         ...new Set([...selectedIngredients, ...ingredientsToAdd]),
       ];
@@ -53,11 +57,12 @@ function SearchBar({
             aria-label="Search for recipes by ingredients"
           />
           <button
-            className="absolute right-0 top-0 h-full px-4 bg-green-500 font-medium text-white rounded-full hover:bg-green-600 hover:scale-105 transition duration-300"
+            disabled={isLoading}
+            className="absolute right-0 top-0 h-full px-4 bg-green-500 font-medium text-white rounded-full transition duration-300 hover:bg-green-600"
             onClick={handleSearch} // Search recipes based on the input
             aria-label="Search"
           >
-            <FaSearch />
+            {isLoading ? <ImSpinner2 className="animate-spin" /> : <FaSearch />}
           </button>
           <div className="text-orange-200 absolute right-[-25px] bottom-[-4px] p-1 group">
             <div className="relative">
