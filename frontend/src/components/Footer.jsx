@@ -1,4 +1,3 @@
-import React from "react";
 import {
   FaSearch,
   FaHeart,
@@ -14,7 +13,6 @@ import { NavLink, useLocation } from "react-router-dom";
 function Footer() {
   const location = useLocation();
   const currentPath = location.pathname;
-  // const [activeIcon, setActiveIcon] = useState(null);
 
   // function to determine if a path is active
   const isPathActive = (path) => {
@@ -30,7 +28,7 @@ function Footer() {
       <footer className="bg-current p-1 shadow-md w-full hidden md:block z-10">
         <div className="w-full mx-auto max-w-screen-2xl p-2 md:flex md:items-center md:justify-between">
           <span className="text-sm text-gray-500 sm:text-center dark:text-gray-600 flex items-center">
-            © 2025{" "}
+            © {new Date().getFullYear()}
             <a href="#" className="hover:underline ml-1">
               LeckerLex
             </a>

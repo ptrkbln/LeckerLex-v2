@@ -13,10 +13,12 @@ export default function LoginComponent() {
   const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const redirectTo = searchParams.get("redirectTo") || "/home";
+  const handleRedirectToRegister = () => {
+    navigate(`/home/register?redirectTo=${encodeURIComponent(redirectTo)}`);
+  };
 
   const handleGuestLogin = () => {
     setIsGuest(true); // Gastmodus aktivieren
-
     if (redirectTo) {
       navigate(redirectTo); // zurück zur vorherigen Seite
     } else {
@@ -24,18 +26,8 @@ export default function LoginComponent() {
     }
   };
 
-  const handleRedirectToRegister = () => {
-    navigate(`/home/register?redirectTo=${encodeURIComponent(redirectTo)}`);
-  };
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      navigate(redirectTo || "/home");
-    }
-  }, [isLoggedIn, redirectTo, navigate]);
-
   const handleSignIn = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
     if (!email || !password) {
       setErrorMessage("Please enter your email and password.");
@@ -43,7 +35,8 @@ export default function LoginComponent() {
     }
 
     setErrorMessage(""); // clean previous errors
-
+    const genericLoginError =
+      "An error occurred while trying to log in. Please try again later.";
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/users/login`,
@@ -57,27 +50,32 @@ export default function LoginComponent() {
           credentials: "include",
         },
       );
-
       if (!response.ok) {
-        const errorData = await response.json();
-        setErrorMessage(errorData.msg || "Incorrent email or password.");
+        if (response.status === 400 || response.status === 401) {
+          setErrorMessage("Incorrect email or password.");
+        } else {
+          setErrorMessage(genericLoginError);
+        }
         return;
       }
       setIsLoggedIn(true);
       setIsAuthChecked(true);
-
       if (redirectTo) {
         navigate(redirectTo);
       } else {
         navigate("/home");
       }
     } catch (error) {
-      console.error("Error by login", error); // debug log
-      setErrorMessage(
-        "An error occured while trying to login. Please try again later.",
-      );
+      console.error("Error during login", error);
+      setErrorMessage(genericLoginError);
     }
   };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate(redirectTo || "/home");
+    }
+  }, [isLoggedIn, redirectTo, navigate]);
 
   return (
     <div className="flex-grow">
