@@ -8,52 +8,14 @@ import Sidebar from "../components/Sidebar";
 import toast from "react-hot-toast";
 
 export default function HomePage() {
-  // access setRecipes from context to store fetched recipes
-  const { setRecipes } = useContext(RecipeContext);
-
-  // manage error message text
-  const [errorMessage, setErrorMessage] = useState("");
-
-  // category selection
-  const [selectedCategory, setSelectedCategory] = useState("null");
-
-  // collect chosen ingredients
-  const [selectedIngredients, setSelectedIngredients] = useState([]);
-
-  // manage the search input text
-  const [searchText, setSearchText] = useState("");
-
-  // manage the sidebar
-
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // State to hold the formatted ingredients
-  const [formattedIngredients, setFormattedIngredients] = useState([]);
-
-  const [isLoading, setIsLoading] = useState(false);
-
-  /*   // selectedIngredients query format
-  const formattedIngredients = selectedIngredients.map((ingredient) =>
-    ingredient.replace(/\s+/g, "_")
-  ); // replace spaces with underscores in ingredient name
-  const ingredientQuery = formattedIngredients.join(","); // join ingredients with comma
-  console.log("Ingredient Query:", ingredientQuery); // works! */
-
-  // Update the formatted ingredients whenever selectedIngredients changes
-  useEffect(() => {
-    const formatted = selectedIngredients.map((ingredient) =>
-      ingredient.replace(/\s+/g, "_"),
-    );
-    setFormattedIngredients(formatted); // Update formatted ingredients state
-  }, [selectedIngredients]);
-
-  // Convert formattedIngredients to a query string
-  const ingredientQuery = formattedIngredients.join(","); // join ingredients with comma
-
   const navigate = useNavigate();
-
-  // List of all categories
-
+  const { setRecipes } = useContext(RecipeContext); // Access setRecipes from context to store fetched recipes
+  const [errorMessage, setErrorMessage] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Manage sidebar
+  const [isLoading, setIsLoading] = useState(false);
   const categories = [
     { id: "Fruits", name: "Fruit" },
     { id: "Vegetables", name: "Veggies" },
@@ -71,6 +33,19 @@ export default function HomePage() {
     { id: "Oils and Fats", name: "Oils/Fats" },
     { id: "Snacks and Side Dishes", name: "Snacks/Sides" },
   ];
+
+  // Remove error message when appropriate number of ingredients is selected
+  useEffect(() => {
+    if (errorMessage && selectedIngredients.length >= 3) setErrorMessage("");
+  }, [selectedIngredients, errorMessage]);
+
+  // Replace spaces in ingredient names with underscores
+  const formattedIngredients = selectedIngredients.map((ingredient) =>
+    ingredient.replace(/\s+/g, "_"),
+  );
+
+  // Convert formattedIngredients to a query string
+  const ingredientQuery = formattedIngredients.join(","); // join ingredients with comma
 
   const handleSearch = async () => {
     if (selectedIngredients.length < 3) {
@@ -96,16 +71,19 @@ export default function HomePage() {
 
       if (!response.ok) {
         if (response.status === 429) {
-          setErrorMessage(
-            "Recipe search limit reached for today. Try again tomorrow.",
+          toast.error(
+            "No more recipe searches available today. Come back tomorrow.",
+            {
+              id: toastId,
+              duration: undefined,
+            },
           );
           setRecipes([]);
-          toast.dismiss(toastId);
           return;
         }
         try {
           const errorData = await response.json();
-          console.log("Recipe search failed:", errorData);
+          console.error("Recipe search failed:", errorData);
         } catch (error) {
           console.error(
             "Recipe search failed: could not parse error response",
@@ -114,31 +92,33 @@ export default function HomePage() {
         }
         toast.error("Couldn't load recipes.", {
           id: toastId,
+          duration: undefined,
         });
         return;
       }
 
       const data = await response.json();
 
-      if (Array.isArray(data.data)) {
-        setRecipes(data.data); // Update the recipes state with the response from backend
-      } else {
+      if (!Array.isArray(data.data)) {
         console.error(
           "Response from backend on recipe search is not in correct shape:",
           data.data,
         );
-        toast.error("Couldn't load recipes.", {
+        toast.error("Something went wrong with the recipe results.", {
           id: toastId,
+          duration: undefined,
         });
         return;
       }
 
+      setRecipes(data.data); // Update the recipes state with the response from backend
       toast.dismiss(toastId);
-      navigate("results"); // navigate to recipes page
+      navigate("results");
     } catch (error) {
-      console.error("Error fetching recipes", error); // debug log
+      console.error("Error fetching recipes", error);
       toast.error("Connection failed.", {
         id: toastId,
+        duration: undefined,
       });
     } finally {
       setIsLoading(false);
@@ -146,10 +126,9 @@ export default function HomePage() {
   };
 
   const handleRemoveIngredient = (index) => {
-    setSelectedIngredients((prevIngredients) => {
-      const updatedIngredients = prevIngredients.filter((_, i) => i !== index);
-      return updatedIngredients;
-    });
+    setSelectedIngredients((prevIngredients) =>
+      prevIngredients.filter((_, i) => i !== index),
+    );
   };
 
   const handleRemoveAll = () => {
@@ -172,7 +151,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-w-full bg-black relative">
+    <div className="min-w-full bg-black">
       <div className="flex justify-center items-center">
         <SearchBar
           searchText={searchText}
@@ -180,7 +159,6 @@ export default function HomePage() {
           handleSearch={handleSearch}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
-          selectedIngredients={selectedIngredients}
           handleAddIngredient={handleAddIngredient}
           isLoading={isLoading}
         />
