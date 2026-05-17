@@ -7,18 +7,17 @@ function SearchBar({
   setSearchText,
   handleSearch,
   handleAddIngredient,
-  selectedIngredients,
   isLoading,
 }) {
   // Handle input changes
   const handleInputChange = (e) => {
     const newSearchText = e.target.value;
-    setSearchText(e.target.value);
+    setSearchText(newSearchText);
 
     //Handle adding the manually typed ingredient to the selected list
     if (newSearchText.includes(",")) {
       //TODO check if searchText should be
-      const ingredientsToAdd = searchText
+      const ingredientsToAdd = newSearchText
         .split(",")
         .map((ingredient) =>
           ingredient
@@ -27,11 +26,6 @@ function SearchBar({
             .replace(/^\w/, (c) => c.toUpperCase()),
         )
         .filter((ingredient) => ingredient); // Filter out empty strings
-
-      // TODO CHECK WHY THIS IS UNUSUED
-      const uniqueIngredients = [
-        ...new Set([...selectedIngredients, ...ingredientsToAdd]),
-      ];
       handleAddIngredient(ingredientsToAdd);
       setSearchText("");
     }

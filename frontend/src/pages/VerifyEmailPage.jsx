@@ -9,7 +9,7 @@ export default function VerifyEmailPage() {
           Registration Successful! 🎉
         </h2>
         <p className="text-lg sm:text-xl mb-8 leading-relaxed">
-          One last step! We've sent a verification email to your inbox. <br />
+          One last step! We have sent a verification email to your inbox. <br />
           Please check your email and confirm your address to complete your
           registration.
         </p>
