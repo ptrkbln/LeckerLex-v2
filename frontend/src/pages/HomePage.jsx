@@ -164,7 +164,7 @@ export default function HomePage() {
         />
       </div>
       {errorMessage && (
-        <p className="text-red-500 text-center absolute left-1/2 -translate-x-1/2 text-sm md:text-base w-full">
+        <p className="text-rose-400 text-center absolute left-1/2 -translate-x-1/2 text-sm md:text-base w-full">
           {errorMessage}
         </p>
       )}
