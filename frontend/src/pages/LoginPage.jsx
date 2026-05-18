@@ -20,14 +20,11 @@ export default function LoginComponent() {
     navigate(`/home/register?redirectTo=${encodeURIComponent(redirectTo)}`);
   };
 
-  const handleGuestLogin = () => {
-    setIsGuest(true); // Gastmodus aktivieren
-    if (redirectTo) {
-      navigate(redirectTo); // zurück zur vorherigen Seite
-    } else {
-      navigate("/home"); // oder zur Startseite
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate(redirectTo || "/home");
     }
-  };
+  }, [isLoggedIn, redirectTo, navigate]);
 
   useEffect(() => {
     if (email && password && errorMessage) setErrorMessage("");
@@ -83,11 +80,14 @@ export default function LoginComponent() {
     }
   };
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      navigate(redirectTo || "/home");
+  const handleGuestLogin = () => {
+    setIsGuest(true); // Gastmodus aktivieren
+    if (redirectTo) {
+      navigate(redirectTo); // zurück zur vorherigen Seite
+    } else {
+      navigate("/home"); // oder zur Startseite
     }
-  }, [isLoggedIn, redirectTo, navigate]);
+  };
 
   return (
     <div className="flex-grow">
