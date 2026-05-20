@@ -1,4 +1,4 @@
-import { createContext, useState, useCallback } from "react";
+import { createContext, useState, useCallback, useEffect } from "react";
 
 export const AuthContext = createContext();
 
@@ -20,17 +20,20 @@ export default function AuthContextProvider({ children }) {
 
       if (response.ok) {
         setIsLoggedIn(true);
-        setErrorMessage("");
       } else {
         setIsLoggedIn(false);
       }
-    } catch (error) {
+    } catch (e) {
       setIsLoggedIn(false);
     } finally {
       setLoading(false);
       setIsAuthChecked(true);
     }
   }, []);
+
+  useEffect(() => {
+    checkLoginStatus();
+  }, [checkLoginStatus]);
 
   return (
     <AuthContext.Provider

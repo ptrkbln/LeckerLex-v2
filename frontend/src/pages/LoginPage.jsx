@@ -9,7 +9,7 @@ export default function LoginComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const { isLoggedIn, setIsLoggedIn, setIsGuest, setIsAuthChecked } =
+  const { isLoggedIn, setIsLoggedIn, loading, setIsAuthChecked, setIsGuest } =
     useContext(AuthContext);
   const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
@@ -20,11 +20,13 @@ export default function LoginComponent() {
     navigate(`/home/register?redirectTo=${encodeURIComponent(redirectTo)}`);
   };
 
+  // Redirect already logged-in user to intended destination/homepage
   useEffect(() => {
+    if (loading) return;
     if (isLoggedIn) {
       navigate(redirectTo || "/home");
     }
-  }, [isLoggedIn, redirectTo, navigate]);
+  }, [loading, isLoggedIn, redirectTo, navigate]);
 
   useEffect(() => {
     if (email && password && errorMessage) setErrorMessage("");
@@ -61,19 +63,22 @@ export default function LoginComponent() {
           credentials: "include",
         },
       );
+
       if (!response.ok) {
-        if (response.status === 400 || response.status === 401) {
-          toast.error("Incorrect email or password.");
+        if (response.status === 401) {
+          toast.error("The login information entered is incorrect.");
+        } else if (response.status === 403) {
+          toast.error("Please verify your email before signing in.");
         } else {
           toast.error("We couldn't sign you in right now.");
         }
         return;
       }
+
       setIsLoggedIn(true);
       setIsAuthChecked(true);
       navigate(redirectTo || "/home");
     } catch (error) {
-      console.error("Error during login", error);
       toast.error("Connection failed.");
     } finally {
       setIsLoading(false);
@@ -94,7 +99,7 @@ export default function LoginComponent() {
       {/* Main Content */}
       <div className="flex justify-center">
         {/* Sign-in Form */}
-        <div className="max-w-md w-full bg-gray-900 p-8 shadow-lg rounded-3xl">
+        <div className="max-w-md w-full bg-gray-900 p-8 rounded-3xl">
           <form onSubmit={handleSignIn}>
             <h2 className="text-2xl font-bold text-white/90 text-center mb-14">
               Sign In
@@ -167,7 +172,7 @@ export default function LoginComponent() {
                 Register here
               </button>
             </div>
-            <div className="text-center mt-3 text-md text-gray-300">
+            <div className="text-center mt-3 text-sm">
               <button
                 className="text-blue-400 hover:scale-105"
                 onClick={handleGuestLogin}
