@@ -9,28 +9,48 @@ export default function LoginComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const { isLoggedIn, setIsLoggedIn, loading, setIsAuthChecked, setIsGuest } =
+  const { isLoggedIn, setIsLoggedIn, loading, setIsAuthChecked } =
     useContext(AuthContext);
-  const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple form submissions while request is in progress
+  const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/home";
-  const handleRedirectToRegister = () => {
-    navigate(`/home/register?redirectTo=${encodeURIComponent(redirectTo)}`);
-  };
+  const navigate = useNavigate();
+  const protectedFromGuestRoutes = [
+    "/home/favorites",
+    "/home/shopping-list",
+    "/home/shopping-list",
+    "/home/journal",
+    "/home/profile",
+  ]; // Routes accessible only to logged-in users
 
-  // Redirect already logged-in user to intended destination/homepage
+  // Logged-in user should not have acccess to login page
   useEffect(() => {
     if (loading) return;
     if (isLoggedIn) {
-      navigate(redirectTo || "/home");
+      navigate(redirectTo, { replace: true });
     }
   }, [loading, isLoggedIn, redirectTo, navigate]);
 
+  // Clear inline validation/error messages once form fields are non-empty
   useEffect(() => {
     if (email && password && errorMessage) setErrorMessage("");
   }, [email, password, errorMessage]);
+
+  // Prevent page flicker while auth status is loading/processing
+  if (loading || isLoggedIn) {
+    return (
+      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100 " />
+    );
+  }
+
+  const handleContinueAsGuest = () => {
+    if (protectedFromGuestRoutes.includes(redirectTo)) {
+      navigate("/home");
+    } else {
+      navigate(redirectTo);
+    }
+  };
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -46,15 +66,14 @@ export default function LoginComponent() {
       return;
     }
 
-    if (isLoading) return;
-    setIsLoading(true);
-    setErrorMessage(""); // clean previous errors
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setErrorMessage("");
 
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/users/login`,
         {
-          // TODO: use env variables for route
           method: "POST",
           body: JSON.stringify({ email, password }),
           headers: {
@@ -77,20 +96,11 @@ export default function LoginComponent() {
 
       setIsLoggedIn(true);
       setIsAuthChecked(true);
-      navigate(redirectTo || "/home");
+      navigate(redirectTo);
     } catch (error) {
       toast.error("Connection failed.");
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGuestLogin = () => {
-    setIsGuest(true); // Gastmodus aktivieren
-    if (redirectTo) {
-      navigate(redirectTo); // zurück zur vorherigen Seite
-    } else {
-      navigate("/home"); // oder zur Startseite
+      setIsSubmitting(false);
     }
   };
 
@@ -155,7 +165,7 @@ export default function LoginComponent() {
               type="submit"
               className="w-full flex justify-center items-center px-4 py-2 mt-12 text-md bg-green-500 text-white rounded-3xl shadow-lg hover:bg-green-700 transition duration-300"
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <ImSpinner2 className="animate-spin size-6" />
               ) : (
                 "Sign In"
@@ -167,7 +177,7 @@ export default function LoginComponent() {
               No profile?{" "}
               <button
                 className="text-blue-400 font-medium hover:underline"
-                onClick={handleRedirectToRegister}
+                onClick={() => navigate("/home/register")}
               >
                 Register here
               </button>
@@ -175,7 +185,7 @@ export default function LoginComponent() {
             <div className="text-center mt-3 text-sm">
               <button
                 className="text-blue-400 hover:scale-105"
-                onClick={handleGuestLogin}
+                onClick={handleContinueAsGuest}
               >
                 Continue as Guest
               </button>

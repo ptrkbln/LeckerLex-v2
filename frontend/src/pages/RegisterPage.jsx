@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { FaEye, FaEyeSlash, FaEnvelope, FaUser, FaLock } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
@@ -9,24 +9,31 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isChecked, setIsChecked] = useState(false); // terms and conditions checkbox
+  const [isChecked, setIsChecked] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple clicks
+  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple form submissions while request is in progress
   const { isLoggedIn, loading } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/home";
+  const inputClasses =
+    "w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition";
 
-  // Redirect already logged-in user to intended destination/homepage
+  // Logged-in user should not have acccess to register page
   useEffect(() => {
     if (loading) return;
     if (isLoggedIn) {
-      navigate(redirectTo || "/home");
+      navigate("/home", { replace: true });
     }
-  }, [loading, isLoggedIn, navigate, redirectTo]);
+  }, [loading, isLoggedIn, navigate]);
+
+  // Prevent page flicker while auth status is loading
+  if (loading || isLoggedIn) {
+    return (
+      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100 " />
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,14 +120,6 @@ export default function RegisterPage() {
     }
   };
 
-  if (loading || isLoggedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-200">
-        Loading...
-      </div>
-    );
-  }
-
   return (
     <div className="flex-grow">
       {/* Main Content */}
@@ -141,7 +140,7 @@ export default function RegisterPage() {
                 <input
                   type="text"
                   placeholder="Username"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                  className={inputClasses}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -157,7 +156,7 @@ export default function RegisterPage() {
                 <input
                   type="email"
                   placeholder="Email"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                  className={inputClasses}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -174,7 +173,7 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   placeholder="Password"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                  className={inputClasses}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -182,7 +181,7 @@ export default function RegisterPage() {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showConfirmPassword ? (
+                  {showPassword ? (
                     <FaEye className="text-gray-400" />
                   ) : (
                     <FaEyeSlash className="text-gray-400" />
@@ -199,7 +198,7 @@ export default function RegisterPage() {
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm password"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                  className={inputClasses}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required

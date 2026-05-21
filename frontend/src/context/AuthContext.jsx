@@ -5,7 +5,6 @@ export const AuthContext = createContext();
 export default function AuthContextProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isGuest, setIsGuest] = useState(false);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   const checkLoginStatus = useCallback(async () => {
@@ -43,8 +42,6 @@ export default function AuthContextProvider({ children }) {
         checkLoginStatus,
         loading,
         setLoading,
-        isGuest,
-        setIsGuest,
         isAuthChecked,
         setIsAuthChecked,
       }}

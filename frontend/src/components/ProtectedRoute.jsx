@@ -1,6 +1,7 @@
 import { useContext, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { ImSpinner2 } from "react-icons/im";
 
 export default function ProtectedRoute({ children }) {
   const { isLoggedIn, checkLoginStatus, loading, isAuthChecked } =
@@ -13,13 +14,7 @@ export default function ProtectedRoute({ children }) {
 
   if (loading || !isAuthChecked)
     return (
-      <div className="flex flex-col items-center text-gray-800">
-        <div className="text-center px-4 text-gray-200">
-          <h2 className="text-2xl sm:text-3xl font-semibold mb-6">
-            Loading...
-          </h2>
-        </div>
-      </div>
+      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100 " />
     );
 
   return !isLoggedIn ? (
