@@ -1,59 +1,47 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { FaEye, FaEyeSlash, FaEnvelope, FaUser, FaLock } from "react-icons/fa";
+import { ImSpinner2 } from "react-icons/im";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isChecked, setIsChecked] = useState(false); // terms and conditions checkbox
+  const [isChecked, setIsChecked] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple clicks
+  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple form submissions while request is in progress
   const { isLoggedIn, loading } = useContext(AuthContext);
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/home";
+  const inputClasses =
+    "w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition";
 
+  // Logged-in user should not have acccess to register page
   useEffect(() => {
-    const checkUserLogin = async () => {
-      if (loading) return; // Prevent execution while loading
-      if (isLoggedIn) {
-        if (redirectTo) {
-          navigate(redirectTo);
-        } else {
-          navigate("/home");
-        }
-      }
-    };
+    if (loading) return;
+    if (isLoggedIn) {
+      navigate("/home", { replace: true });
+    }
+  }, [loading, isLoggedIn, navigate]);
 
-    checkUserLogin();
-  }, [loading, isLoggedIn, navigate, redirectTo]);
+  // Prevent page flicker while auth status is loading
+  if (loading || isLoggedIn) {
+    return (
+      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100 " />
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const nameRegex = /^[a-zA-Z0-9_]{3,15}$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$/;
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#\-=_+])[A-Za-z\d@$!%*?&^#\-=_+]{6,}$/;
-
-    if (!emailRegex.test(email)) {
-      setErrorMessage("Please enter a valid email format.");
-      return;
-    }
-
-    if (!passwordRegex.test(password)) {
-      setErrorMessage(
-        "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&^#-=_+)."
-      );
-      return;
-    }
+    const invalidPasswordCharsRegex = /[^A-Za-z0-9@$!%*?&^#\-=_+]/;
 
     if (!email || !password || !name) {
       setErrorMessage("Please enter your username, email and password.");
@@ -62,7 +50,26 @@ export default function RegisterPage() {
 
     if (!nameRegex.test(name)) {
       setErrorMessage(
-        "Username must be between 3 and 15 characters long, and allows only letters, digits and underscores."
+        "Username must be 3-15 characters and contain only letters, numbers, and underscores.",
+      );
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      setErrorMessage("Please enter a valid email format.");
+      return;
+    }
+
+    if (invalidPasswordCharsRegex.test(password)) {
+      setErrorMessage(
+        "Password contains invalid characters. Allowed special characters: @$!%*?&^#-=_+",
+      );
+      return;
+    }
+
+    if (!passwordRegex.test(password)) {
+      setErrorMessage(
+        "Password must contain 6+ characters, uppercase, lowercase, number, and special character.",
       );
       return;
     }
@@ -74,12 +81,12 @@ export default function RegisterPage() {
 
     if (!isChecked) {
       setErrorMessage(
-        "To register you must agree to the terms and conditions."
+        "To register you must agree to the terms and conditions.",
       );
       return;
     }
 
-    setErrorMessage(""); // Clear previous errors
+    setErrorMessage("");
     setIsSubmitting(true);
 
     try {
@@ -92,164 +99,162 @@ export default function RegisterPage() {
             "Content-Type": "application/json",
           },
           credentials: "include",
-        }
+        },
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        setErrorMessage(
-          errorData.msg || "An error occurred. Please try again."
-        );
+        if (response.status === 409) {
+          toast.error("This email address is already in use.");
+        } else {
+          toast.error(
+            "We couldn't create your account right now. Try again later.",
+          );
+        }
         return;
       }
-
-      if (redirectTo) {
-        navigate(`/home/verify-email?redirectTo=${redirectTo}`, {
-          replace: true,
-        });
-      } else {
-        navigate("/home/verify-email", { replace: true });
-      }
+      navigate("/home/verify-email", { replace: true });
     } catch (error) {
-      setErrorMessage(
-        "An error occurred while trying to register. Please try again later."
-      );
+      setErrorMessage(toast.error("Connection failed."));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (loading || isLoggedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-200">
-        Loading...
-      </div>
-    );
-  }
-
   return (
-    // TODO: fix min-h so its full and centered & problem with centering on small screen
-    <div className="flex flex-grow justify-center">
-      {/* Form Card */}
-      <div className="bg-[#11151E] p-8 rounded-3xl border border-gray-700 shadow-2xl max-w-lg w-full">
-        {/* Header */}
-        <h1 className="text-2xl font-bold text-gray-200 text-center mb-6">
-          Create Account
-        </h1>
-        {/* Registration Form */}
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 gap-4">
+    <div className="flex-grow">
+      {/* Main Content */}
+      <div className="flex justify-center">
+        {/* Sign-in Form */}
+        <div className="max-w-md w-full bg-gray-900 p-8 rounded-3xl">
+          <form onSubmit={handleSubmit}>
+            <h2 className="text-2xl font-bold text-white/90 text-center mb-14">
+              Create an account
+            </h2>
             {/* Username */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                USERNAME
+            <div className="mb-6">
+              <label htmlFor="username" className="sr-only">
+                Username
               </label>
               <div className="relative">
                 <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Enter your username"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-600 rounded-3xl bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                  placeholder="Username"
+                  className={inputClasses}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
             </div>
             {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                YOUR E-MAIL
+            <div className="mb-6">
+              <label htmlFor="email" className="sr-only">
+                Email
               </label>
               <div className="relative">
                 <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="email"
-                  placeholder="Enter your email"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-600 rounded-3xl bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                  placeholder="Email"
+                  className={inputClasses}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
-          </div>
-          {/* Password */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              CREATE PASSWORD
-            </label>
-            <div className="relative">
-              <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
-                placeholder="Enter your password"
-                className="w-full pl-10 pr-10 py-2 border border-gray-600 rounded-3xl bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <div
-                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <FaEyeSlash className="text-gray-400" />
-                ) : (
-                  <FaEye className="text-gray-400" />
-                )}
+            {/* Password */}
+            <div className="mb-6">
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <div className="relative">
+                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="Password"
+                  className={inputClasses}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <div
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <FaEye className="text-gray-400" />
+                  ) : (
+                    <FaEyeSlash className="text-gray-400" />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              CONFIRM PASSWORD
-            </label>
-            <div className="relative">
-              <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm your password"
-                className="w-full pl-10 pr-10 py-2 border border-gray-600 rounded-3xl bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-              <div
-                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? (
-                  <FaEyeSlash className="text-gray-400" />
-                ) : (
-                  <FaEye className="text-gray-400" />
-                )}
+            <div className="mb-2">
+              <label htmlFor="confirm_password" className="sr-only">
+                Confirm password
+              </label>
+              <div className="relative">
+                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm password"
+                  className={inputClasses}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+                <div
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <FaEye className="text-gray-400" />
+                  ) : (
+                    <FaEyeSlash className="text-gray-400" />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          {/* Terms & Conditions */}
-          <div className="mt-4 flex items-center">
-            <input
-              type="checkbox"
-              id="terms"
-              className="w-4 h-4 border-gray-600 rounded"
-              checked={isChecked}
-              onChange={(e) => setIsChecked(e.target.checked)}
-            />
-            <label htmlFor="terms" className="ml-2 text-sm text-gray-300">
-              I Agree To{" "}
-              <a href="/terms" className="text-green-500 hover:underline">
-                The Terms & Conditions
-              </a>
-            </label>
-          </div>
-          {errorMessage && (
-            <p className="text-red-500 text-center mt-4">{errorMessage}</p>
-          )}
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full mt-8 bg-green-500 text-white font-medium py-2 rounded-full hover:bg-green-600 transition"
-          >
-            {isSubmitting ? "Registering..." : "GET STARTED"}
-          </button>
-        </form>
+            <div className="min-h-[40px] flex justify-center items-center">
+              {errorMessage && (
+                <p className="text-rose-400 text-center text-sm">
+                  {errorMessage}
+                </p>
+              )}
+            </div>
+            {/* Terms & Conditions */}
+            <div className="flex items-center justify-center mt-1">
+              <input
+                type="checkbox"
+                id="terms"
+                className="w-4 h-4 border-gray-600 rounded"
+                checked={isChecked}
+                onChange={(e) => setIsChecked(e.target.checked)}
+              />
+              <label
+                htmlFor="terms"
+                className="ml-2.5 text-sm text-gray-300 tracking-wide"
+              >
+                I agree to the{" "}
+                <a href="/terms" className="text-green-500 hover:underline">
+                  Terms & Conditions
+                </a>
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="w-full flex justify-center items-center px-4 py-2 mt-3 text-md bg-green-500 text-white rounded-3xl shadow-lg hover:bg-green-700 transition duration-300"
+            >
+              {isSubmitting ? (
+                <ImSpinner2 className="animate-spin size-6" />
+              ) : (
+                "Get started"
+              )}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,27 @@
+import { useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext.jsx";
+import { ImSpinner2 } from "react-icons/im";
 
 export default function VerifyEmailPage() {
+  const { isLoggedIn, loading } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Logged-in user should not have acccess to email verify page
+  useEffect(() => {
+    if (loading) return;
+    if (isLoggedIn) {
+      navigate("/home", { replace: true });
+    }
+  }, [loading, isLoggedIn, navigate]);
+
+  // Prevent page flicker while auth status is loading
+  if (loading || isLoggedIn) {
+    return (
+      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100 " />
+    );
+  }
+
   return (
     <div className="flex flex-col items-center text-gray-200">
       <div className="text-center px-4">
