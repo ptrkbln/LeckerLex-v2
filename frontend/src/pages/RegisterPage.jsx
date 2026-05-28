@@ -113,7 +113,7 @@ export default function RegisterPage() {
         return;
       }
       navigate("/home/verify-email", { replace: true });
-    } catch (error) {
+    } catch {
       setErrorMessage(toast.error("Connection failed."));
     } finally {
       setIsSubmitting(false);

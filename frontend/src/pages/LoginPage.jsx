@@ -97,7 +97,7 @@ export default function LoginComponent() {
       setIsLoggedIn(true);
       setIsAuthChecked(true);
       navigate(redirectTo);
-    } catch (error) {
+    } catch {
       toast.error("Connection failed.");
     } finally {
       setIsSubmitting(false);
