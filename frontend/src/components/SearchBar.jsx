@@ -7,7 +7,7 @@ function SearchBar({
   setSearchText,
   handleSearch,
   handleAddIngredient,
-  isLoading,
+  isSubmitting,
 }) {
   // Handle input changes
   const handleInputChange = (e) => {
@@ -51,12 +51,16 @@ function SearchBar({
             aria-label="Search for recipes by ingredients"
           />
           <button
-            disabled={isLoading}
+            disabled={isSubmitting}
             className="absolute right-0 top-0 h-full px-4 bg-green-500 font-medium text-white rounded-full transition duration-300 hover:bg-green-600"
             onClick={handleSearch} // Search recipes based on the input
             aria-label="Search"
           >
-            {isLoading ? <ImSpinner2 className="animate-spin" /> : <FaSearch />}
+            {isSubmitting ? (
+              <ImSpinner2 className="animate-spin" />
+            ) : (
+              <FaSearch />
+            )}
           </button>
           <div className="text-orange-200 absolute right-[-25px] bottom-[-4px] p-1 group">
             <div className="relative">

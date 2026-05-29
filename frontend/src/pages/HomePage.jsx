@@ -15,7 +15,7 @@ export default function HomePage() {
   const [selectedIngredients, setSelectedIngredients] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Manage sidebar
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const categories = [
     { id: "Fruits", name: "Fruit" },
     { id: "Vegetables", name: "Veggies" },
@@ -52,10 +52,10 @@ export default function HomePage() {
       setErrorMessage("Pick at least 3 ingredients to start your search.");
       return;
     }
-    if (isLoading) return;
-    setIsLoading(true);
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setErrorMessage(""); // clear previous errors
-    const toastId = toast.loading("Searching recipes...", {
+    const toastId = toast.Submitting("Searching recipes...", {
       duration: Infinity,
     });
 
@@ -121,7 +121,7 @@ export default function HomePage() {
         duration: undefined,
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -160,7 +160,7 @@ export default function HomePage() {
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
           handleAddIngredient={handleAddIngredient}
-          isLoading={isLoading}
+          isSubmitting={isSubmitting}
         />
       </div>
       {errorMessage && (
