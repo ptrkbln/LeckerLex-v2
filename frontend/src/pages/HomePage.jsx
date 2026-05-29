@@ -70,7 +70,7 @@ export default function HomePage() {
       );
 
       if (!response.ok) {
-        if (response.status === 429) {
+        if (response.status === 429 || response.status === 402) {
           toast.error(
             "No more recipe searches available today. Come back tomorrow.",
             {
