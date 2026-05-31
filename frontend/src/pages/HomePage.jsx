@@ -55,7 +55,7 @@ export default function HomePage() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     setErrorMessage(""); // clear previous errors
-    const toastId = toast.Submitting("Searching recipes...", {
+    const toastId = toast.loading("Searching recipes...", {
       duration: Infinity,
     });
 

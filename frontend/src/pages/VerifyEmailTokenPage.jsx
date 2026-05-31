@@ -12,7 +12,7 @@ export default function VerifyEmailTokenPage() {
   const navigate = useNavigate();
   const [isError, setIsError] = useState(false);
   const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let timer;
@@ -58,25 +58,24 @@ export default function VerifyEmailTokenPage() {
     };
   }, [token, navigate]);
 
-  return (
-    <>
-      {isLoading ? (
-        <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100 " />
-      ) : (
-        <div className="flex flex-col items-center gap-5">
-          {isError ? (
-            <MdError className="size-10 sm:size-12 text-rose-400" />
-          ) : (
-            <FaCheckCircle className="size-10 sm:size-12 text-green-400" />
-          )}
+  if (isLoading) {
+    return (
+      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+    );
+  }
 
-          <p
-            className={`text-center text-lg sm:text-xl font-semibold whitespace-pre-line ${isError ? "text-rose-100" : "text-green-100"}`}
-          >
-            {message}
-          </p>
-        </div>
+  return (
+    <div className="flex flex-col items-center gap-5">
+      {isError ? (
+        <MdError className="size-10 sm:size-12 text-rose-400" />
+      ) : (
+        <FaCheckCircle className="size-10 sm:size-12 text-green-400" />
       )}
-    </>
+      <p
+        className={`text-center text-lg sm:text-xl font-semibold whitespace-pre-line ${isError ? "text-rose-100" : "text-green-100"}`}
+      >
+        {message}
+      </p>
+    </div>
   );
 }

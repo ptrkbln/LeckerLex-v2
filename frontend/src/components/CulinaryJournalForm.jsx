@@ -8,14 +8,29 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const allowedImageTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/avif",
+  ];
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (!allowedImageTypes.includes(file.type)) {
+      setErrorMessage("Only JPG, PNG, WEBP and AVIF images allowed.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage("Image must be under 5 MB.");
+      return;
+    }
     setSelectedImage(file);
     setErrorMessage("");
   };
 
+  // Clear error messages when all inputs become valid
   useEffect(() => {
     if (
       selectedImage &&
@@ -28,7 +43,7 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitting) return; // Prevent duplicate submission while upload in progress
     if (!selectedImage) {
       setErrorMessage("Add a photo to save this journal entry.");
       return;
@@ -39,6 +54,7 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
     }
     setIsSubmitting(true);
 
+    // Build multipart form for image upload (req.file) and journal entry data (req.body)
     const formData = new FormData();
     formData.append("imageUrl", selectedImage);
     formData.append("notes", notes);
@@ -59,6 +75,7 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
         return;
       }
       toast.success("Saved to Culinary Journal!");
+      // Reset form after successful submission
       setNotes("");
       setSelectedImage(null);
       setErrorMessage("");

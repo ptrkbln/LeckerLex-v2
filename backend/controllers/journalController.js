@@ -3,22 +3,26 @@ import { User } from "../models/userSchema.js";
 import upload from "../config/cloudinary.js";
 import cloudinary from "cloudinary";
 
-// Create a journal entry
 export const createJournalEntry = [
-  upload.single("imageUrl"), // middleware to handle imageUpload
+  upload.single("imageUrl"), // multer middleware to handle image upload to cloudinary
   async (req, res, next) => {
     try {
+      // multipart form with req.body (journal entry data) and req.file (image upload)
       const { notes, recipeId, recipeName } = req.body;
-      if (!req.file)
+      if (!notes || !recipeId || !recipeName) {
         return res
           .status(400)
-          .json({ msg: "File is required or is too large" });
+          .json({ msg: "Missing required journal entry information." });
+      }
 
-      const imageUrl = req.file.path; // cloudinary URL for the uploaded image
+      if (!req.file) {
+        return res.status(400).json({ msg: "Image is required." });
+      }
+
+      const imageUrl = req.file.path; // cloudinary URL of the uploaded image
 
       // TODO const {recipeId} = req.query ?
 
-      // Create and save the new journal entry
       const newJournalEntry = await Journal.create({
         notes,
         imageUrl,
