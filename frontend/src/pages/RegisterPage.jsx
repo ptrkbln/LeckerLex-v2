@@ -113,7 +113,7 @@ export default function RegisterPage() {
         return;
       }
       navigate("/home/verify-email", { replace: true });
-    } catch (error) {
+    } catch {
       setErrorMessage(toast.error("Connection failed."));
     } finally {
       setIsSubmitting(false);
@@ -246,6 +246,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               className="w-full flex justify-center items-center px-4 py-2 mt-3 text-md bg-green-500 text-white rounded-3xl shadow-lg hover:bg-green-700 transition duration-300"
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <ImSpinner2 className="animate-spin size-6" />

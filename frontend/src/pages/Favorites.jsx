@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import { RecipeContext } from "../context/RecipeContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,7 +10,6 @@ import {
   faSeedling,
   faFire,
 } from "@fortawesome/free-solid-svg-icons";
-
 import CulinaryJournalForm from "../components/CulinaryJournalForm";
 
 function Favorites() {
@@ -47,7 +46,7 @@ function Favorites() {
         updated[recipeId] = [];
       }
       const existingIndex = updated[recipeId].findIndex(
-        (item) => item.name === ingredient.name
+        (item) => item.name === ingredient.name,
       );
       if (existingIndex > -1) {
         updated[recipeId].splice(existingIndex, 1);
@@ -64,8 +63,8 @@ function Favorites() {
         prevFavorites.map((fav) =>
           fav.id === recipeId
             ? { ...fav, missingIngredients: updated[recipeId] }
-            : fav
-        )
+            : fav,
+        ),
       );
       return updated;
     });
@@ -89,7 +88,7 @@ function Favorites() {
                     : (ingredient.amount * servings).toFixed(1), // Eine Nachkommastelle bei Dezimalzahlen
                 }
               : ingredient;
-          }
+          },
         );
       });
       return updatedMissing;
@@ -129,7 +128,7 @@ function Favorites() {
           }),
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-        }
+        },
       );
       if (response.ok) {
         console.log("Shopping list updated successfully");
@@ -146,8 +145,8 @@ function Favorites() {
           prevFavorites.map((fav) =>
             fav.id === selectedRecipeId
               ? { ...fav, missingIngredients: [] }
-              : fav
-          )
+              : fav,
+          ),
         );
         setShowShoppingListModal(true);
         setTimeout(() => setShowShoppingListModal(false), 3000);
@@ -239,7 +238,7 @@ function Favorites() {
   return (
     <div className="mx-auto w-screen md:max-w-screen-xl md:px-6 pb-12 min-h-full">
       {!selectedRecipeId && (
-        <main className="shadow-lg rounded-2xl w-full max-w-3xl mx-auto p-6 mb-2">
+        <main className="shadow-lg rounded-3xl w-full max-w-3xl mx-auto p-6 mb-2">
           <h1 className="text-3xl font-bold mb-8 text-center text-orange-100">
             Your Top Picks
           </h1>
@@ -295,17 +294,17 @@ function Favorites() {
 
       {/* Recipe Details Section */}
       {selectedRecipeId ? (
-        <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-6 rounded-2xl shadow-lg text-gray-200">
+        <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-6 rounded-3xl shadow-lg text-gray-200">
           {favorites
             .filter((recipe) => recipe.id === selectedRecipeId)
             .map((recipe) => (
               <div key={recipe.id}>
                 {/** Recipe Header */}
-                <div className="bg-gray-900 rounded-2xl overflow-hidden shadow-md mb-6 relative">
+                <div className="bg-gray-900 rounded-3xl overflow-hidden shadow-md mb-6 relative">
                   <img
                     src={recipe.image}
                     alt={recipe.title}
-                    className="w-full h-64 object-contain rounded-xl overflow-hidden"
+                    className="w-full h-64 object-contain rounded-3xl overflow-hidden"
                   />
                   <div className="p-4 text-center">
                     <h2 className="text-2xl font-bold">{recipe.title}</h2>
@@ -423,7 +422,7 @@ function Favorites() {
                           {ingredient.amount} {ingredient.unit}{" "}
                           {ingredient.name}
                         </li>
-                      )
+                      ),
                     )}
                   </ul>
                   <div className="flex items-center gap-2 relative">
@@ -487,8 +486,8 @@ function Favorites() {
                         {key === "calories"
                           ? " kcal"
                           : key === "sodium"
-                          ? " mg"
-                          : " g"}
+                            ? " mg"
+                            : " g"}
                       </li>
                     ))}
                   </ul>
@@ -580,19 +579,6 @@ function Favorites() {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/** Back to Home Button */}
-
-      {!selectedRecipeId && (
-        <div className="flex justify-center mt-12">
-          <button
-            onClick={() => (window.location.href = "/home")}
-            className="px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300"
-          >
-            Back to Home
-          </button>
         </div>
       )}
     </div>

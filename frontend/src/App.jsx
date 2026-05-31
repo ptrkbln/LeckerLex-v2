@@ -13,7 +13,7 @@ import RecipeDetails from "./pages/RecipeDetails";
 import MyShoppingList from "./pages/MyShoppingList";
 import NotFound from "./pages/NotFound";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
-import EmailVerifyTokenPage from "./pages/EmailVerifyTokenPage";
+import VerifyEmailTokenPage from "./pages/VerifyEmailTokenPage";
 import AuthContextProvider from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MyCulinaryJournal from "./pages/MyCulinaryJournal";
@@ -59,8 +59,8 @@ function App() {
               />
               <Route path="verify-email" element={<VerifyEmailPage />} />
               <Route
-                path="email-verify/:token"
-                element={<EmailVerifyTokenPage />}
+                path="verify-email/:token"
+                element={<VerifyEmailTokenPage />}
               />
             </Route>
             <Route path="*" element={<NotFound />} />

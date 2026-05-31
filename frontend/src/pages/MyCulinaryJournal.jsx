@@ -1,29 +1,30 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoMdClose } from "react-icons/io";
+import { ImSpinner2 } from "react-icons/im";
 
 export default function MyCulinaryJournal() {
   const [journalEntries, setJournalEntries] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isJournalLoaded, setIsJournalLoaded] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   // get request on mount (empty dependency array)
   useEffect(() => {
-    setLoading(true);
+    setIsLoading(true);
     const getJournalHistory = async () => {
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/journal/history`,
           {
             credentials: "include",
-          }
+          },
         );
 
         if (response.status === 204) {
           setError(
-            "Your journal awaits 📷 \n\nCook something delicious and share your experience!"
+            "Your journal awaits 📷 \n\nCook something delicious and share your experience!",
           );
           return;
         }
@@ -39,20 +40,16 @@ export default function MyCulinaryJournal() {
         console.log(error);
         setError(error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     getJournalHistory();
   }, []);
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex flex-col justify-center items-center">
-        <p className="sm:text-xl text-center font-bold text-gray-300">
-          Reading through your journal...
-        </p>
-      </div>
+      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
     );
   }
 
@@ -76,7 +73,7 @@ export default function MyCulinaryJournal() {
 
       // Remove the entry from the state to update the UI
       setJournalEntries(
-        journalEntries.filter((entry) => entry._id !== journalEntryId)
+        journalEntries.filter((entry) => entry._id !== journalEntryId),
       );
 
       // Remove the entry from database
@@ -90,7 +87,7 @@ export default function MyCulinaryJournal() {
             "Content-Type": "application/json",
           },
           credentials: "include",
-        }
+        },
       );
     } catch (error) {
       setJournalEntries(prevEntries);
