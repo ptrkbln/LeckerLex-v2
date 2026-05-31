@@ -17,14 +17,14 @@ const transporter = nodemailer.createTransport({
 });
 
 // Register new user
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
     const userAlreadyExists = await User.findOne({ email });
     if (userAlreadyExists) {
-      return res.status(400).json({
-        msg: "This email address is already in use. Please try a different email.",
+      return res.status(409).json({
+        msg: "This email address is already in use.",
       });
     }
 
@@ -42,7 +42,9 @@ export const registerUser = async (req, res) => {
       subject: "Confirm Your Registration - LeckerLex",
       html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 10px; padding: 20px; background-color: #f9f9f9;">
-        <h2 style="color: #333; text-align: center;">Welcome to LeckerLex!</h2>
+        <h2 style="text-align: center;">
+          <span style="color: #4ade80;">Lecker</span><span style="color: #fdba74;">Lex</span>
+        </h2>        
         <p style="font-size: 16px; color: #555;">Hi ${newUser.name},</p>
         <p style="font-size: 16px; color: #555;">
           Thank you for registering on LeckerLex! To get started, we just need to verify your email address. 
@@ -50,7 +52,7 @@ export const registerUser = async (req, res) => {
         </p>
         <div style="text-align: center; margin: 20px 0;">
           <a 
-            href="${process.env.FRONTEND_BASE_URL}/home/email-verify/${token}" 
+            href="${process.env.FRONTEND_BASE_URL}/home/verify-email/${token}" 
             style="background-color: #4CAF50; color: white; text-decoration: none; padding: 10px 20px; font-size: 16px; border-radius: 5px;"
           > 
             Verify Email
@@ -62,9 +64,9 @@ export const registerUser = async (req, res) => {
         <p style="font-size: 16px; color: #555; word-wrap: break-word;">
           <a href="${
             process.env.FRONTEND_BASE_URL
-          }/home/email-verify/${token}"  style="color: #4CAF50;">${
-        process.env.FRONTEND_BASE_URL
-      }/home/email-verify/${token}</a>
+          }/home/verify-email/${token}"  style="color: #4CAF50;">${
+            process.env.FRONTEND_BASE_URL
+          }/home/verify-email/${token}</a>
         </p>
         <p style="font-size: 14px; color: #999; text-align: center; margin-top: 30px;">
           If you didn't sign up for LeckerLex, please ignore this email.
@@ -77,7 +79,7 @@ export const registerUser = async (req, res) => {
       text: `
       Welcome to LeckerLex, ${newUser.name}!
       Thank you for registering. Please verify your email address by clicking the link below:
-      ${process.env.FRONTEND_BASE_URL}/home/email-verify/${token}
+      ${process.env.FRONTEND_BASE_URL}/home/verify-email/${token}
       
       If you didn't sign up for LeckerLex, please ignore this email.
   
@@ -87,60 +89,42 @@ export const registerUser = async (req, res) => {
     };
 
     // Send the verification email
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log("Error sending verification email", error);
-        res.status(500).json({ msg: "Error sending verification email" });
-      } else {
-        console.log("Email sent:", info.response);
-        res.status(201).json({
-          msg: "User created. Verification email has been sent",
-        });
-      }
+    await transporter.sendMail(mailOptions);
+    return res.status(201).json({
+      msg: "User created & verification email sent.",
     });
   } catch (error) {
-    console.log(error);
-
-    res
-      .status(500)
-      .json({ msg: "An unexpected error occurred. Please try again later." });
+    next(error);
   }
 };
 
-export const verifyUser = async (req, res) => {
+export const verifyUser = async (req, res, next) => {
   try {
     const token = req.params.token; // Extract token from URL params
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify token via JWT_SECRET
-    console.log("Decoded token:", decoded); // Log decoded token
-
+    jwt.verify(token, process.env.JWT_SECRET); // Verify token via JWT_SECRET
     // Find the user associated with the verification token
-    // const user = await User.findOne({ validationToken: token });
-
     const updatedUser = await User.findOneAndUpdate(
       { validationToken: token },
-      { isEmailValidated: true, validationToken: null }
+      { isEmailValidated: true, validationToken: null },
     );
 
-    // user.isEmailValidated = true; // Set the user's emailVerified field to true
-    // user.validationToken = null; // Remove the registration token
-    // await user.save({ validateBeforeSave: false }); // to skip validating the password after it has been hashed (this leads to errors)
+    if (!updatedUser) {
+      return res
+        .status(400)
+        .json({ msg: "Invalid or already used verification token." });
+    }
 
-    console.log("Updated User:", updatedUser);
     return res.status(200).json({
       msg: "Email successfully verified",
-      /* isEmailValidated: user.isEmailValidated, */
     });
   } catch (error) {
-    console.error("Token verification error:", error);
-
     if (error.name === "TokenExpiredError") {
       return res.status(400).json({ msg: "Verification token has expired" });
     } else if (error.name === "JsonWebTokenError") {
-      return res.status(400).json({ msg: "Invalid token" });
-    } else {
-      return res.status(500).json({ msg: "Internal server error" });
+      return res.status(400).json({ msg: "Invalid verification token" });
     }
+    next(error);
   }
 };
 
@@ -170,17 +154,22 @@ export const loginUser = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user) return res.status(404).json({ msg: "User not found" }); // TODO is this not managed by authenticate?
+    if (!user)
+      return res
+        .status(401)
+        .json({ msg: "The login information entered is incorrect." }); // TODO is this not managed by authenticate?
 
     const isAuthenticated = await user.authenticate(password); // Compare the clear-text password from req.body with the hashed one in the database
 
     if (!isAuthenticated)
-      return res.status(401).json({ msg: "Incorrect credentials" });
+      return res
+        .status(401)
+        .json({ msg: "The login information entered is incorrect." });
 
     // If email-address was not verified, reject login attempt
     if (!user.isEmailValidated)
-      return res.status(401).json({
-        msg: "Unverified email-address: email-address must be verified to log in",
+      return res.status(403).json({
+        msg: "Please verify your email address before signing in.",
       });
 
     // If login successful, generate authentication token and send in a cookie
@@ -223,14 +212,11 @@ export const updateUsersShoppingList = async (req, res, next) => {
     }
     res.status(200).json({ msg: `User's shopping list successfully updated.` });
   } catch (error) {
-    console.log(error);
-    res
-      .status(500)
-      .json({ msg: "Error updating user document. Please try again later." });
+    next(error);
   }
 };
 
-export const getUsersShoppingList = async (req, res) => {
+export const getUsersShoppingList = async (req, res, next) => {
   try {
     const user = await User.findOne(req.user.userId);
     if (!user) {
@@ -243,9 +229,7 @@ export const getUsersShoppingList = async (req, res) => {
 
     return res.status(200).json(shoppingList);
   } catch (error) {
-    res.status(500).json({
-      msg: "Error fetching user's shopping list. Please try again later.",
-    });
+    next(error);
   }
 };
 

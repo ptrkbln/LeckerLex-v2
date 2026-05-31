@@ -29,6 +29,7 @@ function Navbar() {
       if (!response.ok) {
         const errorMessage = await response.json();
         console.error("Failed to logout", errorMessage);
+        // toast error notification (Something went wrong while logging you out. Please try again.)
         return;
       }
       navigate("/");
@@ -38,6 +39,7 @@ function Navbar() {
       });
     } catch (error) {
       console.error("Error logging out:", error);
+      // toast error notification (Network error while logging out. Please try again.)
     }
   };
 

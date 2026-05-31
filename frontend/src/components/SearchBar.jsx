@@ -1,36 +1,31 @@
-import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { RiInformation2Fill } from "react-icons/ri";
+import { ImSpinner2 } from "react-icons/im";
 
 function SearchBar({
   searchText,
   setSearchText,
   handleSearch,
   handleAddIngredient,
-  selectedIngredients,
+  isSubmitting,
 }) {
-  const [placeholder, setPlaceholder] = useState("Add ingredients");
-
   // Handle input changes
   const handleInputChange = (e) => {
     const newSearchText = e.target.value;
-    setSearchText(e.target.value);
+    setSearchText(newSearchText);
 
     //Handle adding the manually typed ingredient to the selected list
     if (newSearchText.includes(",")) {
-      const ingredientsToAdd = searchText
+      //TODO check if searchText should be
+      const ingredientsToAdd = newSearchText
         .split(",")
         .map((ingredient) =>
           ingredient
             .trim()
             .toLowerCase()
-            .replace(/^\w/, (c) => c.toUpperCase())
+            .replace(/^\w/, (c) => c.toUpperCase()),
         )
         .filter((ingredient) => ingredient); // Filter out empty strings
-
-      const uniqueIngredients = Array.from(
-        new Set([...selectedIngredients, ...ingredientsToAdd])
-      );
       handleAddIngredient(ingredientsToAdd);
       setSearchText("");
     }
@@ -50,19 +45,22 @@ function SearchBar({
             id="ingredient-search"
             type="text"
             className="w-full p-2 rounded-full focus:ring-4 focus:ring-blue-800 bg-orange-50 transition font-normal placeholder-gray-600 placeholder:text-sm placeholder:pl-2 placeholder:sm:text-base"
-            placeholder={placeholder}
+            placeholder="Add ingredients"
             value={searchText}
             onChange={handleInputChange}
-            onFocus={() => setPlaceholder("")}
-            onBlur={() => setPlaceholder("Add ingredients")}
             aria-label="Search for recipes by ingredients"
           />
           <button
-            className="absolute right-0 top-0 h-full px-4 bg-green-500 font-medium text-white rounded-full hover:bg-green-600 hover:scale-105 transition duration-300"
+            disabled={isSubmitting}
+            className="absolute right-0 top-0 h-full px-4 bg-green-500 font-medium text-white rounded-full transition duration-300 hover:bg-green-600"
             onClick={handleSearch} // Search recipes based on the input
             aria-label="Search"
           >
-            <FaSearch />
+            {isSubmitting ? (
+              <ImSpinner2 className="animate-spin" />
+            ) : (
+              <FaSearch />
+            )}
           </button>
           <div className="text-orange-200 absolute right-[-25px] bottom-[-4px] p-1 group">
             <div className="relative">

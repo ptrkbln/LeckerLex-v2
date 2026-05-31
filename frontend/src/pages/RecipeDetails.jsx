@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from "react";
-import { useParams, useNavigate, replace } from "react-router-dom";
+import { useState, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { RecipeContext } from "../context/RecipeContext";
 import { AuthContext } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,6 +13,8 @@ import {
   faUtensils,
   faFire,
 } from "@fortawesome/free-solid-svg-icons";
+import toast from "react-hot-toast";
+import { IoMdClose } from "react-icons/io";
 
 function RecipeDetails() {
   const { id } = useParams(); // Rezept-ID aus der URL
@@ -24,11 +26,13 @@ function RecipeDetails() {
     favorites: favs,
     setFavorites,
   } = useContext(RecipeContext);
-
   const navigate = useNavigate();
-
-  // Finde das Rezept mit der passenden ID
+  // Find the recipe with the selected ID
   const recipe = recipes.find((x) => x.id === Number(id));
+  const [showMissingIngredientsModal, setShowMissingIngredientsModal] =
+    useState(true);
+  const [visibleSection, setVisibleSection] = useState(null);
+  const [servings, setServings] = useState(recipe?.servingsAmount || 1);
 
   // Prevent breaking app by refresh
   if (!recipe) {
@@ -36,20 +40,14 @@ function RecipeDetails() {
     return;
   }
 
-  // State declarations.
-  const [showMissingIngredients, setShowMissingIngredients] = useState(true);
-  const [visibleSection, setVisibleSection] = useState(null);
-  const [showShoppingListModal, setShowShoppingListModal] = useState(false);
-  const [servings, setServings] = useState(recipe?.servingsAmount || 1);
-  const [showFavoriteModal, setShowFavoriteModal] = useState(false);
-
   // Toggle between sections.
   const toggleSection = (section) => {
     setVisibleSection((prev) => (prev === section ? null : section));
   };
 
   // Toggle recipe as favorite.
-  const toggleFavorite = () => {
+  // Connect with database and adapt !!!!!!!
+  const handleToggleFavorite = () => {
     const currentRecipe = {
       id: recipe.id,
       title: recipe.title,
@@ -75,55 +73,54 @@ function RecipeDetails() {
     if (isFavorite.includes(recipe.id)) {
       setIsFavorite(isFavorite.filter((favId) => favId !== recipe.id));
       setFavorites(favs.filter((fav) => fav.id !== recipe.id));
+      toast.success("Removed from favorites.");
     } else {
       setIsFavorite([...isFavorite, recipe.id]);
       setFavorites([...favs, currentRecipe]);
-      // Show the "Added to Favorites!" modal
-      setShowFavoriteModal(true);
-      setTimeout(() => setShowFavoriteModal(false), 3000);
+      toast.success("Saved to favorites!");
     }
   };
 
   // Add missing ingredients to the shopping list.
   const handleAddToShoppingList = async () => {
+    if (!isLoggedIn) {
+      navigate(`/home/login?redirectTo=/home/recipe-details/${id}`);
+      return;
+    }
+
     try {
-      if (!isLoggedIn) {
-        navigate(`/home/login?redirectTo=/home/recipe-details/${id}`);
-      } else {
-        setShowShoppingListModal(true);
-        let shoppingListItems = recipe.missedIngredients.map((item) =>
-          item.name.trim().toLowerCase()
-        );
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/users/update-shoppinglist`,
-          {
-            method: "PATCH",
-            body: JSON.stringify({
-              shoppingList: shoppingListItems,
-              action: "add",
-            }),
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-          }
-        );
-        if (!response.ok) {
-          console.log("Failed to update shopping list.");
-        }
+      let shoppingListItems = recipe.missedIngredients.map((item) =>
+        item.name.trim().toLowerCase(),
+      );
+
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/users/update-shoppinglist`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            shoppingList: shoppingListItems,
+            action: "add",
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        toast.error("Couldn't update your shopping list.");
+        return;
       }
-    } catch (error) {
-      console.log("Error while updating shopping list:", error);
+
+      toast.success("Ingredients added to shopping list!");
+      setShowMissingIngredientsModal(false);
+    } catch {
+      toast.error("Connection failed.");
     }
   };
 
-  // Close shopping list modal.
-  const handleCloseShoppingListModal = () => {
-    setShowShoppingListModal(false);
-    setShowMissingIngredients(false);
-  };
-
-  // Adjust servings.
+  // Adjust servings
   const handleIncreaseServings = () => {
     setServings((prev) => Math.round((prev + 0.5) * 10) / 10);
   };
@@ -132,26 +129,21 @@ function RecipeDetails() {
   };
 
   // Dynamic text for servings
-
   const servingsText = `for ${servings} ${
     servings === 1 || servings === 0.5 ? "serving" : "servings"
   }`;
 
-  if (!recipe) {
-    navigate("/home");
-  }
-
   return (
-    <div className="p-6 max-w-6xl mx-auto relative bg-[#11151E] flex-grow font-medium rounded-2xl text-gray-200 mb-6 md:mb-0">
+    <div className="p-6 max-w-6xl mx-auto relative bg-[#11151E] flex-grow font-medium rounded-3xl text-gray-200 mb-6 md:mb-0">
       {/* Recipe Image Section */}
-      <div className="relative mx-auto sm:w-8/12 lg:w-6/12 h-72 sm:h-80 lg:h-96 mt-16 rounded-2xl">
+      <div className="relative mx-auto sm:w-8/12 lg:w-6/12 h-72 sm:h-80 lg:h-96">
         <img
           src={recipe.image}
           alt={recipe.title}
-          className="w-full h-full object-cover rounded-xl"
+          className="w-full h-full object-cover rounded-3xl"
         />
         <button
-          onClick={toggleFavorite}
+          onClick={handleToggleFavorite}
           className="absolute top-4 right-4 bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-50 transition"
         >
           <FontAwesomeIcon
@@ -160,13 +152,6 @@ function RecipeDetails() {
             color={isFavorite.includes(recipe.id) ? "#EF4444" : "#fff"}
           />
         </button>
-        {/* "Added to Favorites!" Modal */}
-        {showFavoriteModal && (
-          <div className="absolute top-[-2rem] right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-full shadow-md animate-fadeIn">
-            Added to Favorites!
-          </div>
-        )}
-        {/* Title Overlay with pointer-events disabled */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="bg-black bg-opacity-40 px-4 py-2 rounded">
             <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-semibold">
@@ -299,7 +284,6 @@ function RecipeDetails() {
                   </svg>
                 </button>
               </div>
-              {/* <p className="text-xl text-white">Ingredients {servingsText}</p> */}
             </div>
 
             <ul className="w-full divide-y divide-gray-500">
@@ -363,17 +347,17 @@ function RecipeDetails() {
         )}
       </div>
 
-      {/* Fenster für fehlende Zutaten*/}
-      {showMissingIngredients &&
+      {/* Missing ingredients modal */}
+      {showMissingIngredientsModal &&
         recipe.missedIngredients &&
         recipe.missedIngredients.length > 0 && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="relative bg-gray-800 rounded-lg shadow-2xl p-6 w-11/12 sm:w-1/2 lg:w-1/3 animate-popIn">
+            <div className="relative bg-gray-800 rounded-3xl shadow-2xl p-6 w-11/12 sm:w-1/2 lg:w-1/3 animate-popIn">
               <button
-                onClick={() => setShowMissingIngredients(false)}
+                onClick={() => setShowMissingIngredientsModal(false)}
                 className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
               >
-                &times;
+                <IoMdClose />
               </button>
               <h3 className="text-2xl font-semibold mb-4 text-center">
                 Missing Ingredients
@@ -397,24 +381,6 @@ function RecipeDetails() {
               >
                 Add to Shopping List
               </button>
-              {showShoppingListModal && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                  <div className="bg-gray-800 rounded-lg shadow-2xl p-6 w-11/12 sm:w-1/2 lg:w-1/3">
-                    <h2 className="text-2xl font-semibold mb-4 text-center">
-                      Item Added! 🎉
-                    </h2>
-                    <p className="text-gray-300 text-center mb-6">
-                      Missing ingredients have been added to your shopping list.
-                    </p>
-                    <button
-                      onClick={handleCloseShoppingListModal}
-                      className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
-                    >
-                      Close
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         )}

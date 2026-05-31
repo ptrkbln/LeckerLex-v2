@@ -1,56 +1,21 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { RecipeContext } from "../context/RecipeContext";
 import CategorySlider from "../components/CategorySlider";
 import Ingredients from "../components/Ingredients";
 import SearchBar from "../components/SearchBar";
 import Sidebar from "../components/Sidebar";
+import toast from "react-hot-toast";
 
 export default function HomePage() {
-  // access setRecipes from context to store fetched recipes
-  const { setRecipes } = useContext(RecipeContext);
-
-  // manage error message text
-  const [errorMessage, setErrorMessage] = useState("");
-
-  // category selection
-  const [selectedCategory, setSelectedCategory] = useState("null");
-
-  // collect chosen ingredients
-  const [selectedIngredients, setSelectedIngredients] = useState([]);
-
-  // manage the search input text
-  const [searchText, setSearchText] = useState("");
-
-  // manage the sidebar
-
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // State to hold the formatted ingredients
-  const [formattedIngredients, setFormattedIngredients] = useState([]);
-
-  /*   // selectedIngredients query format
-  const formattedIngredients = selectedIngredients.map((ingredient) =>
-    ingredient.replace(/\s+/g, "_")
-  ); // replace spaces with underscores in ingredient name
-  const ingredientQuery = formattedIngredients.join(","); // join ingredients with comma
-  console.log("Ingredient Query:", ingredientQuery); // works! */
-
-  // Update the formatted ingredients whenever selectedIngredients changes
-  useEffect(() => {
-    const formatted = selectedIngredients.map((ingredient) =>
-      ingredient.replace(/\s+/g, "_"),
-    );
-    setFormattedIngredients(formatted); // Update formatted ingredients state
-  }, [selectedIngredients]);
-
-  // Convert formattedIngredients to a query string
-  const ingredientQuery = formattedIngredients.join(","); // join ingredients with comma
-
   const navigate = useNavigate();
-
-  // List of all categories
-
+  const { setRecipes } = useContext(RecipeContext); // Access setRecipes from context to store fetched recipes
+  const [errorMessage, setErrorMessage] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Manage sidebar
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const categories = [
     { id: "Fruits", name: "Fruit" },
     { id: "Vegetables", name: "Veggies" },
@@ -69,12 +34,30 @@ export default function HomePage() {
     { id: "Snacks and Side Dishes", name: "Snacks/Sides" },
   ];
 
+  // Remove error message when appropriate number of ingredients is selected
+  useEffect(() => {
+    if (errorMessage && selectedIngredients.length >= 3) setErrorMessage("");
+  }, [selectedIngredients, errorMessage]);
+
+  // Replace spaces in ingredient names with underscores
+  const formattedIngredients = selectedIngredients.map((ingredient) =>
+    ingredient.replace(/\s+/g, "_"),
+  );
+
+  // Convert formattedIngredients to a query string
+  const ingredientQuery = formattedIngredients.join(","); // join ingredients with comma
+
   const handleSearch = async () => {
-    if (selectedIngredients.length < 2) {
-      setErrorMessage("Please select at least 2 ingredients.");
+    if (selectedIngredients.length < 3) {
+      setErrorMessage("Pick at least 3 ingredients to start your search.");
       return;
     }
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setErrorMessage(""); // clear previous errors
+    const toastId = toast.loading("Searching recipes...", {
+      duration: Infinity,
+    });
 
     try {
       const response = await fetch(
@@ -85,39 +68,67 @@ export default function HomePage() {
           credentials: "include", // include cors credentials
         },
       );
-      if (!response.ok) {
-        let errorMessage = "Something went wrong. Please try again.";
 
+      if (!response.ok) {
+        if (response.status === 429 || response.status === 402) {
+          toast.error(
+            "No more recipe searches available today. Come back tomorrow.",
+            {
+              id: toastId,
+              duration: undefined,
+            },
+          );
+          setRecipes([]);
+          return;
+        }
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
+          console.error("Recipe search failed:", errorData);
         } catch (error) {
-          console.error("Error parsing JSON response", error);
+          console.error(
+            "Recipe search failed: could not parse error response",
+            error,
+          );
         }
-        setErrorMessage(errorMessage);
+        toast.error("Couldn't load recipes.", {
+          id: toastId,
+          duration: undefined,
+        });
         return;
       }
+
       const data = await response.json();
 
       if (!Array.isArray(data.data)) {
-        setErrorMessage("API daily limit exceeded. Try again tomorrow.");
-        setRecipes([]); // Ensure it's an array to prevent .map() errors when limit exceeded
+        console.error(
+          "Response from backend on recipe search is not in correct shape:",
+          data.data,
+        );
+        toast.error("Something went wrong with the recipe results.", {
+          id: toastId,
+          duration: undefined,
+        });
         return;
       }
 
       setRecipes(data.data); // Update the recipes state with the response from backend
-      navigate("results"); // navigate to recipes page
+      toast.dismiss(toastId);
+      navigate("results");
     } catch (error) {
-      console.error("Error fetching recipes", error); // debug log
-      setErrorMessage("An error occured. Please try again later.");
+      console.error("Error fetching recipes", error);
+      toast.error("Connection failed.", {
+        id: toastId,
+        duration: undefined,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleRemoveIngredient = (index) => {
-    setSelectedIngredients((prevIngredients) => {
-      const updatedIngredients = prevIngredients.filter((_, i) => i !== index);
-      return updatedIngredients;
-    });
+    setSelectedIngredients((prevIngredients) =>
+      prevIngredients.filter((_, i) => i !== index),
+    );
   };
 
   const handleRemoveAll = () => {
@@ -148,12 +159,14 @@ export default function HomePage() {
           handleSearch={handleSearch}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
-          selectedIngredients={selectedIngredients}
           handleAddIngredient={handleAddIngredient}
+          isSubmitting={isSubmitting}
         />
       </div>
       {errorMessage && (
-        <p className="text-red-500 text-center mt-4">{errorMessage}</p>
+        <p className="text-rose-400 text-center absolute left-1/2 -translate-x-1/2 text-sm md:text-base w-full">
+          {errorMessage}
+        </p>
       )}
       <CategorySlider
         categories={categories}

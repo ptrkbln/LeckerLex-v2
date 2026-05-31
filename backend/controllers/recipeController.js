@@ -15,26 +15,41 @@ export const searchRecipesAndDetails = async (req, res, next) => {
   const ingredientArray = ingredients?.split(",").map((item) => item.trim());
 
   // at least 4 ingredients needed for the search
-  if (!ingredientArray || ingredientArray.length < 2)
+  if (!ingredientArray || ingredientArray.length < 3)
     return res
       .status(400)
-      .json({ msg: "Search is permitted with a minimum of 2 ingredients." });
+      .json({ msg: "Search is permitted with a minimum of 3 ingredients." });
 
   try {
     // Fetch basic recipe list based on ingredients: hard-coded salt, water, oil, sugar as something everyone has at home; parameters are set to prioritize minimising missing ingredients & limit to 5 results
     const response = await fetch(
-      `https://api.spoonacular.com/recipes/findByIngredients?ingredients=salt,water,oil,sugar,${ingredients}&ranking=2&ignorePantry=true&number=12`, // TODO eg. number=5, how many recipes to fetch
-      options
+      `https://api.spoonacular.com/recipes/findByIngredients?ingredients=salt,water,oil,sugar,${ingredients}&ranking=2&ignorePantry=true&number=6`, // TODO eg. number=5, how many recipes to fetch
+      options,
     );
     const recipes = await response.json();
     console.log(recipes);
+
+    if (!response.ok || recipes.status === "failure") {
+      if (recipes.code === 402) {
+        return res
+          .status(402)
+          .json({ msg: "Recipe API search quota reached." });
+      }
+
+      return res
+        .status(response.status || 500)
+        .json({ msg: recipes.message || "Recipe search failed." });
+    }
+
+    if (!Array.isArray(recipes))
+      return res.status(502).json({ msg: "Unexpected recipe API response." });
 
     // Fetch detailed data for each recipe
     const detailedRecipes = await Promise.all(
       recipes.map(async (recipe) => {
         const detailResponse = await fetch(
           `https://api.spoonacular.com/recipes/${recipe.id}/information?includeNutrition=true`,
-          options
+          options,
         );
 
         const recipeDetail = await detailResponse.json();
@@ -43,31 +58,31 @@ export const searchRecipesAndDetails = async (req, res, next) => {
         const nutritionData = {
           calories:
             recipeDetail.nutrition.nutrients.find(
-              (nutrient) => nutrient.name === "Calories"
+              (nutrient) => nutrient.name === "Calories",
             )?.amount || 0,
           fat:
             recipeDetail.nutrition.nutrients.find(
-              (nutrient) => nutrient.name === "Fat"
+              (nutrient) => nutrient.name === "Fat",
             )?.amount || 0,
           saturatedFat:
             recipeDetail.nutrition.nutrients.find(
-              (nutrient) => nutrient.name === "Saturated Fat"
+              (nutrient) => nutrient.name === "Saturated Fat",
             )?.amount || 0,
           carbohydrates:
             recipeDetail.nutrition.nutrients.find(
-              (nutrient) => nutrient.name === "Carbohydrates"
+              (nutrient) => nutrient.name === "Carbohydrates",
             )?.amount || 0,
           sugar:
             recipeDetail.nutrition.nutrients.find(
-              (nutrient) => nutrient.name === "Sugar"
+              (nutrient) => nutrient.name === "Sugar",
             )?.amount || 0,
           protein:
             recipeDetail.nutrition.nutrients.find(
-              (nutrient) => nutrient.name === "Protein"
+              (nutrient) => nutrient.name === "Protein",
             )?.amount || 0,
           sodium:
             recipeDetail.nutrition.nutrients.find(
-              (nutrient) => nutrient.name === "Sodium"
+              (nutrient) => nutrient.name === "Sodium",
             )?.amount / 1000 || 0, // convert from mg to g
         };
 
@@ -86,7 +101,8 @@ export const searchRecipesAndDetails = async (req, res, next) => {
         const capitalizedTitle = recipe.title
           .split(" ")
           .map(
-            (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            (word) =>
+              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
           )
           .join(" ");
 
@@ -102,7 +118,7 @@ export const searchRecipesAndDetails = async (req, res, next) => {
             unit: ingredient.unit || "",
           })),
           usedIngredients: recipe.usedIngredients.map(
-            (ingredient) => ingredient.original
+            (ingredient) => ingredient.original,
           ),
           preparationTime: recipeDetail.readyInMinutes,
           servingsAmount: recipeDetail.servings || 0,
@@ -127,10 +143,10 @@ export const searchRecipesAndDetails = async (req, res, next) => {
             instruction.steps.map((step) => ({
               number: step.number,
               description: step.step,
-            }))
+            })),
           ),
         };
-      })
+      }),
     );
 
     // send the combined data as a single response used for search results and for each recipe details

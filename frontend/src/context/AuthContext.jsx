@@ -1,12 +1,10 @@
-import { createContext, useState, useCallback } from "react";
+import { createContext, useState, useCallback, useEffect } from "react";
 
 export const AuthContext = createContext();
 
 export default function AuthContextProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isGuest, setIsGuest] = useState(false);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   const checkLoginStatus = useCallback(async () => {
@@ -21,34 +19,29 @@ export default function AuthContextProvider({ children }) {
 
       if (response.ok) {
         setIsLoggedIn(true);
-        setErrorMessage("");
       } else {
         setIsLoggedIn(false);
-        setErrorMessage(
-          "This feature is available to registered users only. Please log in to access it.",
-        );
       }
-    } catch (error) {
+    } catch (e) {
       setIsLoggedIn(false);
-      setErrorMessage("An error occured. Please try again later.");
     } finally {
       setLoading(false);
       setIsAuthChecked(true);
     }
   }, []);
 
+  useEffect(() => {
+    checkLoginStatus();
+  }, [checkLoginStatus]);
+
   return (
     <AuthContext.Provider
       value={{
         isLoggedIn,
         setIsLoggedIn,
-        errorMessage,
-        setErrorMessage,
         checkLoginStatus,
         loading,
         setLoading,
-        isGuest,
-        setIsGuest,
         isAuthChecked,
         setIsAuthChecked,
       }}
