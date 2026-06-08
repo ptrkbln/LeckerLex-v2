@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { FaUser, FaHeart, FaSignOutAlt, FaCartArrowDown } from "react-icons/fa";
 import { BsJournalAlbum } from "react-icons/bs";
+import toast from "react-hot-toast";
 
 const HoverEffect = () => (
   <>
@@ -26,18 +27,16 @@ function Navbar() {
       );
 
       if (!response.ok) {
-        const errorMessage = await response.json();
-        console.error("Failed to logout", errorMessage);
-        // toast error notification (Something went wrong while logging you out. Please try again.)
+        toast.error("Something went wrong while logging you out.");
         return;
       }
       navigate("/");
+      // Delay auth state update so navigation to landing page happens before ProtectedRoute redirects to login
       setTimeout(() => {
-        (setIsLoggedIn(false), 0);
-      });
-    } catch (error) {
-      console.error("Error logging out:", error);
-      // toast error notification (Network error while logging out. Please try again.)
+        setIsLoggedIn(false);
+      }, 0);
+    } catch {
+      toast.error("Connection failed.");
     }
   };
 

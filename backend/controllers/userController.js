@@ -194,6 +194,12 @@ export const updateUsersShoppingList = async (req, res, next) => {
     if (!Array.isArray(shoppingList))
       return res.status(400).json({ msg: "Shopping List should be an array." });
 
+    if (!shoppingList.every((item) => typeof item === "string")) {
+      return res
+        .status(400)
+        .json({ msg: "Shopping list items must be strings." });
+    }
+
     shoppingList = shoppingList.map((item) => item.trim().toLowerCase());
 
     if (action === "add") {
@@ -207,10 +213,10 @@ export const updateUsersShoppingList = async (req, res, next) => {
         $set: { shoppingList },
       });
     } else {
-      // Invalid action
       return res.status(400).json({ msg: "Invalid action specified" });
     }
-    res.status(200).json({ msg: `User's shopping list successfully updated.` });
+
+    res.status(200).json({ msg: "User's shopping list successfully updated." });
   } catch (error) {
     next(error);
   }
@@ -218,16 +224,13 @@ export const updateUsersShoppingList = async (req, res, next) => {
 
 export const getUsersShoppingList = async (req, res, next) => {
   try {
-    const user = await User.findOne(req.user.userId);
+    const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({ msg: "User not found." });
     }
 
     const shoppingList = user.shoppingList;
-    /* if (shoppingList.length < 1)
-      return res.status(200).json({ msg: "Your shopping list is empty." }); */
-
-    return res.status(200).json(shoppingList);
+    return res.status(200).json({ data: shoppingList });
   } catch (error) {
     next(error);
   }

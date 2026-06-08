@@ -1,40 +1,44 @@
-import { RecipeContext } from "../context/RecipeContext";
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import shoppingCartImage from "../assets/images/shoppingcart.webp";
+import { useEffect, useState } from "react";
+import { ImSpinner2 } from "react-icons/im";
+import { FaShoppingBasket } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 function MyShoppingList() {
   const [showSaveButton, setShowSaveButton] = useState(false);
   const [showAddIngredient, setShowAddIngredient] = useState(false);
   const [shoppingList, setShoppingList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [newIngredient, setNewIngredient] = useState("");
-  const [notification, setNotification] = useState("");
+  const navigate = useNavigate();
 
-  // Fetch shopping list on mount
   useEffect(() => {
+    setIsLoading(true);
     const getShoppingList = async () => {
-      setLoading(true);
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/users/shoppinglist`,
           {
             credentials: "include",
-          }
+          },
         );
+
         if (!response.ok) {
-          setError("Failed to fetch shopping list.");
+          toast.error("Unable to read your shopping list at this moment.");
+          return;
         }
-        const result = await response.json();
-        console.log(result);
-        setShoppingList(result);
-      } catch (error) {
-        console.log("Error while updating shopping list:", error);
-        setError(error.msg);
+
+        const shoppingListItems = await response.json();
+
+        if (shoppingListItems.data.length > 0) {
+          setShoppingList(shoppingListItems.data);
+        }
+      } catch {
+        toast.error("Unable to read your shopping list at this moment.");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -43,6 +47,7 @@ function MyShoppingList() {
 
   // Save the updated shopping list to the backend
   const saveShoppingList = async (updatedList) => {
+    setIsSubmitting(true);
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/users/update-shoppinglist`,
@@ -56,44 +61,53 @@ function MyShoppingList() {
             shoppingList: updatedList,
             action: "replace",
           }),
-        }
+        },
       );
       if (!response.ok) {
-        throw new Error("Failed to update shopping list.");
+        toast.error("Something went wrong while updating your shopping list.");
       }
-      /*  const result = await response.json(); */
-
       setShowSaveButton(false);
-    } catch (error) {
-      console.error("Error saving shopping list:", error);
-      setError("Failed to save shopping list. Please try again.");
+    } catch {
+      toast.error("Something went wrong while updating your shopping list.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Loading state UI
-  if (loading) {
+  if (isLoading) {
     return (
-      <p className="min-h-screen flex items-center justify-center text-md font-semibold text-gray-200">
-        Loading shopping list...
-      </p>
+      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
     );
   }
 
-  // Error state UI
-  if (error) {
+  /*   if (shoppingList.length === 0) {
     return (
-      <p className="min-h-screen flex items-center justify-center text-md font-semibold text-gray-200">
-        Error: {error}
-      </p>
+      <div className="bg-gray-900/50 rounded-[70px] p-10 shadow-lg text-center max-w-lg">
+        <div className="flex flex-col items-center justify-center text-center text-gray-100">
+          <FaShoppingBasket className="size-12 text-orange-200 mb-4" />
+          <h1 className="text-xl sm:text-3xl font-semibold mb-4">
+            Your shopping list is empty
+          </h1>
+          <p className="sm:text-xl text-gray-300 max-w-md">
+            Add ingredients manually or browse recipes for inspiration.
+          </p>
+          <button
+            onClick={() => navigate("/home")}
+            className="sm:text-lg mt-8 px-6 py-2.5 bg-green-500 hover:bg-green-600 rounded-full"
+          >
+            Discover Recipes
+          </button>
+        </div>
+      </div>
     );
-  }
+  } */
 
   // Toggle purchased status on item click
   const handleIngredientChoise = (name) => {
     setPurchasedItems((prev) =>
       prev.includes(name)
         ? prev.filter((item) => item !== name)
-        : [...prev, name]
+        : [...prev, name],
     );
     setShowSaveButton(true);
   };
@@ -120,19 +134,11 @@ function MyShoppingList() {
   const handleSaveNewIngredient = () => {
     const formattedIngredient = newIngredient.trim().toLowerCase();
     if (formattedIngredient === "") {
-      setNotification("Ingredient field cannot be empty!");
-      setTimeout(() => {
-        setNotification("");
-      }, 3000);
+      toast.error("Enter an ingredient to add to your shopping list.");
       return;
     }
     if (shoppingList.includes(formattedIngredient)) {
-      setNotification(
-        "This ingredient has already been added to the shopping list"
-      );
-      setTimeout(() => {
-        setNotification("");
-      }, 3000);
+      toast.error("This ingredient is already on your list.");
       return;
     }
     const updatedList = [...shoppingList, formattedIngredient];
@@ -140,38 +146,36 @@ function MyShoppingList() {
     saveShoppingList(updatedList);
     setNewIngredient("");
     setShowAddIngredient(false);
-    setNotification("");
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-fit lg:pr-5">
-      {/* Image Section (visible on large screens) */}
-      <div className="hidden lg:flex w-auto mt-4 flex-col items-center justify-center p-4">
-        <img
-          src={shoppingCartImage}
-          alt="Shopping Cart"
-          className="w-1/2 h-auto rounded-lg object-cover shadow-lg"
-        />
-      </div>
-
-      {/* Shopping List Section */}
-      <div
-        className="p-8 m-auto w-full lg:w-2/3 border border-gray-800 rounded-3xl shadow-lg"
-        style={{ background: "#11151E" }}
-      >
-        {/* Title */}
-        <h1 className="text-3xl font-medium mb-12 text-center text-orange-50">
+    <div className="flex flex-col items-center justify-center py-10">
+      {shoppingList.length > 0 ? (
+        <h1 className="text-3xl font-bold mb-10 text-orange-200 pb-3">
           Shop Smart, Stay Organized
         </h1>
-
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center text-gray-100">
+          <FaShoppingBasket className="size-12 text-orange-200 mb-4" />
+          <h1 className="text-3xl font-bold mb-10 text-orange-200 pb-3">
+            Your shopping list is empty
+          </h1>
+        </div>
+      )}
+      <div
+        className="p-8 m-auto w-full border border-gray-800 rounded-3xl shadow-lg"
+        style={{ background: "#11151E" }}
+      >
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-8 relative">
-          <button
-            className="bg-green-500 text-gray-50 px-6 py-2 rounded-full hover:bg-green-600 hover:shadow-xl transition duration-300 mb-4 sm:mb-0"
-            onClick={markAllAsPurchased}
-          >
-            Mark All as Purchased
-          </button>
+          {shoppingList.length > 0 && (
+            <button
+              className="bg-green-500 text-gray-50 px-6 py-2 rounded-full hover:bg-green-600 hover:shadow-xl transition duration-300 mb-4 sm:mb-0"
+              onClick={markAllAsPurchased}
+            >
+              Mark All as Purchased
+            </button>
+          )}
           <button
             className="bg-blue-500 text-gray-50 px-6 py-2 rounded-full hover:bg-blue-600 hover:shadow-xl transition duration-300"
             onClick={handleAddIngredientClick}
@@ -194,6 +198,7 @@ function MyShoppingList() {
                   <button
                     className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition"
                     onClick={handleSaveNewIngredient}
+                    disabled={isSubmitting}
                   >
                     Save
                   </button>
@@ -208,13 +213,6 @@ function MyShoppingList() {
             </div>
           )}
         </div>
-
-        {/* Notification Message */}
-        {notification && (
-          <div className="bg-red-500 text-white p-3 rounded-full mb-4 text-center">
-            {notification}
-          </div>
-        )}
 
         {/* Shopping List Items */}
         {shoppingList.length > 0 ? (
@@ -242,15 +240,24 @@ function MyShoppingList() {
               <button
                 onClick={handleSaveAndRemoveAll}
                 className="bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 shadow-md transition inline-block mt-4"
+                disabled={isSubmitting}
               >
-                Save and Remove All
+                Remove all and save
               </button>
             )}
           </ul>
         ) : (
-          <p className="text-gray-300 text-center mt-6">
-            Your shopping list is empty.
-          </p>
+          <div className="flex flex-col items-center justify-center text-center text-gray-100">
+            <p className="sm:text-xl text-gray-300">
+              Add ingredients manually or browse recipes for inspiration.
+            </p>
+            <button
+              onClick={() => navigate("/home")}
+              className="sm:text-lg mt-8 px-6 py-2.5 bg-green-500 hover:bg-green-600 rounded-full"
+            >
+              Discover Recipes
+            </button>
+          </div>
         )}
       </div>
     </div>
