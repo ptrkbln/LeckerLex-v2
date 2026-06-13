@@ -1,18 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { FaShoppingBasket } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import {
+  RiCheckboxBlankCircleLine,
+  RiCheckboxCircleLine,
+} from "react-icons/ri";
 
 function MyShoppingList() {
-  const [showSaveButton, setShowSaveButton] = useState(false);
   const [showAddIngredient, setShowAddIngredient] = useState(false);
   const [shoppingList, setShoppingList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [newIngredient, setNewIngredient] = useState("");
+  const inputRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (showAddIngredient) inputRef.current?.focus();
+  }, [showAddIngredient, shoppingList]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -45,7 +53,6 @@ function MyShoppingList() {
     getShoppingList();
   }, []);
 
-  // Save the updated shopping list to the backend
   const saveShoppingList = async (updatedList) => {
     setIsSubmitting(true);
     try {
@@ -66,7 +73,6 @@ function MyShoppingList() {
       if (!response.ok) {
         toast.error("Something went wrong while updating your shopping list.");
       }
-      setShowSaveButton(false);
     } catch {
       toast.error("Something went wrong while updating your shopping list.");
     } finally {
@@ -102,6 +108,10 @@ function MyShoppingList() {
     );
   } */
 
+  const handleEnterKey = (e) => {
+    if (e.key === "Enter") handleSaveNewIngredient();
+  };
+
   // Toggle purchased status on item click
   const handleIngredientChoise = (name) => {
     setPurchasedItems((prev) =>
@@ -109,25 +119,23 @@ function MyShoppingList() {
         ? prev.filter((item) => item !== name)
         : [...prev, name],
     );
-    setShowSaveButton(true);
   };
 
   // Mark all items as purchased
   const markAllAsPurchased = () => {
     setPurchasedItems(shoppingList.map((item) => item));
-    setShowSaveButton(true);
   };
 
+  //// UPDATE THIS ONE
   // Save and remove all items
-  const handleSaveAndRemoveAll = () => {
+  const handleRemovePurchasedItems = () => {
     saveShoppingList([]); // Save an empty shopping list
     setShoppingList([]);
     setPurchasedItems([]);
-    setShowSaveButton(false);
   };
 
-  const handleAddIngredientClick = () => {
-    setShowAddIngredient(true);
+  const toggleAddIngredientClick = () => {
+    setShowAddIngredient((prev) => !prev);
   };
 
   // Save new ingredient if not empty or already added
@@ -145,115 +153,119 @@ function MyShoppingList() {
     setShoppingList(updatedList);
     saveShoppingList(updatedList);
     setNewIngredient("");
-    setShowAddIngredient(false);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-10">
-      {shoppingList.length > 0 ? (
-        <h1 className="text-3xl font-bold mb-10 text-orange-200 pb-3">
-          Shop Smart, Stay Organized
-        </h1>
-      ) : (
-        <div className="flex flex-col items-center justify-center text-center text-gray-100">
-          <FaShoppingBasket className="size-12 text-orange-200 mb-4" />
-          <h1 className="text-3xl font-bold mb-10 text-orange-200 pb-3">
-            Your shopping list is empty
-          </h1>
-        </div>
-      )}
-      <div
-        className="p-8 m-auto w-full border border-gray-800 rounded-3xl shadow-lg"
-        style={{ background: "#11151E" }}
-      >
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-8 relative">
-          {shoppingList.length > 0 && (
-            <button
-              className="bg-green-500 text-gray-50 px-6 py-2 rounded-full hover:bg-green-600 hover:shadow-xl transition duration-300 mb-4 sm:mb-0"
-              onClick={markAllAsPurchased}
-            >
-              Mark All as Purchased
-            </button>
-          )}
+    <div className="flex flex-col my-2 w-full max-w-2xl border border-gray-800 bg-[#11151E] rounded-3xl shadow-2xl sm:p-10">
+      <div className="w-full rounded-3xl p-6 sm:p-3">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 relative">
+          <h1 className="text-3xl font-bold text-orange-200">Groceries</h1>
           <button
-            className="bg-blue-500 text-gray-50 px-6 py-2 rounded-full hover:bg-blue-600 hover:shadow-xl transition duration-300"
-            onClick={handleAddIngredientClick}
+            className="bg-gray-700 text-white px-6 py-2.5 rounded-full hover:bg-gray-800 transition"
+            onClick={toggleAddIngredientClick}
           >
-            Add an Ingredient
+            Add Ingredient
           </button>
-
-          {/* Add Ingredient Modal */}
           {showAddIngredient && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
-              <div className="bg-orange-50 p-6 rounded-3xl shadow-lg w-80">
-                <input
-                  type="text"
-                  value={newIngredient}
-                  placeholder="Add an Ingredient..."
-                  onChange={(e) => setNewIngredient(e.target.value)}
-                  className="border border-gray-300 p-2 rounded mb-4 w-full focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <div className="flex justify-end space-x-2">
-                  <button
-                    className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition"
-                    onClick={handleSaveNewIngredient}
-                    disabled={isSubmitting}
-                  >
-                    Save
-                  </button>
-                  <button
-                    className="bg-gray-500 text-white px-4 py-2 rounded-full hover:bg-gray-600 transition"
-                    onClick={() => setShowAddIngredient(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
+            <div className="absolute sm:top-0 sm:right-0 z-10 w-2/3 sm:w-[42.5%] bg-[#11151E]">
+              <input
+                type="text"
+                value={newIngredient}
+                placeholder="Bread, Milk, Eggs..."
+                onChange={(e) => setNewIngredient(e.target.value)}
+                onKeyDown={(e) => handleEnterKey(e)}
+                ref={inputRef}
+                className="border text-sm sm:text-base border-gray-300 p-3 bg-orange-50 placeholder:pl-2 rounded-full mb-2.5 w-full focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+
+              <div className="flex justify-center sm:justify-end gap-2.5">
+                <button
+                  className="bg-green-500 text-white py-2 rounded-full hover:bg-green-600 w-full sm:w-[85px] transition"
+                  onClick={handleSaveNewIngredient}
+                  disabled={isSubmitting}
+                >
+                  Add
+                </button>
+
+                <button
+                  className="bg-gray-500 text-white py-2  rounded-full hover:bg-gray-600 w-full sm:w-[85px] transition"
+                  onClick={() => setShowAddIngredient(false)}
+                >
+                  Close
+                </button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Shopping List Items */}
         {shoppingList.length > 0 ? (
-          <ul className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {shoppingList.map((item, index) => (
-              <li
-                key={index}
-                onClick={() => handleIngredientChoise(item)}
-                className={`flex flex-col sm:flex-row justify-between items-center p-4 border rounded-3xl transition-transform transform hover:scale-105 hover:shadow-md cursor-pointer ${
-                  purchasedItems.includes(item)
-                    ? "line-through text-gray-500 bg-gray-200"
-                    : "bg-white hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex items-center mb-2 sm:mb-0">
-                  <span className="font-semibold capitalize">{item}</span>
-                </div>
-                <span className="text-sm text-gray-700">
-                  {/* If available, display amount and unit */}
-                  {item.amount ? `${item.amount} ${item.unit}` : ""}
-                </span>
-              </li>
-            ))}
-            {showSaveButton && (
+          <>
+            <ul className="my-8 sm:my-12">
+              {shoppingList.map((item, index) => (
+                <li
+                  key={index}
+                  className="flex items-center gap-4 px-4 pt-4 pb-1 border-b border-green-500/15 cursor-pointer"
+                  onClick={() => handleIngredientChoise(item)}
+                >
+                  {purchasedItems.includes(item) ? (
+                    <RiCheckboxCircleLine className="size-5 text-green-800" />
+                  ) : (
+                    <RiCheckboxBlankCircleLine className="size-5 text-gray-700" />
+                  )}
+                  <span
+                    className={`tracking-wider transition-all capitalize ${purchasedItems.includes(item) ? "line-through  text-slate-300/50 scale-[0.98]" : "text-orange-100/95 font-semibold"}`}
+                  >
+                    {item}
+                  </span>
+                </li>
+              ))}
+
+              {/* Placeholder rows */}
+              {Array.from({ length: 7 - shoppingList.length }).map((_, i) => (
+                <li
+                  key={i}
+                  className="flex items-center gap-4 px-4 pt-4 pb-1 border-b border-green-500/15"
+                >
+                  <RiCheckboxBlankCircleLine className="size-5 text-gray-800/30" />
+                  <span className="invisible">placeholder</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex flex-col sm:flex-row justify-between gap-4 mb-5 sm:mb-3">
               <button
-                onClick={handleSaveAndRemoveAll}
-                className="bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 shadow-md transition inline-block mt-4"
-                disabled={isSubmitting}
+                className="bg-orange-400 text-white px-6 py-2 rounded-full hover:bg-orange-500 transition"
+                onClick={markAllAsPurchased}
               >
-                Remove all and save
+                Select all
               </button>
-            )}
-          </ul>
+
+              {purchasedItems.length > 0 && (
+                <button
+                  onClick={handleRemovePurchasedItems}
+                  className="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition"
+                  disabled={isSubmitting}
+                >
+                  Remove Purchased Items
+                </button>
+              )}
+            </div>
+          </>
         ) : (
-          <div className="flex flex-col items-center justify-center text-center text-gray-100">
-            <p className="sm:text-xl text-gray-300">
+          <div className="flex flex-col items-center text-center p-4 pt-6 sm:pt-8">
+            <FaShoppingBasket className="size-10 sm:size-12 text-orange-200 mb-4 sm:mb-3" />
+
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 text-gray-300">
+              Your shopping list is empty
+            </h2>
+
+            <p className="text-gray-400 max-w-md mb-10">
               Add ingredients manually or browse recipes for inspiration.
             </p>
+
             <button
               onClick={() => navigate("/home")}
-              className="sm:text-lg mt-8 px-6 py-2.5 bg-green-500 hover:bg-green-600 rounded-full"
+              className="px-6 py-2.5 bg-green-500 text-white hover:bg-green-600 rounded-full transition"
             >
               Discover Recipes
             </button>
