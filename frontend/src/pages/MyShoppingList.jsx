@@ -13,7 +13,6 @@ function MyShoppingList() {
   const [shoppingList, setShoppingList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [purchasedItems, setPurchasedItems] = useState([]);
   const [newIngredient, setNewIngredient] = useState("");
   const inputRef = useRef(null);
   const navigate = useNavigate();
@@ -53,7 +52,8 @@ function MyShoppingList() {
     getShoppingList();
   }, []);
 
-  const saveShoppingList = async (updatedList) => {
+  // update in useEfect whenever shoppingList changes?
+  const updateShoppingList = async (updatedList) => {
     setIsSubmitting(true);
     try {
       const response = await fetch(
@@ -72,6 +72,7 @@ function MyShoppingList() {
       );
       if (!response.ok) {
         toast.error("Something went wrong while updating your shopping list.");
+        return;
       }
     } catch {
       toast.error("Something went wrong while updating your shopping list.");
@@ -86,52 +87,37 @@ function MyShoppingList() {
     );
   }
 
-  /*   if (shoppingList.length === 0) {
-    return (
-      <div className="bg-gray-900/50 rounded-[70px] p-10 shadow-lg text-center max-w-lg">
-        <div className="flex flex-col items-center justify-center text-center text-gray-100">
-          <FaShoppingBasket className="size-12 text-orange-200 mb-4" />
-          <h1 className="text-xl sm:text-3xl font-semibold mb-4">
-            Your shopping list is empty
-          </h1>
-          <p className="sm:text-xl text-gray-300 max-w-md">
-            Add ingredients manually or browse recipes for inspiration.
-          </p>
-          <button
-            onClick={() => navigate("/home")}
-            className="sm:text-lg mt-8 px-6 py-2.5 bg-green-500 hover:bg-green-600 rounded-full"
-          >
-            Discover Recipes
-          </button>
-        </div>
-      </div>
-    );
-  } */
-
   const handleEnterKey = (e) => {
-    if (e.key === "Enter") handleSaveNewIngredient();
+    if (e.key === "Enter") handleAddNewIngredient();
   };
 
-  // Toggle purchased status on item click
-  const handleIngredientChoise = (name) => {
-    setPurchasedItems((prev) =>
-      prev.includes(name)
-        ? prev.filter((item) => item !== name)
-        : [...prev, name],
+  // Toggle completed status on item click
+  const handleToggleIngredientCompleted = (ingr) => {
+    setShoppingList((prev) =>
+      prev.map((item) =>
+        item.ingredient === ingr.ingredient
+          ? { ...item, completed: !item.completed }
+          : item,
+      ),
     );
   };
 
-  // Mark all items as purchased
-  const markAllAsPurchased = () => {
-    setPurchasedItems(shoppingList.map((item) => item));
+  const areAllCompleted =
+    shoppingList.length > 0 && shoppingList.every((item) => item.completed);
+
+  const handleToggleAllCompleted = () => {
+    areAllCompleted
+      ? setShoppingList((prev) =>
+          prev.map((item) => ({ ...item, completed: false })),
+        )
+      : setShoppingList((prev) =>
+          prev.map((item) => ({ ...item, completed: true })),
+        );
   };
 
-  //// UPDATE THIS ONE
-  // Save and remove all items
-  const handleRemovePurchasedItems = () => {
-    saveShoppingList([]); // Save an empty shopping list
-    setShoppingList([]);
-    setPurchasedItems([]);
+  const isAnyCompleted = shoppingList.some((item) => item.completed);
+  const handleRemoveCompletedItems = () => {
+    setShoppingList((prev) => prev.filter((item) => item.completed === false));
   };
 
   const toggleAddIngredientClick = () => {
@@ -139,7 +125,7 @@ function MyShoppingList() {
   };
 
   // Save new ingredient if not empty or already added
-  const handleSaveNewIngredient = () => {
+  const handleAddNewIngredient = () => {
     const formattedIngredient = newIngredient.trim().toLowerCase();
     if (formattedIngredient === "") {
       toast.error("Enter an ingredient to add to your shopping list.");
@@ -149,9 +135,12 @@ function MyShoppingList() {
       toast.error("This ingredient is already on your list.");
       return;
     }
-    const updatedList = [...shoppingList, formattedIngredient];
+    const updatedList = [
+      ...shoppingList,
+      { ingredient: formattedIngredient, completed: false },
+    ];
+    // updateShoppingList(updatedList);
     setShoppingList(updatedList);
-    saveShoppingList(updatedList);
     setNewIngredient("");
   };
 
@@ -181,7 +170,7 @@ function MyShoppingList() {
               <div className="flex justify-center sm:justify-end gap-2.5">
                 <button
                   className="bg-green-500 text-white py-2 rounded-full hover:bg-green-600 w-full sm:w-[85px] transition"
-                  onClick={handleSaveNewIngredient}
+                  onClick={handleAddNewIngredient}
                   disabled={isSubmitting}
                 >
                   Add
@@ -204,18 +193,18 @@ function MyShoppingList() {
               {shoppingList.map((item, index) => (
                 <li
                   key={index}
-                  className="flex items-center gap-4 px-4 pt-4 pb-1 border-b border-green-500/15 cursor-pointer"
-                  onClick={() => handleIngredientChoise(item)}
+                  className="flex items-center gap-4 sm:gap-7 px-4 pt-4 pb-1 border-b border-green-500/15 cursor-pointer"
+                  onClick={() => handleToggleIngredientCompleted(item)}
                 >
-                  {purchasedItems.includes(item) ? (
+                  {item.completed ? (
                     <RiCheckboxCircleLine className="size-5 text-green-800" />
                   ) : (
                     <RiCheckboxBlankCircleLine className="size-5 text-gray-700" />
                   )}
                   <span
-                    className={`tracking-wider transition-all capitalize ${purchasedItems.includes(item) ? "line-through  text-slate-300/50 scale-[0.98]" : "text-orange-100/95 font-semibold"}`}
+                    className={`tracking-wider transition-all capitalize ${item.completed ? "line-through  text-slate-300/50 scale-[0.98]" : "text-orange-100/95 font-semibold"}`}
                   >
-                    {item}
+                    {item.ingredient}
                   </span>
                 </li>
               ))}
@@ -234,17 +223,16 @@ function MyShoppingList() {
 
             <div className="flex flex-col sm:flex-row justify-between gap-4 mb-5 sm:mb-3">
               <button
-                className="bg-orange-400 text-white px-6 py-2 rounded-full hover:bg-orange-500 transition"
-                onClick={markAllAsPurchased}
+                className="bg-orange-400 text-white px-6 py-2 rounded-full min-w-[133px] hover:bg-orange-500 transition"
+                onClick={handleToggleAllCompleted}
               >
-                Select all
+                {areAllCompleted ? "Deselect all" : "Select all"}
               </button>
 
-              {purchasedItems.length > 0 && (
+              {isAnyCompleted && (
                 <button
-                  onClick={handleRemovePurchasedItems}
+                  onClick={handleRemoveCompletedItems}
                   className="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition"
-                  disabled={isSubmitting}
                 >
                   Remove Purchased Items
                 </button>

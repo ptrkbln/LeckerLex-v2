@@ -194,19 +194,42 @@ export const updateUsersShoppingList = async (req, res, next) => {
     if (!Array.isArray(shoppingList))
       return res.status(400).json({ msg: "Shopping List should be an array." });
 
-    if (!shoppingList.every((item) => typeof item === "string")) {
-      return res
-        .status(400)
-        .json({ msg: "Shopping list items must be strings." });
+    if (
+      !shoppingList.every(
+        (item) =>
+          item &&
+          typeof item.ingredient === "string" &&
+          typeof item.completed === "boolean",
+      )
+    ) {
+      return res.status(400).json({
+        msg: "Shopping list items must be objects with item property as a string and completed property as a boolean.",
+      });
     }
-
-    shoppingList = shoppingList.map((item) => item.trim().toLowerCase());
 
     if (action === "add") {
       // Add items from RecipeDetails page
-      await User.findByIdAndUpdate(req.user.userId, {
-        $addToSet: { shoppingList: { $each: shoppingList } }, // addToSet prevents adding duplicate items
+      const user = await User.findById(req.user.userId);
+      if (!user) {
+        return res.status(404).json({ msg: "User not found." });
+      }
+
+      shoppingList.forEach((newItem) => {
+        const existingItem = user.shoppingList.find(
+          (entry) =>
+            entry.ingredient === newItem.ingredient.trim().toLowerCase(),
+        );
+        if (existingItem) {
+          existingItem.completed = false;
+        } else {
+          user.shoppingList.push({
+            ingredient: newItem.ingredient.trim().toLowerCase(),
+            completed: false,
+          });
+        }
       });
+
+      await user.save();
     } else if (action === "replace") {
       // Replace the shopping list from MyShoppingList page
       await User.findByIdAndUpdate(req.user.userId, {
@@ -229,8 +252,7 @@ export const getUsersShoppingList = async (req, res, next) => {
       return res.status(404).json({ msg: "User not found." });
     }
 
-    const shoppingList = user.shoppingList;
-    return res.status(200).json({ data: shoppingList });
+    return res.status(200).json({ data: user.shoppingList });
   } catch (error) {
     next(error);
   }
