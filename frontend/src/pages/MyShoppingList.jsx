@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import {
   RiCheckboxBlankCircleLine,
   RiCheckboxCircleLine,
+  RiCheckboxBlankCircleFill,
 } from "react-icons/ri";
 
 function MyShoppingList() {
@@ -190,6 +191,20 @@ function MyShoppingList() {
         {shoppingList.length > 0 ? (
           <>
             <ul className="my-8 sm:my-12">
+              <button
+                className="flex items-center pl-4 pr-6 py-2.5 border border-gray-400 rounded-full gap-3 sm:gap-6 min-w-[179px]"
+                onClick={handleToggleAllCompleted}
+              >
+                {areAllCompleted ? (
+                  <RiCheckboxBlankCircleFill className="size-5 text-green-800" />
+                ) : (
+                  <RiCheckboxBlankCircleLine className="size-5 text-gray-700" />
+                )}
+                <span className="text-gray-400 tracking-widest text-xs">
+                  {areAllCompleted ? "DESELECT ALL" : "SELECT ALL"}
+                </span>
+              </button>
+
               {shoppingList.map((item, index) => (
                 <li
                   key={index}
@@ -222,13 +237,6 @@ function MyShoppingList() {
             </ul>
 
             <div className="flex flex-col sm:flex-row justify-between gap-4 mb-5 sm:mb-3">
-              <button
-                className="bg-orange-400 text-white px-6 py-2 rounded-full min-w-[133px] hover:bg-orange-500 transition"
-                onClick={handleToggleAllCompleted}
-              >
-                {areAllCompleted ? "Deselect all" : "Select all"}
-              </button>
-
               {isAnyCompleted && (
                 <button
                   onClick={handleRemoveCompletedItems}
