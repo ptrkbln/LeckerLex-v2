@@ -36,7 +36,6 @@ const userSchema = new Schema(
         "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&^#-=_+).",
       ],
     },
-    /* shoppingList: { type: String, default: [] }, */
     journal: [
       // TODO reviews model (1-n)
       {
@@ -52,7 +51,15 @@ const userSchema = new Schema(
       },
     ],
     shoppingList: {
-      type: [String],
+      type: [
+        {
+          ingredient: String,
+          completed: {
+            type: Boolean,
+            default: false,
+          },
+        },
+      ],
       default: [],
     },
     validationToken: String,
@@ -61,7 +68,7 @@ const userSchema = new Schema(
       default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // // Pre-save middleware to hash the user's password before saving it to the database

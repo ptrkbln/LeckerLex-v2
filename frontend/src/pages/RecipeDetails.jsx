@@ -89,8 +89,13 @@ function RecipeDetails() {
     }
 
     try {
-      let shoppingListItems = recipe.missedIngredients.map((item) =>
-        item.name.trim().toLowerCase(),
+      const shoppingListItems = [];
+
+      recipe.missedIngredients.forEach((item) =>
+        shoppingListItems.push({
+          ingredient: item.name.trim().toLowerCase(),
+          completed: false,
+        }),
       );
 
       const response = await fetch(

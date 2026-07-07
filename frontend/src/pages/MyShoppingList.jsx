@@ -1,22 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { FaShoppingBasket } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import {
+  RiCheckboxBlankCircleLine,
+  RiCheckboxCircleLine,
+  RiCheckboxBlankCircleFill,
+} from "react-icons/ri";
 
 function MyShoppingList() {
-  const [showSaveButton, setShowSaveButton] = useState(false);
   const [showAddIngredient, setShowAddIngredient] = useState(false);
   const [shoppingList, setShoppingList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [purchasedItems, setPurchasedItems] = useState([]);
   const [newIngredient, setNewIngredient] = useState("");
+  const inputRef = useRef(null);
   const navigate = useNavigate();
+  const isAnyCompleted = shoppingList.some((item) => item.completed);
+
+  useEffect(() => {
+    if (showAddIngredient) inputRef.current?.focus();
+  }, [showAddIngredient, shoppingList]);
 
   useEffect(() => {
     setIsLoading(true);
-    const getShoppingList = async () => {
+    const getShoppingListDatabase = async () => {
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/users/shoppinglist`,
@@ -42,12 +51,17 @@ function MyShoppingList() {
       }
     };
 
-    getShoppingList();
+    getShoppingListDatabase();
   }, []);
 
-  // Save the updated shopping list to the backend
-  const saveShoppingList = async (updatedList) => {
+  const updateShoppingListDatabase = async (updatedList) => {
     setIsSubmitting(true);
+    // Ensure ingredient names are stored in a consistent format
+    const formattedList = updatedList.map((item) => ({
+      ...item,
+      ingredient: item.ingredient.trim().toLowerCase(),
+    }));
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/users/update-shoppinglist`,
@@ -58,17 +72,17 @@ function MyShoppingList() {
           },
           credentials: "include",
           body: JSON.stringify({
-            shoppingList: updatedList,
+            shoppingList: formattedList,
             action: "replace",
           }),
         },
       );
       if (!response.ok) {
-        toast.error("Something went wrong while updating your shopping list.");
+        throw new Error("Failed to update shopping list.");
       }
-      setShowSaveButton(false);
-    } catch {
+    } catch (error) {
       toast.error("Something went wrong while updating your shopping list.");
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -80,180 +94,212 @@ function MyShoppingList() {
     );
   }
 
-  /*   if (shoppingList.length === 0) {
-    return (
-      <div className="bg-gray-900/50 rounded-[70px] p-10 shadow-lg text-center max-w-lg">
-        <div className="flex flex-col items-center justify-center text-center text-gray-100">
-          <FaShoppingBasket className="size-12 text-orange-200 mb-4" />
-          <h1 className="text-xl sm:text-3xl font-semibold mb-4">
-            Your shopping list is empty
-          </h1>
-          <p className="sm:text-xl text-gray-300 max-w-md">
-            Add ingredients manually or browse recipes for inspiration.
-          </p>
-          <button
-            onClick={() => navigate("/home")}
-            className="sm:text-lg mt-8 px-6 py-2.5 bg-green-500 hover:bg-green-600 rounded-full"
-          >
-            Discover Recipes
-          </button>
-        </div>
-      </div>
+  const handleEnterKey = (e) => {
+    if (e.key === "Enter") handleAddNewIngredient();
+  };
+
+  // Toggle completed status on item click
+  const handleToggleIngredientCompleted = async (ingr) => {
+    // Save the current state in case the database update fails
+    const previousList = shoppingList;
+
+    const updatedList = shoppingList.map((item) =>
+      item.ingredient === ingr.ingredient
+        ? { ...item, completed: !item.completed }
+        : item,
     );
-  } */
 
-  // Toggle purchased status on item click
-  const handleIngredientChoise = (name) => {
-    setPurchasedItems((prev) =>
-      prev.includes(name)
-        ? prev.filter((item) => item !== name)
-        : [...prev, name],
-    );
-    setShowSaveButton(true);
+    setShoppingList(updatedList);
+
+    try {
+      await updateShoppingListDatabase(updatedList);
+    } catch {
+      setShoppingList(previousList);
+    }
   };
 
-  // Mark all items as purchased
-  const markAllAsPurchased = () => {
-    setPurchasedItems(shoppingList.map((item) => item));
-    setShowSaveButton(true);
+  const areAllCompleted =
+    shoppingList.length > 0 && shoppingList.every((item) => item.completed);
+
+  const handleToggleAllCompleted = async () => {
+    // Save the current state in case the database update fails
+    const previousList = shoppingList;
+
+    const updatedList = areAllCompleted
+      ? shoppingList.map((item) => ({ ...item, completed: false }))
+      : shoppingList.map((item) => ({ ...item, completed: true }));
+
+    setShoppingList(updatedList);
+
+    try {
+      await updateShoppingListDatabase(updatedList);
+    } catch {
+      setShoppingList(previousList);
+    }
   };
 
-  // Save and remove all items
-  const handleSaveAndRemoveAll = () => {
-    saveShoppingList([]); // Save an empty shopping list
-    setShoppingList([]);
-    setPurchasedItems([]);
-    setShowSaveButton(false);
-  };
+  const handleRemoveCompletedItems = async () => {
+    // Save the current state in case the database update fails
+    const previousList = shoppingList;
 
-  const handleAddIngredientClick = () => {
-    setShowAddIngredient(true);
+    const updatedList = shoppingList.filter((item) => item.completed === false);
+
+    setShoppingList(updatedList);
+    try {
+      await updateShoppingListDatabase(updatedList);
+    } catch {
+      setShoppingList(previousList);
+    }
   };
 
   // Save new ingredient if not empty or already added
-  const handleSaveNewIngredient = () => {
+  const handleAddNewIngredient = async () => {
+    // Save the current state in case the database update fails
+    const previousList = shoppingList;
+
     const formattedIngredient = newIngredient.trim().toLowerCase();
     if (formattedIngredient === "") {
       toast.error("Enter an ingredient to add to your shopping list.");
       return;
     }
-    if (shoppingList.includes(formattedIngredient)) {
+    if (shoppingList.some((item) => item.ingredient === formattedIngredient)) {
       toast.error("This ingredient is already on your list.");
       return;
     }
-    const updatedList = [...shoppingList, formattedIngredient];
+    const updatedList = [
+      ...shoppingList,
+      { ingredient: formattedIngredient, completed: false },
+    ];
+
     setShoppingList(updatedList);
-    saveShoppingList(updatedList);
-    setNewIngredient("");
-    setShowAddIngredient(false);
+
+    try {
+      await updateShoppingListDatabase(updatedList);
+      setNewIngredient("");
+    } catch {
+      setShoppingList(previousList);
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-10">
-      {shoppingList.length > 0 ? (
-        <h1 className="text-3xl font-bold mb-10 text-orange-200 pb-3">
-          Shop Smart, Stay Organized
-        </h1>
-      ) : (
-        <div className="flex flex-col items-center justify-center text-center text-gray-100">
-          <FaShoppingBasket className="size-12 text-orange-200 mb-4" />
-          <h1 className="text-3xl font-bold mb-10 text-orange-200 pb-3">
-            Your shopping list is empty
+    <div className="flex flex-col my-2 w-full max-w-2xl border border-gray-800 bg-[#11151E] rounded-3xl shadow-2xl sm:p-10">
+      <div className="w-full rounded-3xl p-6 sm:p-3">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 relative">
+          <h1 className="text-3xl font-bold text-orange-200 tracking-wide">
+            Groceries
           </h1>
-        </div>
-      )}
-      <div
-        className="p-8 m-auto w-full border border-gray-800 rounded-3xl shadow-lg"
-        style={{ background: "#11151E" }}
-      >
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-8 relative">
-          {shoppingList.length > 0 && (
-            <button
-              className="bg-green-500 text-gray-50 px-6 py-2 rounded-full hover:bg-green-600 hover:shadow-xl transition duration-300 mb-4 sm:mb-0"
-              onClick={markAllAsPurchased}
-            >
-              Mark All as Purchased
-            </button>
-          )}
           <button
-            className="bg-blue-500 text-gray-50 px-6 py-2 rounded-full hover:bg-blue-600 hover:shadow-xl transition duration-300"
-            onClick={handleAddIngredientClick}
+            className={`border-green-400/60 text-green-300/80 hover:text-green-300 hover:border-green-400 px-6 py-2 rounded-full border min-w-[180px] ${showAddIngredient ? "invisible" : ""} transition`}
+            onClick={() => setShowAddIngredient((prev) => !prev)}
           >
-            Add an Ingredient
+            Add Ingredient
           </button>
-
-          {/* Add Ingredient Modal */}
           {showAddIngredient && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
-              <div className="bg-orange-50 p-6 rounded-3xl shadow-lg w-80">
-                <input
-                  type="text"
-                  value={newIngredient}
-                  placeholder="Add an Ingredient..."
-                  onChange={(e) => setNewIngredient(e.target.value)}
-                  className="border border-gray-300 p-2 rounded mb-4 w-full focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <div className="flex justify-end space-x-2">
-                  <button
-                    className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition"
-                    onClick={handleSaveNewIngredient}
-                    disabled={isSubmitting}
-                  >
-                    Save
-                  </button>
-                  <button
-                    className="bg-gray-500 text-white px-4 py-2 rounded-full hover:bg-gray-600 transition"
-                    onClick={() => setShowAddIngredient(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
+            <div className="absolute top-1 sm:top-0 sm:right-0 z-10 w-2/3 max-w-64 sm:w-[42.5%] bg-[#11151E]">
+              <input
+                type="text"
+                value={newIngredient}
+                placeholder="Enter ingredient..."
+                onChange={(e) => setNewIngredient(e.target.value)}
+                onKeyDown={(e) => handleEnterKey(e)}
+                ref={inputRef}
+                className="bg-slate-800/50 border border-gray-600 text-gray-100 placeholder:text-gray-400 p-3 placeholder:pl-2 rounded-full mb-1.5 w-full focus:outline-none"
+              />
+
+              <div className="flex justify-center sm:justify-end gap-2.5">
+                <button
+                  className="border border-green-400/60 text-green-300/80 hover:text-green-300 hover:border-green-400 py-1.5 rounded-full w-full transition"
+                  onClick={handleAddNewIngredient}
+                  disabled={isSubmitting}
+                >
+                  Add
+                </button>
+
+                <button
+                  className="border border-gray-400/60 text-gray-300/80 hover:text-gray-300 hover:border-gray-300 py-1.5 rounded-full w-full transition"
+                  onClick={() => setShowAddIngredient(false)}
+                >
+                  Close
+                </button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Shopping List Items */}
         {shoppingList.length > 0 ? (
-          <ul className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {shoppingList.map((item, index) => (
-              <li
-                key={index}
-                onClick={() => handleIngredientChoise(item)}
-                className={`flex flex-col sm:flex-row justify-between items-center p-4 border rounded-3xl transition-transform transform hover:scale-105 hover:shadow-md cursor-pointer ${
-                  purchasedItems.includes(item)
-                    ? "line-through text-gray-500 bg-gray-200"
-                    : "bg-white hover:bg-gray-50"
-                }`}
-              >
-                <div className="flex items-center mb-2 sm:mb-0">
-                  <span className="font-semibold capitalize">{item}</span>
-                </div>
-                <span className="text-sm text-gray-700">
-                  {/* If available, display amount and unit */}
-                  {item.amount ? `${item.amount} ${item.unit}` : ""}
-                </span>
-              </li>
-            ))}
-            {showSaveButton && (
-              <button
-                onClick={handleSaveAndRemoveAll}
-                className="bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 shadow-md transition inline-block mt-4"
-                disabled={isSubmitting}
-              >
-                Remove all and save
-              </button>
-            )}
-          </ul>
+          <>
+            <ul className="pb-4 pt-6">
+              <div className="flex flex-col-reverse sm:flex-row justify-between items-start sm:items-end min-h-[92px]">
+                <button
+                  className="flex items-center pl-4 pr-6 py-2.5 border border-gray-400 rounded-full gap-3 sm:gap-6 min-w-[180px] hover:border-gray-300 text-gray-400 hover:text-gray-300 transition"
+                  onClick={handleToggleAllCompleted}
+                >
+                  {areAllCompleted ? (
+                    <RiCheckboxBlankCircleFill className="size-5 text-green-800" />
+                  ) : (
+                    <RiCheckboxBlankCircleLine className="size-5 text-gray-700" />
+                  )}
+                  <span className="tracking-widest text-xs">
+                    {areAllCompleted ? "DESELECT ALL" : "SELECT ALL"}
+                  </span>
+                </button>
+
+                {isAnyCompleted && (
+                  <button
+                    onClick={handleRemoveCompletedItems}
+                    className="border border-rose-400/40 text-rose-300/80 hover:border-rose-400/70 hover:text-rose-300 px-6 py-2 rounded-full transition min-w-[180px]"
+                  >
+                    Remove Selected
+                  </button>
+                )}
+              </div>
+
+              {shoppingList.map((item, index) => (
+                <li
+                  key={index}
+                  className="flex items-center gap-4 sm:gap-7 px-4 pt-4 pb-1 border-b border-green-500/15 cursor-pointer"
+                  onClick={() => handleToggleIngredientCompleted(item)}
+                >
+                  {item.completed ? (
+                    <RiCheckboxCircleLine className="size-5 text-green-800" />
+                  ) : (
+                    <RiCheckboxBlankCircleLine className="size-5 text-gray-700" />
+                  )}
+                  <span
+                    className={`tracking-wider transition-all capitalize ${item.completed ? "line-through  text-slate-300/50 scale-[0.98]" : "text-orange-100/95 font-semibold"}`}
+                  >
+                    {item.ingredient}
+                  </span>
+                </li>
+              ))}
+
+              {/* Placeholder rows */}
+              {Array.from({ length: 7 - shoppingList.length }).map((_, i) => (
+                <li
+                  key={i}
+                  className="flex items-center gap-4 px-4 pt-4 pb-1 border-b border-green-500/15"
+                >
+                  <RiCheckboxBlankCircleLine className="size-5 text-gray-800/30" />
+                  <span className="invisible">placeholder</span>
+                </li>
+              ))}
+            </ul>
+          </>
         ) : (
-          <div className="flex flex-col items-center justify-center text-center text-gray-100">
-            <p className="sm:text-xl text-gray-300">
+          <div className="flex flex-col items-center text-center p-4 pt-6 sm:pt-8">
+            <FaShoppingBasket className="size-10 sm:size-12 text-orange-200 mb-4 sm:mb-3" />
+
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 text-gray-300">
+              Your shopping list is empty
+            </h2>
+
+            <p className="text-gray-400 max-w-md mb-10">
               Add ingredients manually or browse recipes for inspiration.
             </p>
+
             <button
               onClick={() => navigate("/home")}
-              className="sm:text-lg mt-8 px-6 py-2.5 bg-green-500 hover:bg-green-600 rounded-full"
+              className="px-6 py-2.5 bg-green-500 text-white hover:bg-green-600 rounded-full transition"
             >
               Discover Recipes
             </button>
