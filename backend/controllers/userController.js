@@ -231,7 +231,7 @@ export const updateUsersShoppingList = async (req, res, next) => {
 
       await user.save();
     } else if (action === "replace") {
-      // Replace the shopping list from MyShoppingList page
+      // Replace the shopping list with items from MyShoppingList page
       await User.findByIdAndUpdate(req.user.userId, {
         $set: { shoppingList },
       });

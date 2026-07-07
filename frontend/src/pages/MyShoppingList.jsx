@@ -17,6 +17,7 @@ function MyShoppingList() {
   const [newIngredient, setNewIngredient] = useState("");
   const inputRef = useRef(null);
   const navigate = useNavigate();
+  const isAnyCompleted = shoppingList.some((item) => item.completed);
 
   useEffect(() => {
     if (showAddIngredient) inputRef.current?.focus();
@@ -24,7 +25,7 @@ function MyShoppingList() {
 
   useEffect(() => {
     setIsLoading(true);
-    const getShoppingList = async () => {
+    const getShoppingListDatabase = async () => {
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/users/shoppinglist`,
@@ -50,12 +51,17 @@ function MyShoppingList() {
       }
     };
 
-    getShoppingList();
+    getShoppingListDatabase();
   }, []);
 
-  // update in useEfect whenever shoppingList changes?
-  const updateShoppingList = async (updatedList) => {
+  const updateShoppingListDatabase = async (updatedList) => {
     setIsSubmitting(true);
+    // Ensure ingredient names are stored in a consistent format
+    const formattedList = updatedList.map((item) => ({
+      ...item,
+      ingredient: item.ingredient.trim().toLowerCase(),
+    }));
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/users/update-shoppinglist`,
@@ -66,17 +72,17 @@ function MyShoppingList() {
           },
           credentials: "include",
           body: JSON.stringify({
-            shoppingList: updatedList,
+            shoppingList: formattedList,
             action: "replace",
           }),
         },
       );
       if (!response.ok) {
-        toast.error("Something went wrong while updating your shopping list.");
-        return;
+        throw new Error("Failed to update shopping list.");
       }
-    } catch {
+    } catch (error) {
       toast.error("Something went wrong while updating your shopping list.");
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -93,46 +99,70 @@ function MyShoppingList() {
   };
 
   // Toggle completed status on item click
-  const handleToggleIngredientCompleted = (ingr) => {
-    setShoppingList((prev) =>
-      prev.map((item) =>
-        item.ingredient === ingr.ingredient
-          ? { ...item, completed: !item.completed }
-          : item,
-      ),
+  const handleToggleIngredientCompleted = async (ingr) => {
+    // Save the current state in case the database update fails
+    const previousList = shoppingList;
+
+    const updatedList = shoppingList.map((item) =>
+      item.ingredient === ingr.ingredient
+        ? { ...item, completed: !item.completed }
+        : item,
     );
+
+    setShoppingList(updatedList);
+
+    try {
+      await updateShoppingListDatabase(updatedList);
+    } catch {
+      setShoppingList(previousList);
+    }
   };
 
   const areAllCompleted =
     shoppingList.length > 0 && shoppingList.every((item) => item.completed);
 
-  const handleToggleAllCompleted = () => {
-    areAllCompleted
-      ? setShoppingList((prev) =>
-          prev.map((item) => ({ ...item, completed: false })),
-        )
-      : setShoppingList((prev) =>
-          prev.map((item) => ({ ...item, completed: true })),
-        );
+  const handleToggleAllCompleted = async () => {
+    // Save the current state in case the database update fails
+    const previousList = shoppingList;
+
+    const updatedList = areAllCompleted
+      ? shoppingList.map((item) => ({ ...item, completed: false }))
+      : shoppingList.map((item) => ({ ...item, completed: true }));
+
+    setShoppingList(updatedList);
+
+    try {
+      await updateShoppingListDatabase(updatedList);
+    } catch {
+      setShoppingList(previousList);
+    }
   };
 
-  const isAnyCompleted = shoppingList.some((item) => item.completed);
-  const handleRemoveCompletedItems = () => {
-    setShoppingList((prev) => prev.filter((item) => item.completed === false));
-  };
+  const handleRemoveCompletedItems = async () => {
+    // Save the current state in case the database update fails
+    const previousList = shoppingList;
 
-  const toggleAddIngredientClick = () => {
-    setShowAddIngredient((prev) => !prev);
+    const updatedList = shoppingList.filter((item) => item.completed === false);
+
+    setShoppingList(updatedList);
+    try {
+      await updateShoppingListDatabase(updatedList);
+    } catch {
+      setShoppingList(previousList);
+    }
   };
 
   // Save new ingredient if not empty or already added
-  const handleAddNewIngredient = () => {
+  const handleAddNewIngredient = async () => {
+    // Save the current state in case the database update fails
+    const previousList = shoppingList;
+
     const formattedIngredient = newIngredient.trim().toLowerCase();
     if (formattedIngredient === "") {
       toast.error("Enter an ingredient to add to your shopping list.");
       return;
     }
-    if (shoppingList.includes(formattedIngredient)) {
+    if (shoppingList.some((item) => item.ingredient === formattedIngredient)) {
       toast.error("This ingredient is already on your list.");
       return;
     }
@@ -140,9 +170,15 @@ function MyShoppingList() {
       ...shoppingList,
       { ingredient: formattedIngredient, completed: false },
     ];
-    // updateShoppingList(updatedList);
+
     setShoppingList(updatedList);
-    setNewIngredient("");
+
+    try {
+      await updateShoppingListDatabase(updatedList);
+      setNewIngredient("");
+    } catch {
+      setShoppingList(previousList);
+    }
   };
 
   return (
@@ -154,7 +190,7 @@ function MyShoppingList() {
           </h1>
           <button
             className={`border-green-400/60 text-green-300/80 hover:text-green-300 hover:border-green-400 px-6 py-2 rounded-full border min-w-[180px] ${showAddIngredient ? "invisible" : ""} transition`}
-            onClick={toggleAddIngredientClick}
+            onClick={() => setShowAddIngredient((prev) => !prev)}
           >
             Add Ingredient
           </button>
