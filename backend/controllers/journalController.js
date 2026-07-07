@@ -46,57 +46,54 @@ export const createJournalEntry = [
   },
 ];
 
-// Delete a journal entry
-export const deleteJournalEntry = async (req, res) => {
+export const deleteJournalEntry = async (req, res, next) => {
   try {
     const { journalEntryId } = req.params;
     const journalEntry = await Journal.findById(journalEntryId);
     if (!journalEntry)
-      return res.status(404).json({ msg: "Journal Entry not found!" });
-
-    const imageUrl = journalEntry.imageUrl;
-    let imagePublicId = null;
-
-    // access cloudinary's image's public_id (<folder/public_id>) from https://res.cloudinary.com/<cloud_name>/image/upload/v<version>/folder/<public_id>.<format>
-
-    if (imageUrl) {
-      const imageUrlParts = imageUrl.split("/upload/").at(-1).split("/");
-      if (imageUrlParts.length > 1) {
-        imageUrlParts.shift(); // remove the v<version>
-        const publicId = imageUrlParts.join("/").split(".")[0];
-        imagePublicId = publicId;
-      }
-    }
+      return res.status(404).json({ msg: "Journal entry not found!" });
 
     if (journalEntry.user.toString() !== req.user.userId.toString())
       return res
         .status(403)
         .json({ msg: "Not authorized to delete this journal entry!" });
 
-    if (imagePublicId) await cloudinary.uploader.destroy(imagePublicId);
+    const imageUrl = journalEntry.imageUrl;
+    let imagePublicId = null;
+    // Cloudinary requires image's public_id (not the URL) to delete it
+    // public_id (<folder/public_id>) comes from
+    // url (https://res.cloudinary.com/<cloud_name>/image/upload/<version>/folder/<public_id>.<format>)
+    if (imageUrl) {
+      const imageUrlParts = imageUrl.split("/upload/").at(-1).split("/");
+      if (imageUrlParts.length > 1) {
+        imageUrlParts.shift(); // remove the <version>
+        const publicId = imageUrlParts.join("/").split(".")[0];
+        imagePublicId = publicId;
+      }
+    }
+    if (imagePublicId) {
+      await cloudinary.uploader.destroy(imagePublicId);
+    }
 
-    await journalEntry.deleteOne();
-    return res.status(200).json({ msg: "Journal Entry successfully deleted." });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msg: "Error deleting user's journal entry. Please try again later.",
+    // Remove also the deleted journal entry reference from the user's journal field array
+    await User.findByIdAndUpdate(req.user.userId, {
+      $pull: { journal: journalEntryId },
     });
+    await journalEntry.deleteOne();
+    return res.status(200).json({ msg: "Journal entry successfully deleted." });
+  } catch {
+    next();
   }
 };
 
-// Fetch all journal entries from the logged-in user
 export const getAllUserJournalEntries = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.userId);
-
     const allUserJournalEntries = await Journal.find({
-      _id: { $in: user.journal },
+      user: req.user.userId,
     });
 
-    if (allUserJournalEntries.length === 0) return res.status(204).end();
-
-    return res.status(200).json(allUserJournalEntries);
+    // Returns an empty array even if no entries are found
+    return res.status(200).json({ data: allUserJournalEntries });
   } catch (error) {
     console.log(error);
     next(error);

@@ -9,8 +9,7 @@ export default function LoginComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const { isLoggedIn, setIsLoggedIn, loading, setIsAuthChecked } =
-    useContext(AuthContext);
+  const { isLoggedIn, setIsLoggedIn, loading } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple form submissions while request is in progress
   const [searchParams] = useSearchParams();
@@ -95,7 +94,6 @@ export default function LoginComponent() {
       }
 
       setIsLoggedIn(true);
-      setIsAuthChecked(true);
       navigate(redirectTo);
     } catch {
       toast.error("Connection failed.");

@@ -17,12 +17,12 @@ export default function AuthContextProvider({ children }) {
         },
       ); // TODO: route with .env replace
 
-      if (response.ok) {
-        setIsLoggedIn(true);
-      } else {
+      if (!response.ok) {
         setIsLoggedIn(false);
+        return;
       }
-    } catch (e) {
+      setIsLoggedIn(true);
+    } catch {
       setIsLoggedIn(false);
     } finally {
       setLoading(false);

@@ -6,7 +6,7 @@ const userRouter = Router();
 
 userRouter
   .post("/signup", user.registerUser)
-  .get("/verify-email/:token", user.verifyUser)
+  .get("/verify-email/:token", user.verifyEMail)
   .post("/login", user.loginUser)
   .post("/logout", user.logoutUser) // authenticate?
   .get("/verify-user", user.authenticateUser)

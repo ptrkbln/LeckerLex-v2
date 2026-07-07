@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 export default function CulinaryJournalForm({ recipeName, recipeId }) {
   const [notes, setNotes] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [fileKey, setFileKey] = useState(0); // Used to reset the file input after submission
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const allowedImageTypes = [
@@ -79,6 +80,8 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
       setNotes("");
       setSelectedImage(null);
       setErrorMessage("");
+      // Reset file input after submission to allow re-uploading the same image after form submission
+      setFileKey((prev) => prev + 1);
     } catch {
       toast.error("Connection failed.");
     } finally {
@@ -93,7 +96,6 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
             Dish complete? Add to journal!
           </h2>
 
-          {/* Image Upload */}
           <div className="mb-4">
             <label className="block text-sm font-semibold mb-2">
               Show Off Your Dish!
@@ -109,6 +111,7 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
               <input
                 type="file"
                 id="imageInput"
+                key={fileKey}
                 className="hidden"
                 onChange={handleImageUpload}
               />
@@ -125,7 +128,6 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
             )}
           </div>
 
-          {/* Notes Section */}
           <label className="block text-sm font-semibold text-gray-300 mb-2">
             How Did It Turn Out?
           </label>
@@ -144,7 +146,6 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
             )}
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             className="w-full flex justify-center items-center px-4 py-2 mt-1.5 text-md bg-green-500 text-white rounded-3xl shadow-lg hover:bg-green-700 transition duration-300"
