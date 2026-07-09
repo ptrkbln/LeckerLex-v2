@@ -11,6 +11,8 @@ userRouter
   .post("/logout", user.logoutUser) // authenticate?
   .get("/verify-user", user.authenticateUser)
   .patch("/update-shoppinglist", authenticate, user.updateUsersShoppingList)
-  .get("/shoppinglist", authenticate, user.getUsersShoppingList);
+  .get("/shoppinglist", authenticate, user.getUsersShoppingList)
+  .patch("/update-favorites", authenticate, user.updateUsersFavorites)
+  .get("/favorites", authenticate, user.getUsersFavorites);
 
 export default userRouter;

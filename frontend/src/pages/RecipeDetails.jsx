@@ -20,12 +20,7 @@ function RecipeDetails() {
   const { id } = useParams(); // Rezept-ID aus der URL
   const { recipes } = useContext(RecipeContext); // Rezepte aus dem Context
   const { isLoggedIn } = useContext(AuthContext);
-  const {
-    isFavorite,
-    setIsFavorite,
-    favorites: favs,
-    setFavorites,
-  } = useContext(RecipeContext);
+  const { favorites, setFavorites } = useContext(RecipeContext);
   const navigate = useNavigate();
   // Find the recipe with the selected ID
   const recipe = recipes.find((x) => x.id === Number(id));
@@ -33,6 +28,7 @@ function RecipeDetails() {
     useState(true);
   const [visibleSection, setVisibleSection] = useState(null);
   const [servings, setServings] = useState(recipe?.servingsAmount || 1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Prevent breaking app by refresh
   if (!recipe) {
@@ -40,21 +36,50 @@ function RecipeDetails() {
     return;
   }
 
+  const updateFavoritesDatabase = async (updatedFavorites) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/users/update-favorites`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ favorites: updatedFavorites }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error("Failed to update favorites.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while saving to your favorites.");
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Toggle between sections.
   const toggleSection = (section) => {
     setVisibleSection((prev) => (prev === section ? null : section));
   };
 
-  // Toggle recipe as favorite.
-  // Connect with database and adapt !!!!!!!
-  const handleToggleFavorite = () => {
+  // Toggle recipe as favorite
+  const handleToggleFavorite = async () => {
+    // Save the current state in case database update fails
+    const previousFavorites = favorites;
+
     const currentRecipe = {
       id: recipe.id,
       title: recipe.title,
       image: recipe.image,
+      servings: recipe.servingsAmount,
       ingredients: recipe.ingredients.map((ingredient) => ({
         name: ingredient.name,
-        amount: (ingredient.amount * servings).toFixed(1),
+        amount: ingredient.amount,
         unit: ingredient.unit,
       })),
       nutrition: recipe.nutritionPer100g,
@@ -69,15 +94,19 @@ function RecipeDetails() {
       calories: recipe.nutritionPer100g?.calories,
     };
 
-    // If recipe already in favorites, remove it.
-    if (isFavorite.includes(recipe.id)) {
-      setIsFavorite(isFavorite.filter((favId) => favId !== recipe.id));
-      setFavorites(favs.filter((fav) => fav.id !== recipe.id));
-      toast.success("Removed from favorites.");
-    } else {
-      setIsFavorite([...isFavorite, recipe.id]);
-      setFavorites([...favs, currentRecipe]);
-      toast.success("Saved to favorites!");
+    // Add or remove current recipe from favorites state
+    const wasAlreadyFavorite = favorites.some((item) => item.id === recipe.id);
+    const updatedFavorites = wasAlreadyFavorite
+      ? favorites.filter((item) => item.id !== recipe.id)
+      : [...favorites, currentRecipe];
+
+    setFavorites(updatedFavorites);
+
+    try {
+      await updateFavoritesDatabase(updatedFavorites);
+      if (!wasAlreadyFavorite) toast.success("Added to favorites.");
+    } catch {
+      setFavorites(previousFavorites);
     }
   };
 
@@ -154,7 +183,11 @@ function RecipeDetails() {
           <FontAwesomeIcon
             icon={faHeart}
             size="2x"
-            color={isFavorite.includes(recipe.id) ? "#EF4444" : "#fff"}
+            color={
+              favorites.some((item) => item.id === recipe.id)
+                ? "#EF4444"
+                : "#fff"
+            }
           />
         </button>
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
