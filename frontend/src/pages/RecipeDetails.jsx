@@ -15,6 +15,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 import { IoMdClose } from "react-icons/io";
+import { updateFavoritesDatabase } from "../api/favorites";
 
 function RecipeDetails() {
   const { id } = useParams(); // Rezept-ID aus der URL
@@ -28,39 +29,12 @@ function RecipeDetails() {
     useState(true);
   const [visibleSection, setVisibleSection] = useState(null);
   const [servings, setServings] = useState(recipe?.servingsAmount || 1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Prevent breaking app by refresh
   if (!recipe) {
     navigate("/home", { replace: true });
     return;
   }
-
-  const updateFavoritesDatabase = async (updatedFavorites) => {
-    setIsSubmitting(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/users/update-favorites`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ favorites: updatedFavorites }),
-        },
-      );
-      if (!response.ok) {
-        throw new Error("Failed to update favorites.");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong while saving to your favorites.");
-      throw error;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   // Toggle between sections.
   const toggleSection = (section) => {
@@ -106,6 +80,7 @@ function RecipeDetails() {
       await updateFavoritesDatabase(updatedFavorites);
       if (!wasAlreadyFavorite) toast.success("Added to favorites.");
     } catch {
+      toast.error("Something went wrong while saving to your favorites.");
       setFavorites(previousFavorites);
     }
   };
@@ -178,7 +153,7 @@ function RecipeDetails() {
         />
         <button
           onClick={handleToggleFavorite}
-          className="absolute top-4 right-4 bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-50 transition"
+          className="absolute top-4 right-4 bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-50 transition duration-300"
         >
           <FontAwesomeIcon
             icon={faHeart}

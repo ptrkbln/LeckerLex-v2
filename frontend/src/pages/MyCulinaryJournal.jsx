@@ -142,7 +142,7 @@ export default function MyCulinaryJournal() {
               >
                 <button
                   className="absolute p-1 right-4 top-4 rounded-full text-lg md:text-xl bg-opacity-30 
-              lg:opacity-0 lg:group-hover:opacity-100 lg:hover:bg-opacity-50 transition-all duration-300 ease-in-out 
+              lg:opacity-0 lg:group-hover:opacity-100 lg:hover:bg-opacity-50 hover:scale-110 transition-all duration-300 ease-in-out 
               bg-black text-white z-10"
                   onClick={() => handleShowDeleteEntryModal(entry)}
                 >

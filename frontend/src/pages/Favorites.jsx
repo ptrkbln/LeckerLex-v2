@@ -9,8 +9,12 @@ import {
   faLeaf,
   faSeedling,
   faFire,
+  faHeart,
 } from "@fortawesome/free-solid-svg-icons";
+import { IoMdClose } from "react-icons/io";
 import CulinaryJournalForm from "../components/CulinaryJournalForm";
+import { updateFavoritesDatabase } from "../api/favorites";
+import toast from "react-hot-toast";
 
 function Favorites() {
   const { favorites, setFavorites, setShoppingList } =
@@ -180,6 +184,26 @@ function Favorites() {
     servings === 1 || servings === 0.5 ? "serving" : "servings"
   }`;
 
+  const handleRemoveFromFavorites = async (e, favoriteRecipeId) => {
+    e.stopPropagation();
+    const previousFavorites = favorites;
+
+    const updatedFavorites = favorites.filter(
+      (item) => item.id !== favoriteRecipeId,
+    );
+
+    setFavorites(updatedFavorites);
+
+    try {
+      await updateFavoritesDatabase(updatedFavorites);
+    } catch {
+      toast.error(
+        "Something went wrong while removing the recipe from your favorites.",
+      );
+      setFavorites(previousFavorites);
+    }
+  };
+
   // --- Filtering Logic ---
   const filterRecipe = (recipe) => {
     // Filter by Cooking Time (using recipe.preparationTime)
@@ -294,13 +318,21 @@ function Favorites() {
 
       {/* Recipe Details Section */}
       {selectedRecipeId ? (
-        <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-6 rounded-3xl shadow-lg text-gray-200">
+        <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-6 rounded-3xl shadow-lg text-gray-200 relative group">
           {favorites
             .filter((recipe) => recipe.id === selectedRecipeId)
             .map((recipe) => (
               <div key={recipe.id}>
                 {/** Recipe Header */}
                 <div className="bg-gray-900 rounded-3xl overflow-hidden shadow-md mb-6 relative">
+                  <button
+                    className="absolute p-1 right-4 top-4 rounded-full text-lg md:text-xl bg-opacity-30 
+              lg:opacity-0 lg:group-hover:opacity-100 lg:hover:bg-opacity-50 transition-all duration-300 ease-in-out 
+              bg-white text-white z-10"
+                    onClick={() => setSelectedRecipeId(null)}
+                  >
+                    <IoMdClose />
+                  </button>
                   <img
                     src={recipe.image}
                     alt={recipe.title}
@@ -514,8 +546,14 @@ function Favorites() {
             <div
               key={recipe.id}
               onClick={() => toggleDetails(recipe.id)}
-              className="bg-gray-800 rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300 cursor-pointer flex flex-col"
+              className="bg-gray-800 rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300 cursor-pointer flex flex-col relative group"
             >
+              <button
+                className="absolute top-3 right-3 bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-75 hover:scale-105 transition duration-300 text-red-500 lg:opacity-0 lg:group-hover:opacity-100"
+                onClick={(e) => handleRemoveFromFavorites(e, recipe.id)}
+              >
+                <FontAwesomeIcon icon={faHeart} size="xl" />
+              </button>
               <img
                 src={recipe.image}
                 alt={recipe.title}
