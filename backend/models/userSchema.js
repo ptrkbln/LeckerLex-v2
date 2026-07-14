@@ -49,7 +49,8 @@ const userSchema = new Schema(
           id: Number,
           title: String,
           image: String,
-          servings: Number,
+          servingsAmount: Number,
+          servingPortion: { amount: Number, unit: String },
           ingredients: [
             {
               name: String,
@@ -57,7 +58,7 @@ const userSchema = new Schema(
               unit: String,
             },
           ],
-          nutrition: {
+          nutritionPer100g: {
             calories: Number,
             carbohydrates: Number,
             fat: Number,
@@ -66,7 +67,7 @@ const userSchema = new Schema(
             sodium: Number,
             sugar: Number,
           },
-          preparation: [String],
+          preparationSteps: [String],
           preparationTime: Number,
           diet: {
             vegetarian: Boolean,
@@ -74,7 +75,6 @@ const userSchema = new Schema(
             glutenFree: Boolean,
             dairyFree: Boolean,
           },
-          calories: Number,
         },
       ],
       default: [],
