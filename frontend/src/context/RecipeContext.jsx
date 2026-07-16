@@ -7,10 +7,14 @@ export default function RecipeContextProvider({ children }) {
   const [recipes, setRecipes] = useState([]);
   const [shoppingList, setShoppingList] = useState([]); // is this needed??
   const [favorites, setFavorites] = useState([]);
-  const { isLoggedIn } = useContext(AuthContext);
+  const [areFavoritesLoaded, setAreFavoritesLoaded] = useState(false);
+  const { isLoggedIn, isAuthChecked } = useContext(AuthContext);
 
   useEffect(() => {
+    if (!isAuthChecked) return;
+
     const fetchFavorites = async () => {
+      setAreFavoritesLoaded(false);
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/users/favorites`,
@@ -23,6 +27,8 @@ export default function RecipeContextProvider({ children }) {
         setFavorites(favorites.data);
       } catch (error) {
         console.log(error);
+      } finally {
+        setAreFavoritesLoaded(true);
       }
     };
 
@@ -30,8 +36,9 @@ export default function RecipeContextProvider({ children }) {
       fetchFavorites();
     } else {
       setFavorites([]);
+      setAreFavoritesLoaded(true);
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, isAuthChecked]);
 
   return (
     <RecipeContext.Provider
@@ -42,6 +49,7 @@ export default function RecipeContextProvider({ children }) {
         setShoppingList,
         favorites,
         setFavorites,
+        areFavoritesLoaded,
       }}
     >
       {children}

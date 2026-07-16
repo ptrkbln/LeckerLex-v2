@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { RecipeContext } from "../context/RecipeContext";
 import { AuthContext } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ImSpinner2 } from "react-icons/im";
 import {
   faClock,
   faHeart,
@@ -22,7 +23,13 @@ import CulinaryJournalForm from "../components/CulinaryJournalForm";
 
 function RecipeDetails() {
   const { id } = useParams();
-  const { recipes, favorites, setFavorites } = useContext(RecipeContext);
+  const {
+    recipes,
+    favorites,
+    setFavorites,
+    areFavoritesLoaded,
+    wasRecipeSearchPerformed,
+  } = useContext(RecipeContext);
   const { isLoggedIn } = useContext(AuthContext);
   const navigate = useNavigate();
   // Find the recipe with the selected ID
@@ -40,13 +47,36 @@ function RecipeDetails() {
 
   // Prevents navigation to home if the opened recipe is from favorite and we unsave it
   useEffect(() => {
-    if (!recipe && selectedRecipe) setRecipe(selectedRecipe);
-  }, [recipe, selectedRecipe]);
+    if (!recipe && selectedRecipe) {
+      setRecipe(selectedRecipe);
+    } else if (!recipe && !selectedRecipe && areFavoritesLoaded) {
+      navigate("/home", { replace: true });
+      return;
+    }
 
-  // Prevent breaking app by refresh
+    /*     if (
+      !recipe &&
+      !selectedRecipe &&
+      areFavoritesLoaded &&
+      !wasRecipeSearchPerformed
+    ) {
+       return (
+        <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+      );
+    } */
+  }, [
+    recipe,
+    selectedRecipe,
+    navigate,
+    areFavoritesLoaded,
+    wasRecipeSearchPerformed,
+  ]);
+
+  // Prevents breaking app by refresh
   if (!recipe) {
-    navigate("/home", { replace: true });
-    return;
+    return (
+      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+    );
   }
 
   // Toggle recipe as favorite
@@ -122,50 +152,6 @@ function RecipeDetails() {
       toast.error("Something went wrong while updating your shopping list.");
     }
   };
-
-  /*   // Add missing ingredients to the shopping list.
-  const handleAddToShoppingList = async () => {
-    if (!isLoggedIn) {
-      navigate(`/home/login?redirectTo=/home/recipe-details/${id}`);
-      return;
-    }
-
-    try {
-      const shoppingListItems = [];
-
-      recipe.missedIngredients.forEach((item) =>
-        shoppingListItems.push({
-          ingredient: item.name.trim().toLowerCase(),
-          completed: false,
-        }),
-      );
-
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/users/update-shoppinglist`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            shoppingList: shoppingListItems,
-            action: "add",
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        },
-      );
-
-      if (!response.ok) {
-        toast.error("Couldn't update your shopping list.");
-        return;
-      }
-
-      toast.success("Ingredients added to shopping list!");
-      setShowMissingIngredientsModal(false);
-    } catch {
-      toast.error("Connection failed.");
-    }
-  }; */
 
   // Adjust servings
   const handleIncreaseServings = () => {
