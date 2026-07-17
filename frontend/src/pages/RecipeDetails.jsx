@@ -20,16 +20,12 @@ import { IoMdClose } from "react-icons/io";
 import { updateFavoritesDatabase } from "../api/favorites";
 import { addToShoppingListDatabase } from "../api/shoppingList";
 import CulinaryJournalForm from "../components/CulinaryJournalForm";
+import { FaMinus, FaPlus } from "react-icons/fa";
 
 function RecipeDetails() {
   const { id } = useParams();
-  const {
-    recipes,
-    favorites,
-    setFavorites,
-    areFavoritesLoaded,
-    wasRecipeSearchPerformed,
-  } = useContext(RecipeContext);
+  const { recipes, favorites, setFavorites, areFavoritesLoaded } =
+    useContext(RecipeContext);
   const { isLoggedIn } = useContext(AuthContext);
   const navigate = useNavigate();
   // Find the recipe with the selected ID
@@ -43,36 +39,19 @@ function RecipeDetails() {
   );
   const [showMissingIngredientsModal, setShowMissingIngredientsModal] =
     useState(true); // should I remove this UI element?
-  const [servings, setServings] = useState(recipe?.servingsAmount || 1); // do I need this?
+  const [servings, setServings] = useState(2); // do I need this?
 
-  // Prevents navigation to home if the opened recipe is from favorite and we unsave it
   useEffect(() => {
     if (!recipe && selectedRecipe) {
+      // Keep displaying the current recipe after it is removed from favorites
       setRecipe(selectedRecipe);
     } else if (!recipe && !selectedRecipe && areFavoritesLoaded) {
+      // Redirect only after favorites have finished loading and no recipe matches route ID
       navigate("/home", { replace: true });
-      return;
     }
+  }, [recipe, selectedRecipe, navigate, areFavoritesLoaded]);
 
-    /*     if (
-      !recipe &&
-      !selectedRecipe &&
-      areFavoritesLoaded &&
-      !wasRecipeSearchPerformed
-    ) {
-       return (
-        <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
-      );
-    } */
-  }, [
-    recipe,
-    selectedRecipe,
-    navigate,
-    areFavoritesLoaded,
-    wasRecipeSearchPerformed,
-  ]);
-
-  // Prevents breaking app by refresh
+  // Show a loading state until recipe data is resolved
   if (!recipe) {
     return (
       <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
@@ -155,23 +134,19 @@ function RecipeDetails() {
 
   // Adjust servings
   const handleIncreaseServings = () => {
-    setServings((prev) => Math.round((prev + 0.5) * 10) / 10);
+    setServings((prev) => prev + 1);
   };
   const handleDecreaseServings = () => {
-    setServings((prev) => Math.max(0.5, Math.round((prev - 0.5) * 10) / 10));
+    if (servings < 2) return;
+    setServings((prev) => prev - 1);
   };
-
-  // Dynamic text for servings
-  const servingsText = `for ${servings} ${
-    servings === 1 || servings === 0.5 ? "serving" : "servings"
-  }`;
 
   return (
     <div className="mx-auto w-screen md:max-w-screen-xl md:px-6 pb-12 min-h-full">
       <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-6 rounded-3xl shadow-lg text-gray-200 relative group">
-        <div key={recipe.id}>
+        <div key={recipe.id} className="flex flex-col gap-6">
           {/** Recipe Header */}
-          <div className="bg-gray-900 rounded-3xl overflow-hidden shadow-md mb-6 relative">
+          <div className="bg-gray-900 rounded-3xl overflow-hidden shadow-md relative">
             {/*             <button
               className="absolute p-1 right-4 top-4 rounded-full text-lg md:text-xl bg-opacity-30 
                 lg:opacity-0 lg:group-hover:opacity-100 lg:hover:bg-opacity-50 transition-all duration-300 ease-in-out 
@@ -247,49 +222,50 @@ function RecipeDetails() {
             </div>
           </div>
 
-          {/** Servings Adjuster */}
-          <div className="bg-gray-900 rounded-3xl p-6 flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold">Servings</h3>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleDecreaseServings}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-600 hover:bg-green-500 transition-colors"
-              >
-                &minus;
-              </button>
-              <span className="text-lg">{servingsText}</span>
-
-              <button
-                onClick={handleIncreaseServings}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-600 hover:bg-green-500 transition-colors"
-              >
-                &#xff0b;
-              </button>
-            </div>
-          </div>
-
           {/** Ingredients List */}
-          <div className="bg-gray-900 rounded-3xl p-6 shadow-md mb-6">
-            <div className="flex justify-between min-h-[50px] gap-3 items-start mb-3">
+          <div className="bg-gray-900 rounded-3xl p-6 pb-8 relative">
+            <div className="flex flex-col sm:flex-row sm:justify-between min-h-[50px] gap-3 items-start mb-3">
               <h3 className="text-xl font-semibold">Ingredients</h3>
-              {missingIngredients.length > 0 && (
-                <button
-                  className="border-green-500 border rounded-full p-3 flex hover:scale-110 transition duration-300 relative"
-                  onClick={handleAddToShoppingList}
-                >
-                  <FontAwesomeIcon
-                    icon={faShoppingCart}
-                    className="text-green-500 size-5"
-                  />
-                  <div className="absolute -top-2 -right-1 text-sm rounded-full size-5 bg-green-700 text-white">
-                    {missingIngredients.length}
+
+              <div className="flex items-center sm:items-start sm:flex-row-reverse w-full gap-3 justify-between sm:justify-start">
+                <div className="flex items-center justify-start gap-1 border border-gray-600 rounded-full sm:border-none p-0.5 sm:p-0">
+                  <button
+                    onClick={handleDecreaseServings}
+                    className={`size-8 sm:size-9 flex items-center justify-center rounded-full  transition-all active:scale-95 text-xs ${servings === 1 ? "opacity-30" : "opacity-80 hover:opacity-100 sm:hover:border border-gray-500"}`}
+                    disabled={servings === 1}
+                  >
+                    <FaMinus />
+                  </button>
+
+                  <span className="min-w-[89px] text-center text-sm sm:text-base tracking-wider sm:tracking-wide opacity-95">
+                    {servings} serving{servings > 1 ? "s" : ""}
+                  </span>
+
+                  <button
+                    onClick={handleIncreaseServings}
+                    className="size-8 sm:size-9 flex items-center justify-center rounded-full opacity-80 hover:opacity-100 sm:hover:border border-gray-500 transition-all text-xs active:scale-95"
+                  >
+                    <FaPlus />
+                  </button>
+                </div>
+                {missingIngredients.length > 0 && (
+                  <div className="sm:absolute -bottom-3 -right-1">
+                    <button
+                      className="border-green-500 border bg-gray-900 rounded-full p-3 flex hover:scale-105 transition-all active:scale-95 -mt-2 relative animate-popIn"
+                      onClick={handleAddToShoppingList}
+                    >
+                      <FontAwesomeIcon
+                        icon={faShoppingCart}
+                        className="text-green-500 size-5"
+                      />
+                      <div className="absolute -top-2 -right-1 text-sm rounded-full size-5 bg-green-700 text-white">
+                        {missingIngredients.length}
+                      </div>
+                    </button>
                   </div>
-                </button>
-              )}{" "}
+                )}
+              </div>
             </div>
-            {/* <p className="text-md text-green-400 mb-4">
-              Select the ingredients you are missing
-            </p> */}
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {recipe.ingredients.map((ingredient, index) => {
                 return (
@@ -315,7 +291,7 @@ function RecipeDetails() {
           </div>
 
           {/** Preparation */}
-          <div className="bg-gray-900 rounded-3xl p-6 shadow-md mb-6">
+          <div className="bg-gray-900 rounded-3xl p-6 shadow-md">
             <h3 className="text-xl font-semibold mb-6">Preparation Steps</h3>
             <div className="relative pl-10">
               <div className="absolute left-5 top-0 bottom-0 w-px bg-gray-600"></div>

@@ -391,7 +391,7 @@ function Favorites() {
                   icon={faFire}
                   className="text-red-500 text-lg"
                 />
-                <span>{recipe.nutrition?.calories || "N/A"} kcal</span>
+                <span>{recipe.nutritionPer100g?.calories || "N/A"} kcal</span>
               </div>
             </div>
           </div>

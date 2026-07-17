@@ -89,7 +89,7 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
     }
   };
   return (
-    <div className="flex-grow flex items-center justify-center p-4">
+    <div className="flex-grow flex items-center justify-center">
       <div className="max-w-md w-full bg-gray-900 p-8 shadow-lg rounded-3xl">
         <form onSubmit={handleSubmit}>
           <h2 className="text-2xl font-bold text-center mb-6">
