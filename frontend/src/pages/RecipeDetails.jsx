@@ -41,6 +41,8 @@ function RecipeDetails() {
     useState(true); // should I remove this UI element?
   const [servings, setServings] = useState(2); // do I need this?
 
+  console.log(recipe);
+
   useEffect(() => {
     if (!recipe && selectedRecipe) {
       // Keep displaying the current recipe after it is removed from favorites
@@ -139,6 +141,38 @@ function RecipeDetails() {
   const handleDecreaseServings = () => {
     if (servings < 2) return;
     setServings((prev) => prev - 1);
+  };
+
+  // Format ingredient amount and unit for display based on servings
+  const formatIngredient = (ingredient) => {
+    let unit = ingredient.unit;
+    let amount = +ingredient.amount;
+
+    amount *= servings;
+
+    const abbreviatedUnit = unit
+      .replace("teaspoon", "tsp")
+      .replace("tablespoon", "tbsp")
+      .replace("grams", "g")
+      .replace("milliliters", "ml")
+      .replace("liters", "l");
+    unit = abbreviatedUnit;
+
+    if (unit === "ml" && amount >= 1000) {
+      unit = "l";
+      const convertedAmount = amount / 1000;
+      amount = convertedAmount;
+    }
+
+    if (unit === "g" && amount >= 1000) {
+      unit = "kg";
+      const convertedAmount = amount / 1000;
+      amount = convertedAmount;
+    }
+
+    if (!Number.isInteger(amount)) amount = amount.toFixed(1);
+
+    return { amount, unit };
   };
 
   return (
@@ -268,22 +302,26 @@ function RecipeDetails() {
             </div>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {recipe.ingredients.map((ingredient, index) => {
+                const formattedIngredient = formatIngredient(ingredient);
                 return (
                   <li
                     key={index}
                     onClick={() => handleToggleMissingIngredient(ingredient)}
-                    className={`cursor-pointer rounded-full p-2 text-center transition-colors ${
+                    className={`cursor-pointer rounded-full p-2 text-center transition-all active:scale-95 border ${
                       missingIngredients.some(
                         (item) => item === ingredient.name,
                       )
-                        ? "bg-green-600 text-gray-100"
-                        : "bg-gray-700 hover:bg-gray-800"
+                        ? "border-green-600 tracking-wide hover:border-green-400"
+                        : "border-gray-600 hover:border-gray-400 opacity-85 hover:opacity-100"
                     }`}
                   >
-                    {Number.isInteger(ingredient.amount * servings)
+                    {" "}
+                    {formattedIngredient.amount} {formattedIngredient.unit}{" "}
+                    {ingredient.name}
+                    {/*                     {Number.isInteger(ingredient.amount * servings)
                       ? ingredient.amount * servings
                       : (ingredient.amount * servings).toFixed(1)}{" "}
-                    {ingredient.unit} {ingredient.name}
+                    {ingredient.unit} {ingredient.name} */}
                   </li>
                 );
               })}
