@@ -39,9 +39,7 @@ function RecipeDetails() {
   );
   const [showMissingIngredientsModal, setShowMissingIngredientsModal] =
     useState(true); // should I remove this UI element?
-  const [servings, setServings] = useState(2); // do I need this?
-
-  console.log(recipe);
+  const [servings, setServings] = useState(selectedRecipe?.servingsAmount || 1);
 
   useEffect(() => {
     if (!recipe && selectedRecipe) {
@@ -53,6 +51,10 @@ function RecipeDetails() {
     }
   }, [recipe, selectedRecipe, navigate, areFavoritesLoaded]);
 
+  useEffect(() => {
+    if (recipe) setServings(recipe.servingsAmount);
+  }, [recipe]);
+
   // Show a loading state until recipe data is resolved
   if (!recipe) {
     return (
@@ -60,7 +62,6 @@ function RecipeDetails() {
     );
   }
 
-  // Toggle recipe as favorite
   const handleToggleFavorite = async () => {
     // Save the current state in case database update fails
     const previousFavorites = favorites;
@@ -134,7 +135,6 @@ function RecipeDetails() {
     }
   };
 
-  // Adjust servings
   const handleIncreaseServings = () => {
     setServings((prev) => prev + 1);
   };
@@ -148,12 +148,17 @@ function RecipeDetails() {
     let unit = ingredient.unit;
     let amount = +ingredient.amount;
 
-    amount *= servings;
+    amount *= servings / recipe.servingsAmount;
 
     const abbreviatedUnit = unit
       .replace("teaspoon", "tsp")
+      .replace("teaspoons", "tsp")
+      .replace("tsps", "tsp")
       .replace("tablespoon", "tbsp")
+      .replace("tablespoons", "tbsp")
+      .replace("tbsps", "tbsp")
       .replace("grams", "g")
+      .replace("kilograms", "kg")
       .replace("milliliters", "ml")
       .replace("liters", "l");
     unit = abbreviatedUnit;
