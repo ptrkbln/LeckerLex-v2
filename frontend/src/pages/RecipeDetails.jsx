@@ -74,6 +74,7 @@ function RecipeDetails() {
       servingPortion: recipe.servingPortion,
       ingredients: recipe.ingredients,
       nutritionPer100g: recipe.nutritionPer100g,
+      nutritionPerServing: recipe.nutritionPerServing,
       preparationSteps: recipe.preparationSteps,
       preparationTime: recipe.preparationTime,
       diet: recipe.diet,
@@ -145,7 +146,7 @@ function RecipeDetails() {
 
   // Format ingredient amount and unit for display based on servings
   const formatIngredient = (ingredient) => {
-    let unit = ingredient.unit;
+    let unit = ingredient.unit.toLowerCase();
     let amount = +ingredient.amount;
 
     amount *= servings / recipe.servingsAmount;

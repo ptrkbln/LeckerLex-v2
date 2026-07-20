@@ -67,6 +67,15 @@ const userSchema = new Schema(
             sodium: Number,
             sugar: Number,
           },
+          nutritionPerServing: {
+            calories: Number,
+            carbohydrates: Number,
+            fat: Number,
+            protein: Number,
+            saturatedFat: Number,
+            sodium: Number,
+            sugar: Number,
+          },
           preparationSteps: [String],
           preparationTime: Number,
           diet: {
