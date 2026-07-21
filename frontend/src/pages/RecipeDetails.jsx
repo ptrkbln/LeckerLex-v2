@@ -20,7 +20,7 @@ import { IoMdClose } from "react-icons/io";
 import { updateFavoritesDatabase } from "../api/favorites";
 import { addToShoppingListDatabase } from "../api/shoppingList";
 import CulinaryJournalForm from "../components/CulinaryJournalForm";
-import { FaMinus, FaPlus } from "react-icons/fa";
+import { FaMinus, FaPlus, FaCheck } from "react-icons/fa";
 
 function RecipeDetails() {
   const { id } = useParams();
@@ -40,6 +40,7 @@ function RecipeDetails() {
   const [showMissingIngredientsModal, setShowMissingIngredientsModal] =
     useState(true); // should I remove this UI element?
   const [servings, setServings] = useState(selectedRecipe?.servingsAmount || 1);
+  const [completedPrepSteps, setCompletedPrepSteps] = useState([]);
 
   useEffect(() => {
     if (!recipe && selectedRecipe) {
@@ -54,6 +55,8 @@ function RecipeDetails() {
   useEffect(() => {
     if (recipe) setServings(recipe.servingsAmount);
   }, [recipe]);
+
+  console.log(recipe);
 
   // Show a loading state until recipe data is resolved
   if (!recipe) {
@@ -107,6 +110,15 @@ function RecipeDetails() {
     setMissingIngredients(updatedMissingIngredients);
   };
 
+  // update completed UI and hover UI
+  const handleToggleStepCompleted = (index) => {
+    setCompletedPrepSteps((prev) =>
+      prev.includes(index)
+        ? prev.filter((item) => item !== index)
+        : [...prev, index],
+    );
+  };
+
   const handleAddToShoppingList = async () => {
     // Adding to shopping list is only for logged in users
     if (!isLoggedIn) {
@@ -152,11 +164,13 @@ function RecipeDetails() {
     amount *= servings / recipe.servingsAmount;
 
     const abbreviatedUnit = unit
-      .replace("teaspoon", "tsp")
+      .replace("servings", "serv")
+      .replace("serving", "serv")
       .replace("teaspoons", "tsp")
+      .replace("teaspoon", "tsp")
       .replace("tsps", "tsp")
-      .replace("tablespoon", "tbsp")
       .replace("tablespoons", "tbsp")
+      .replace("tablespoon", "tbsp")
       .replace("tbsps", "tbsp")
       .replace("grams", "g")
       .replace("kilograms", "kg")
@@ -176,14 +190,37 @@ function RecipeDetails() {
       amount = convertedAmount;
     }
 
-    if (!Number.isInteger(amount)) amount = amount.toFixed(1);
-
+    if (!Number.isInteger(amount)) {
+      amount =
+        amount < 1
+          ? amount.toFixed(2)
+          : amount >= 100
+            ? amount.toFixed(0)
+            : amount.toFixed(1);
+    }
     return { amount, unit };
+  };
+
+  // Improve readability of inconsistent format of preparation steps returned by Spoonacular API
+  const formatPreparationStep = (step) => {
+    return (
+      step
+        // Add a space after sentence punctuation if missing
+        .replace(/([.!?])([A-Za-z])/g, "$1 $2")
+
+        // Capitalize the first letter of each sentence
+        .replace(/(^|[.!?]\s+)([a-z])/g, (_, prefix, letter) => {
+          return prefix + letter.toUpperCase();
+        })
+
+        // Ensure the step ends with sentence punctuation
+        .replace(/([^.!?])$/, "$1.")
+    );
   };
 
   return (
     <div className="mx-auto w-screen md:max-w-screen-xl md:px-6 pb-12 min-h-full">
-      <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-6 rounded-3xl shadow-lg text-gray-200 relative group">
+      <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-6 rounded-3xl shadow-lg text-gray-200 relative">
         <div key={recipe.id} className="flex flex-col gap-6">
           {/** Recipe Header */}
           <div className="bg-gray-900 rounded-3xl overflow-hidden shadow-md relative">
@@ -266,7 +303,6 @@ function RecipeDetails() {
           <div className="bg-gray-900 rounded-3xl p-6 pb-8 relative">
             <div className="flex flex-col sm:flex-row sm:justify-between min-h-[50px] gap-3 items-start mb-3">
               <h3 className="text-xl font-semibold">Ingredients</h3>
-
               <div className="flex items-center sm:items-start sm:flex-row-reverse w-full gap-3 justify-between sm:justify-start">
                 <div className="flex items-center justify-start gap-1 border border-gray-600 rounded-full sm:border-none p-0.5 sm:p-0">
                   <button
@@ -324,10 +360,6 @@ function RecipeDetails() {
                     {" "}
                     {formattedIngredient.amount} {formattedIngredient.unit}{" "}
                     {ingredient.name}
-                    {/*                     {Number.isInteger(ingredient.amount * servings)
-                      ? ingredient.amount * servings
-                      : (ingredient.amount * servings).toFixed(1)}{" "}
-                    {ingredient.unit} {ingredient.name} */}
                   </li>
                 );
               })}
@@ -335,26 +367,40 @@ function RecipeDetails() {
           </div>
 
           {/** Preparation */}
-          <div className="bg-gray-900 rounded-3xl p-6 shadow-md">
+          <div className="bg-gray-900 rounded-3xl p-6">
             <h3 className="text-xl font-semibold mb-6">Preparation Steps</h3>
-            <div className="relative pl-10">
-              <div className="absolute left-5 top-0 bottom-0 w-px bg-gray-600"></div>
-
-              <ol className="list-decimal space-y-2">
-                {recipe.preparationSteps.map((step, index) => (
-                  <div key={index} className=" flex items-start">
-                    {/* Number Badge */}
-                    <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-green-600 text-white font-bold text-lg text-center mb-3">
-                      {index + 1}
+            <ol>
+              {recipe.preparationSteps.map((step, index) => {
+                const isStepCompleted = completedPrepSteps.includes(index);
+                return (
+                  <li
+                    key={index}
+                    className="flex items-start py-2 gap-3 sm:gap-5 sm:text-lg cursor-pointer transition-all duration-300 group"
+                    onClick={() => handleToggleStepCompleted(index)}
+                  >
+                    <div className="size-7 sm:size-10 shrink-0 flex relative items-center justify-center rounded-full border-r-2 border-green-700 text-gray-300 font-bold text-center">
+                      <span
+                        className={`group-hover:opacity-0 ${isStepCompleted ? "opacity-0" : "opacity-100"} transition-all duration-[400ms]`}
+                      >
+                        {index + 1}
+                      </span>
+                      <span
+                        className={`absolute group-hover:opacity-100 transition-all duration-[400ms] ${completedPrepSteps.includes(index) ? "opacity-100" : "opacity-0"}`}
+                      >
+                        <FaCheck
+                          className={`size-3 sm:size-4 ${isStepCompleted ? "text-green-700" : "text-gray-300"} transition-all`}
+                        />
+                      </span>
                     </div>
-                    {/* Step Description */}
-                    <div className="ml-4">
-                      <p className="text-gray-300 text-lg">{step}</p>
-                    </div>
-                  </div>
-                ))}
-              </ol>
-            </div>
+                    <p
+                      className={`sm:pt-1.5 leading-7 ${isStepCompleted ? "text-gray-600" : "text-gray-300"} transition-all`}
+                    >
+                      {formatPreparationStep(step)}
+                    </p>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
 
           {/** Nutrition */}
