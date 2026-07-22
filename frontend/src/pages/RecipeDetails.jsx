@@ -41,6 +41,7 @@ function RecipeDetails() {
     useState(true); // should I remove this UI element?
   const [servings, setServings] = useState(selectedRecipe?.servingsAmount || 1);
   const [completedPrepSteps, setCompletedPrepSteps] = useState([]);
+  const [isPer100g, setIsPer100g] = useState(true);
 
   useEffect(() => {
     if (!recipe && selectedRecipe) {
@@ -64,6 +65,10 @@ function RecipeDetails() {
       <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
     );
   }
+
+  const nutrition = isPer100g
+    ? recipe.nutritionPer100g
+    : recipe.nutritionPerServing;
 
   const handleToggleFavorite = async () => {
     // Save the current state in case database update fails
@@ -205,17 +210,22 @@ function RecipeDetails() {
   const formatPreparationStep = (step) => {
     return (
       step
-        // Add a space after sentence punctuation if missing
+        // If missing: add space after sentence punctuation
         .replace(/([.!?])([A-Za-z])/g, "$1 $2")
-
         // Capitalize the first letter of each sentence
         .replace(/(^|[.!?]\s+)([a-z])/g, (_, prefix, letter) => {
           return prefix + letter.toUpperCase();
         })
-
-        // Ensure the step ends with sentence punctuation
+        // If missing: end the step with punctuation
         .replace(/([^.!?])$/, "$1.")
     );
+  };
+
+  // Round nutrition values while preventing unnecessary trailing zeros
+  const roundToOneDecimal = (num) => {
+    if (typeof num !== "number") return num;
+    const rounded = Math.round(num * 10) / 10;
+    return Number.isInteger(rounded) ? rounded : rounded.toFixed(1);
   };
 
   return (
@@ -404,20 +414,72 @@ function RecipeDetails() {
           </div>
 
           {/** Nutrition */}
-          <div className="bg-gray-900 rounded-3xl p-6 shadow-md">
-            <h3 className="text-xl font-semibold mb-3">Nutrition (per 100g)</h3>
-            <ul className="ml-6 space-y-1">
-              {Object.entries(recipe.nutritionPer100g).map(([key, value]) => (
-                <li key={key}>
-                  <span className="capitalize">{key}</span>: {value}
-                  {key === "calories"
-                    ? " kcal"
-                    : key === "sodium"
-                      ? " mg"
-                      : " g"}
-                </li>
-              ))}
-            </ul>
+          <div className="bg-gray-900 rounded-3xl p-6 shadow-md max-w-96">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-semibold">Nutrition</h3>
+              <button
+                className="text-xs text-gray-500 rounded-full border border-gray-600 hover:border-gray-400 min-w-[127px] min-h-[42px] group transition-all"
+                onClick={() => setIsPer100g((prev) => !prev)}
+              >
+                <span
+                  className={`${isPer100g ? "text-lg font-bold text-orange-200" : "group-hover:text-gray-300 "} transition-all`}
+                >
+                  100g
+                </span>{" "}
+                /{" "}
+                <span
+                  className={`${!isPer100g ? "text-lg font-bold text-orange-200" : "group-hover:text-gray-300"} transition-all`}
+                >
+                  serving
+                </span>
+              </button>
+            </div>
+            <table className="w-full">
+              <tbody>
+                <tr>
+                  <td className="pb-1.5">Calories</td>
+                  <td className="text-right pb-1.5">
+                    {Math.round(nutrition.calories)} kcal
+                  </td>
+                </tr>
+                <tr>
+                  <td>Fat</td>
+                  <td className="text-right">
+                    {roundToOneDecimal(nutrition.fat)} g
+                  </td>
+                </tr>
+                <tr className="text-gray-400">
+                  <td className="pl-5 pb-1.5">of which saturated fat</td>
+                  <td className="text-right pb-1.5">
+                    {roundToOneDecimal(nutrition.saturatedFat)} g
+                  </td>
+                </tr>
+                <tr>
+                  <td>Carbohydrates</td>
+                  <td className="text-right">
+                    {roundToOneDecimal(nutrition.carbohydrates)} g
+                  </td>
+                </tr>
+                <tr className="text-gray-400">
+                  <td className="pl-5 pb-1.5">of which sugars</td>
+                  <td className="text-right pb-1.5">
+                    {roundToOneDecimal(nutrition.sugar)} g
+                  </td>
+                </tr>
+                <tr>
+                  <td className="pb-1.5">Protein</td>
+                  <td className="text-right pb-1.5">
+                    {roundToOneDecimal(nutrition.protein)} g
+                  </td>
+                </tr>
+                <tr>
+                  <td>Salt</td>
+                  <td className="text-right">
+                    {roundToOneDecimal(nutrition.sodium)} g
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           <CulinaryJournalForm recipeName={recipe.title} recipeId={recipe.id} />
         </div>
