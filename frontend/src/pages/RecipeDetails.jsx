@@ -41,7 +41,7 @@ function RecipeDetails() {
     useState(true); // should I remove this UI element?
   const [servings, setServings] = useState(selectedRecipe?.servingsAmount || 1);
   const [completedPrepSteps, setCompletedPrepSteps] = useState([]);
-  const [isPer100g, setIsPer100g] = useState(true);
+  const [isPer100g, setIsPer100g] = useState(false);
 
   useEffect(() => {
     if (!recipe && selectedRecipe) {
@@ -230,7 +230,7 @@ function RecipeDetails() {
 
   return (
     <div className="mx-auto w-screen md:max-w-screen-xl md:px-6 pb-12 min-h-full">
-      <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-6 rounded-3xl shadow-lg text-gray-200 relative">
+      <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-2 sm:p-6 sm:rounded-3xl shadow-lg text-gray-200 relative">
         <div key={recipe.id} className="flex flex-col gap-6">
           {/** Recipe Header */}
           <div className="bg-gray-900 rounded-3xl overflow-hidden shadow-md relative">
@@ -317,7 +317,7 @@ function RecipeDetails() {
                 <div className="flex items-center justify-start gap-1 border border-gray-600 rounded-full sm:border-none p-0.5 sm:p-0">
                   <button
                     onClick={handleDecreaseServings}
-                    className={`size-8 sm:size-9 flex items-center justify-center rounded-full  transition-all active:scale-95 text-xs ${servings === 1 ? "opacity-30" : "opacity-80 hover:opacity-100 sm:hover:border border-gray-500"}`}
+                    className={`size-8 sm:size-9 flex items-center justify-center rounded-full  transition-all duration-100 active:scale-95 text-xs ${servings === 1 ? "opacity-30" : "opacity-80 hover:opacity-100 sm:hover:border border-gray-500"}`}
                     disabled={servings === 1}
                   >
                     <FaMinus />
@@ -329,7 +329,7 @@ function RecipeDetails() {
 
                   <button
                     onClick={handleIncreaseServings}
-                    className="size-8 sm:size-9 flex items-center justify-center rounded-full opacity-80 hover:opacity-100 sm:hover:border border-gray-500 transition-all text-xs active:scale-95"
+                    className="size-8 sm:size-9 flex items-center justify-center rounded-full opacity-80 hover:opacity-100 sm:hover:border border-gray-500 transition-all duration-100 text-xs active:scale-95"
                   >
                     <FaPlus />
                   </button>
@@ -414,74 +414,86 @@ function RecipeDetails() {
           </div>
 
           {/** Nutrition */}
-          <div className="bg-gray-900 rounded-3xl p-6 shadow-md max-w-96">
-            <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-6">
+            <div className="bg-gray-900 rounded-3xl p-6 shadow-md w-full h-full">
               <h3 className="text-xl font-semibold">Nutrition</h3>
-              <button
-                className="text-xs text-gray-500 rounded-full border border-gray-600 hover:border-gray-400 min-w-[127px] min-h-[42px] group transition-all"
-                onClick={() => setIsPer100g((prev) => !prev)}
+              <div className="flex justify-end mb-2">
+                <button
+                  className="text-xs -mr-2 text-gray-500 rounded-full border border-gray-500 hover:border-gray-400 min-w-[127px] min-h-[42px] group transition-all"
+                  onClick={() => setIsPer100g((prev) => !prev)}
+                >
+                  <span
+                    className={`${isPer100g ? "text-lg font-bold text-orange-200" : "group-hover:text-gray-300 "} transition-all`}
+                  >
+                    100g
+                  </span>{" "}
+                  /{" "}
+                  <span
+                    className={`${!isPer100g ? "text-lg font-bold text-orange-200" : "group-hover:text-gray-300"} transition-all`}
+                  >
+                    serving
+                  </span>
+                </button>
+              </div>
+              <table className="w-full">
+                <tbody>
+                  <tr>
+                    <td className="pb-2">Calories</td>
+                    <td className="text-right pb-2">
+                      {Math.round(nutrition.calories)} kcal
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Fat</td>
+                    <td className="text-right">
+                      {roundToOneDecimal(nutrition.fat)} g
+                    </td>
+                  </tr>
+                  <tr className="text-gray-400">
+                    <td className="pl-5 pb-2">of which saturated fat</td>
+                    <td className="text-right pb-2">
+                      {roundToOneDecimal(nutrition.saturatedFat)} g
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Carbohydrates</td>
+                    <td className="text-right">
+                      {roundToOneDecimal(nutrition.carbohydrates)} g
+                    </td>
+                  </tr>
+                  <tr className="text-gray-400">
+                    <td className="pl-5 pb-2">of which sugar</td>
+                    <td className="text-right pb-2">
+                      {roundToOneDecimal(nutrition.sugar)} g
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="pb-2">Protein</td>
+                    <td className="text-right pb-2">
+                      {roundToOneDecimal(nutrition.protein)} g
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="pb-2">Salt</td>
+                    <td className="text-right pb-2">
+                      {roundToOneDecimal(nutrition.sodium)} g
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <p
+                className={`text-sm text-gray-400 pt-2 -mb-1.5 mt-1.5 text-right border-t border-gray-700 ${isPer100g ? "opacity-0" : "opacity-100"}`}
               >
-                <span
-                  className={`${isPer100g ? "text-lg font-bold text-orange-200" : "group-hover:text-gray-300 "} transition-all`}
-                >
-                  100g
-                </span>{" "}
-                /{" "}
-                <span
-                  className={`${!isPer100g ? "text-lg font-bold text-orange-200" : "group-hover:text-gray-300"} transition-all`}
-                >
-                  serving
-                </span>
-              </button>
+                Serving size: {recipe.servingPortion.amount}{" "}
+                {recipe.servingPortion.unit}
+              </p>
             </div>
-            <table className="w-full">
-              <tbody>
-                <tr>
-                  <td className="pb-1.5">Calories</td>
-                  <td className="text-right pb-1.5">
-                    {Math.round(nutrition.calories)} kcal
-                  </td>
-                </tr>
-                <tr>
-                  <td>Fat</td>
-                  <td className="text-right">
-                    {roundToOneDecimal(nutrition.fat)} g
-                  </td>
-                </tr>
-                <tr className="text-gray-400">
-                  <td className="pl-5 pb-1.5">of which saturated fat</td>
-                  <td className="text-right pb-1.5">
-                    {roundToOneDecimal(nutrition.saturatedFat)} g
-                  </td>
-                </tr>
-                <tr>
-                  <td>Carbohydrates</td>
-                  <td className="text-right">
-                    {roundToOneDecimal(nutrition.carbohydrates)} g
-                  </td>
-                </tr>
-                <tr className="text-gray-400">
-                  <td className="pl-5 pb-1.5">of which sugars</td>
-                  <td className="text-right pb-1.5">
-                    {roundToOneDecimal(nutrition.sugar)} g
-                  </td>
-                </tr>
-                <tr>
-                  <td className="pb-1.5">Protein</td>
-                  <td className="text-right pb-1.5">
-                    {roundToOneDecimal(nutrition.protein)} g
-                  </td>
-                </tr>
-                <tr>
-                  <td>Salt</td>
-                  <td className="text-right">
-                    {roundToOneDecimal(nutrition.sodium)} g
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <CulinaryJournalForm
+              recipeName={recipe.title}
+              recipeId={recipe.id}
+            />
           </div>
-          <CulinaryJournalForm recipeName={recipe.title} recipeId={recipe.id} />
         </div>
       </div>
     </div>

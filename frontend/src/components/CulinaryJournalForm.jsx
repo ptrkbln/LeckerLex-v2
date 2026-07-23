@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaUpload } from "react-icons/fa";
+import { FaCameraRetro } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import toast from "react-hot-toast";
 
@@ -89,76 +89,62 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
     }
   };
   return (
-    <div className="flex-grow flex items-center justify-center">
-      <div className="max-w-md w-full bg-gray-900 p-8 shadow-lg rounded-3xl">
-        <form onSubmit={handleSubmit}>
-          <h2 className="text-2xl font-bold text-center mb-6">
-            Dish complete? Add to journal!
-          </h2>
-
-          <div className="mb-4">
-            <label className="block text-sm font-semibold mb-2">
-              Show Off Your Dish!
+    <div className="bg-gray-900 p-6 shadow-lg rounded-3xl w-full h-full">
+      <form onSubmit={handleSubmit}>
+        <h2 className="text-xl font-semibold mb-6">Recipe Journal</h2>
+        <div className="mb-4">
+          <div className="flex flex-col items-center text-gray-400 hover:text-gray-300 transition-all">
+            <label
+              htmlFor="imageInput"
+              className="w-full max-w-md border border-gray-600 rounded-3xl p-3 text-center cursor-pointer hover:border-gray-400 transition-all flex items-center justify-center active:scale-95 gap-2"
+            >
+              <FaCameraRetro className="size-5" />
+              Upload your dish
             </label>
-            <div className="flex flex-col items-center">
-              <label
-                htmlFor="imageInput"
-                className="w-full max-w-md bg-gray-700 border border-gray-600 rounded-3xl p-4 text-center cursor-pointer hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
-              >
-                <FaUpload />
-                Upload Image
-              </label>
-              <input
-                type="file"
-                id="imageInput"
-                key={fileKey}
-                className="hidden"
-                onChange={handleImageUpload}
+            <input
+              type="file"
+              id="imageInput"
+              key={fileKey}
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+          </div>
+          {selectedImage && (
+            <div className="mt-4 flex justify-center">
+              <img
+                width="250px"
+                src={URL.createObjectURL(selectedImage)}
+                alt="Preview of uploaded image"
+                className="rounded-lg shadow-lg"
               />
             </div>
-            {selectedImage && (
-              <div className="mt-4 flex justify-center">
-                <img
-                  width="250px"
-                  src={URL.createObjectURL(selectedImage)}
-                  alt="Preview of uploaded image"
-                  className="rounded-lg shadow-lg"
-                />
-              </div>
-            )}
-          </div>
+          )}
+        </div>
+        <textarea
+          rows="4"
+          value={notes}
+          placeholder="How did it turn out?"
+          onChange={(e) => setNotes(e.target.value)}
+          className="w-full px-4 py-2 flex max-w-md mx-auto border border-gray-600 bg-gray-800 rounded-3xl focus:outline-none focus:ring-1 focus:ring-gray-400 resize-none font-playpen tracking-wide placeholder:font-sans placeholder:italic"
+        />
+        <div className={`min-h-[40px] flex justify-center items-center`}>
+          {errorMessage && (
+            <p className="text-rose-400 text-center text-sm">{errorMessage}</p>
+          )}
+        </div>
 
-          <label className="block text-sm font-semibold text-gray-300 mb-2">
-            How Did It Turn Out?
-          </label>
-          <textarea
-            rows="5"
-            value={notes}
-            placeholder="Share your thoughts..."
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring focus:ring-orange-100 resize-none font-playpen tracking-wide placeholder:font-sans"
-          />
-          <div className="min-h-[40px] flex justify-center items-center">
-            {errorMessage && (
-              <p className="text-rose-400 text-center text-sm">
-                {errorMessage}
-              </p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className="w-full flex justify-center items-center px-4 py-2 mt-1.5 text-md bg-green-500 text-white rounded-3xl shadow-lg hover:bg-green-700 transition duration-300"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ImSpinner2 className="animate-spin size-6" />
-            ) : (
-              "Save Journal Entry"
-            )}
-          </button>
-        </form>
-      </div>
+        <button
+          type="submit"
+          className="w-full max-w-md mx-auto flex justify-center items-center px-4 py-2 mt-1.5 text-md border border-green-600 text-green-600 rounded-3xl shadow-lg hover:border-green-400 hover:text-green-400 active:scale-95 transition"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <ImSpinner2 className="animate-spin size-6" />
+          ) : (
+            "Save to Journal"
+          )}
+        </button>
+      </form>
     </div>
   );
 }
