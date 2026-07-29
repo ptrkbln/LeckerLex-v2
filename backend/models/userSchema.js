@@ -43,13 +43,51 @@ const userSchema = new Schema(
         ref: "Journal",
       },
     ],
-    favorites: [
-      // TODO reviews model (1-n)
-      {
-        type: Schema.Types.ObjectId, // Reference to recipes saved under favorites
-        ref: "Recipes",
-      },
-    ],
+    favorites: {
+      type: [
+        {
+          id: Number,
+          title: String,
+          image: String,
+          servingsAmount: Number,
+          servingPortion: { amount: Number, unit: String },
+          ingredients: [
+            {
+              name: String,
+              amount: Number,
+              unit: String,
+            },
+          ],
+          nutritionPer100g: {
+            calories: Number,
+            carbohydrates: Number,
+            fat: Number,
+            protein: Number,
+            saturatedFat: Number,
+            sodium: Number,
+            sugar: Number,
+          },
+          nutritionPerServing: {
+            calories: Number,
+            carbohydrates: Number,
+            fat: Number,
+            protein: Number,
+            saturatedFat: Number,
+            sodium: Number,
+            sugar: Number,
+          },
+          preparationSteps: [String],
+          preparationTime: Number,
+          diet: {
+            vegetarian: Boolean,
+            vegan: Boolean,
+            glutenFree: Boolean,
+            dairyFree: Boolean,
+          },
+        },
+      ],
+      default: [],
+    },
     shoppingList: {
       type: [
         {

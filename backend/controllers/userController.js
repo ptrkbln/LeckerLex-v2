@@ -239,7 +239,9 @@ export const updateUsersShoppingList = async (req, res, next) => {
       return res.status(400).json({ msg: "Invalid action specified" });
     }
 
-    res.status(200).json({ msg: "User's shopping list successfully updated." });
+    return res
+      .status(200)
+      .json({ msg: "User's shopping list successfully updated." });
   } catch (error) {
     next(error);
   }
@@ -253,6 +255,53 @@ export const getUsersShoppingList = async (req, res, next) => {
     }
 
     return res.status(200).json({ data: user.shoppingList });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUsersFavorites = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    return res.status(200).json({ data: user.favorites });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUsersFavorites = async (req, res, next) => {
+  try {
+    const { favorites } = req.body;
+    if (!Array.isArray(favorites))
+      return res
+        .status(400)
+        .json({ msg: "Favorites List should be an array." });
+
+    /* VALIDATION
+  if (
+      !shoppingList.every(
+        (item) =>
+          item &&
+          typeof item.ingredient === "string" &&
+          typeof item.completed === "boolean",
+      )
+    ) {
+      return res.status(400).json({
+        msg: "Shopping list items must be objects with item property as a string and completed property as a boolean.",
+      });
+    } */
+
+    await User.findByIdAndUpdate(req.user.userId, {
+      $set: { favorites },
+    });
+
+    return res
+      .status(200)
+      .json({ msg: "User's favorites successfully updated." });
   } catch (error) {
     next(error);
   }
