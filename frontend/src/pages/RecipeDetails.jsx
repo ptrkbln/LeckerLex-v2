@@ -7,20 +7,15 @@ import { ImSpinner2 } from "react-icons/im";
 import {
   faClock,
   faHeart,
-  faLeaf,
-  faSeedling,
-  faWheatAlt,
-  faTint,
-  faUtensils,
-  faFire,
   faShoppingCart,
+  faCarrot,
+  faBasketShopping,
 } from "@fortawesome/free-solid-svg-icons";
+import { FaMinus, FaPlus, FaCheck } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { IoMdClose } from "react-icons/io";
 import { updateFavoritesDatabase } from "../api/favorites";
 import { addToShoppingListDatabase } from "../api/shoppingList";
 import CulinaryJournalForm from "../components/CulinaryJournalForm";
-import { FaMinus, FaPlus, FaCheck } from "react-icons/fa";
 
 function RecipeDetails() {
   const { id } = useParams();
@@ -37,8 +32,6 @@ function RecipeDetails() {
     selectedRecipe?.missedIngredients?.map((ingredient) => ingredient.name) ||
       [],
   );
-  const [showMissingIngredientsModal, setShowMissingIngredientsModal] =
-    useState(true); // should I remove this UI element?
   const [servings, setServings] = useState(selectedRecipe?.servingsAmount || 1);
   const [completedPrepSteps, setCompletedPrepSteps] = useState([]);
   const [isPer100g, setIsPer100g] = useState(false);
@@ -229,82 +222,79 @@ function RecipeDetails() {
   };
 
   return (
-    <div className="mx-auto w-screen md:max-w-screen-xl md:px-6 pb-12 min-h-full">
-      <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-2 sm:p-6 sm:rounded-3xl shadow-lg text-gray-200 relative">
+    <div className="mx-auto w-screen md:max-w-screen-xl min-h-full">
+      <div className="w-full md:max-w-4xl mx-auto bg-gray-800 p-2 sm:p-6 md:rounded-3xl shadow-lg text-gray-300 relative">
         <div key={recipe.id} className="flex flex-col gap-6">
           {/** Recipe Header */}
-          <div className="bg-gray-900 rounded-3xl overflow-hidden shadow-md relative">
-            {/*             <button
-              className="absolute p-1 right-4 top-4 rounded-full text-lg md:text-xl bg-opacity-30 
-                lg:opacity-0 lg:group-hover:opacity-100 lg:hover:bg-opacity-50 transition-all duration-300 ease-in-out 
-                bg-white text-white z-10"
-              onClick={() => setSelectedRecipeId(null)}
-            >
-              <IoMdClose />
-            </button> */}
+          <div className="bg-gray-900 sm:pt-0 flex flex-col rounded-3xl overflow-hidden relative">
             <button
               onClick={handleToggleFavorite}
-              className="absolute top-4 right-4 bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-50 transition duration-300"
+              className={`absolute flex justify-center items-center top-2 right-3 bg-gray-800 p-2.5 rounded-full active:scale-95 hover:bg-gray-700 transition-all duration-300 hover:scale-105 ${favorites.some((item) => item.id === recipe.id) ? "text-red-800 sm:text-red-900 sm:hover:text-red-800" : "text-gray-400 sm:text-gray-900"}`}
             >
-              <FontAwesomeIcon
-                icon={faHeart}
-                size="2x"
-                color={
-                  favorites.some((item) => item.id === recipe.id)
-                    ? "#EF4444"
-                    : "#fff"
-                }
-              />
+              <FontAwesomeIcon icon={faHeart} className="size-6 sm:size-7" />
             </button>
-            <img
-              src={recipe.image}
-              alt={recipe.title}
-              className="w-full h-64 object-contain rounded-3xl overflow-hidden"
-            />
-            <div className="p-4 text-center">
-              <h2 className="text-2xl font-bold">{recipe.title}</h2>
-            </div>
-            <div className="flex justify-around items-center p-4 border-t border-gray-600">
-              <div className="flex items-center gap-2">
-                <FontAwesomeIcon icon={faClock} className="text-lg" />
-                <span>{recipe.preparationTime} min</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {recipe.diet?.vegetarian && (
-                  <FontAwesomeIcon
-                    icon={faLeaf}
-                    className="text-green-500"
-                    title="Vegetarian"
-                  />
+            <div className="flex flex-col md:flex-row max-w-[380px] md:max-w-none mx-auto md:mx-0">
+              <img
+                src={recipe.image}
+                alt={recipe.title}
+                className="h-64 object-contain w-auto rounded-3xl md:rounded-none self-center"
+              />
+              <div className="flex flex-col w-full items-center justify-center gap-4 md:gap-7 p-2">
+                <h2 className="text-2xl font-bold text-center">
+                  {recipe.title}
+                </h2>
+                <div className="flex gap-3 sm:gap-6">
+                  <span className="flex text-sm sm:text-base sm:flex-row items-center gap-2">
+                    <FontAwesomeIcon
+                      icon={faClock}
+                      className="size-4 sm:size-5"
+                    />{" "}
+                    {recipe.preparationTime} min
+                  </span>
+                  <span className="flex text-sm sm:text-base sm:flex-row items-center gap-2">
+                    <FontAwesomeIcon
+                      icon={faCarrot}
+                      className="size-4 sm:size-5"
+                    />{" "}
+                    {recipe.ingredients.length} ingredients
+                  </span>
+                  {recipe.missedIngredientCount && (
+                    <span className="flex text-sm sm:text-base sm:flex-row items-center gap-2">
+                      <FontAwesomeIcon
+                        icon={faBasketShopping}
+                        className="size-4 sm:size-5"
+                      />{" "}
+                      {recipe.missedIngredientCount} missing
+                    </span>
+                  )}
+                </div>
+                {(recipe.diet.vegetarian ||
+                  recipe.diet.vegan ||
+                  recipe.diet.glutenFree ||
+                  recipe.diet.dairyFree) && (
+                  <div className="flex gap-1.5 md:gap-3 items-center">
+                    {recipe.diet.vegetarian && (
+                      <span className="rounded-full text-center bg-green-500/25 px-2 py-0.5 italic text-[13px] sm:text-sm">
+                        Vegetarian
+                      </span>
+                    )}
+                    {recipe.diet.vegan && (
+                      <span className="rounded-full text-center bg-lime-500/25 px-2 py-0.5 italic text-[13px] sm:text-sm">
+                        Vegan
+                      </span>
+                    )}
+                    {recipe.diet.glutenFree && (
+                      <span className="rounded-full text-center bg-amber-400/25 px-2 py-0.5 italic text-[13px] sm:text-sm">
+                        Gluten-free
+                      </span>
+                    )}
+                    {recipe.diet.dairyFree && (
+                      <span className="rounded-full text-center bg-blue-400/25 px-2 py-0.5 italic text-[13px] sm:text-sm">
+                        Dairy-free
+                      </span>
+                    )}
+                  </div>
                 )}
-                {recipe.diet?.vegan && (
-                  <FontAwesomeIcon
-                    icon={faSeedling}
-                    className="text-green-500"
-                    title="Vegan"
-                  />
-                )}
-                {!recipe.diet?.glutenFree && (
-                  <FontAwesomeIcon
-                    icon={faWheatAlt}
-                    className="text-yellow-500"
-                    title="Contains Gluten"
-                  />
-                )}
-                {!recipe.diet?.dairyFree && (
-                  <FontAwesomeIcon
-                    icon={faTint}
-                    className="text-blue-500"
-                    title="Contains Dairy"
-                  />
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <FontAwesomeIcon
-                  icon={faFire}
-                  className="text-lg text-red-500"
-                />
-                <span>{recipe.nutritionPer100g?.calories || "N/A"} kcal</span>
               </div>
             </div>
           </div>
@@ -337,12 +327,12 @@ function RecipeDetails() {
                 {missingIngredients.length > 0 && (
                   <div className="sm:absolute -bottom-3 -right-1">
                     <button
-                      className="border-green-500 border bg-gray-900 rounded-full p-3 flex hover:scale-105 transition-all active:scale-95 -mt-2 relative animate-popIn"
+                      className="border-green-600 hover:border-green-500 text-green-600 hover:text-green-500 border bg-gray-900 rounded-full p-3 flex hover:scale-105 transition-all duration-300 active:scale-95 -mt-2 relative animate-popIn"
                       onClick={handleAddToShoppingList}
                     >
                       <FontAwesomeIcon
                         icon={faShoppingCart}
-                        className="text-green-500 size-5"
+                        className="size-5"
                       />
                       <div className="absolute -top-2 -right-1 text-sm rounded-full size-5 bg-green-700 text-white">
                         {missingIngredients.length}
