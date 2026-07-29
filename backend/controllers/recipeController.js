@@ -139,11 +139,8 @@ export const searchRecipesAndDetails = async (req, res, next) => {
             amount: ingredient.measures.metric.amount,
             unit: ingredient.measures.metric.unitLong,
           })),
-          steps: recipeDetail.analyzedInstructions.flatMap((instruction) =>
-            instruction.steps.map((step) => ({
-              number: step.number,
-              description: step.step,
-            })),
+          preparationSteps: recipeDetail.analyzedInstructions.flatMap(
+            (instruction) => instruction.steps.map((step) => step.step),
           ),
         };
       }),

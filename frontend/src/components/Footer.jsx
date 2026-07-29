@@ -91,7 +91,7 @@ function Footer() {
 
       {/* NavBar for smaller screens */}
 
-      <nav className="bg-green-50 rounded-lg shadow-md mx-auto fixed bottom-0 w-full md:hidden z-30">
+      <nav className="bg-green-50 rounded-lg shadow-md mx-auto fixed bottom-0 w-full md:hidden z-30 p-1 pb-2">
         <ul className="flex justify-around p-2 text-sm font-medium text-gray-700">
           <li className="hover:text-green-500">
             <NavLink
