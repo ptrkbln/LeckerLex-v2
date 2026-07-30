@@ -229,7 +229,7 @@ function RecipeDetails() {
           <div className="bg-gray-900 sm:pt-0 flex flex-col rounded-3xl overflow-hidden relative">
             <button
               onClick={handleToggleFavorite}
-              className={`absolute flex justify-center items-center top-2 right-3 bg-gray-800 p-2.5 rounded-full active:scale-95 hover:bg-gray-700 transition-all duration-300 hover:scale-105 ${favorites.some((item) => item.id === recipe.id) ? "text-red-800 sm:text-red-900 sm:hover:text-red-800" : "text-gray-400 sm:text-gray-900"}`}
+              className={`absolute flex justify-center items-center top-1 right-1 bg-gray-800 p-2.5 rounded-full active:scale-95 hover:bg-gray-700 transition-all duration-300 hover:scale-105 ${favorites.some((item) => item.id === recipe.id) ? "text-red-800 sm:text-red-900 sm:hover:text-red-800" : "text-gray-400 sm:text-gray-900"}`}
             >
               <FontAwesomeIcon icon={faHeart} className="size-6 sm:size-7" />
             </button>
