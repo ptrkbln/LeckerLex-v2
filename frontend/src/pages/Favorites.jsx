@@ -2,13 +2,11 @@ import { useContext, useState, useRef } from "react";
 import { RecipeContext } from "../context/RecipeContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faTint,
-  faWheatAlt,
-  faClock,
-  faLeaf,
-  faSeedling,
   faFire,
   faHeart,
+  faShoppingCart,
+  faCarrot,
+  faBasketShopping,
 } from "@fortawesome/free-solid-svg-icons";
 import { updateFavoritesDatabase } from "../api/favorites";
 import toast from "react-hot-toast";
@@ -27,15 +25,12 @@ const DIET_OPTIONS = ["vegetarian", "vegan", "dairy-free", "gluten-free"];
 
 function Favorites() {
   const { favorites, setFavorites } = useContext(RecipeContext);
-  //const [cookTime, setCookTime] = useState("");
-  const [calories, setCalories] = useState("");
-  const [nutrition, setNutrition] = useState("");
   const [isDietDropdownOpen, setIsDietDropdownOpen] = useState(false);
   const dietDropdownRef = useRef(null);
   const [diet, setDiet] = useState([]);
   const [isCaloriesDropdownOpen, setIsCaloriesDropdownOpen] = useState(false);
   const caloriesDropdownRef = useRef(null);
-  const [isPer100g, setIsPer100g] = useState(true);
+  const [isPer100g, setIsPer100g] = useState(false);
   const [maxCalories, setMaxCalories] = useState(600);
   const navigate = useNavigate();
 
@@ -108,28 +103,13 @@ function Favorites() {
   return (
     <>
       {favorites.length > 0 ? (
-        <div className="mx-auto w-screen md:max-w-screen-xl px-1 sm:px-6 pb-12 min-h-full text-gray-300">
-          <main className="shadow-lg rounded-3xl w-full max-w-3xl mx-auto p-6 mb-2">
-            <h1 className="text-3xl font-bold mb-8 text-center text-orange-100">
+        <div className="mx-auto md:max-w-[90%] lg:max-w-[1400px] w-full px-1 sm:px-6 pb-2 min-h-full text-gray-300 self-start">
+          <div className="rounded-3xl w-full mx-auto p-4 flex flex-col md:flex-row justify-between gap-4">
+            <h1 className="text-3xl font-bold text-center text-orange-100">
               Your Top Picks
             </h1>
             {/* Filter section */}
-            <div className="flex flex-col sm:flex-row w-full items-center justify-center gap-6">
-              {/** Cooking Time - Omited due to Spoonacular issues returning 45min for each recipe*/}
-              {/*              <label className="flex flex-col items-center">
-                <select
-                  value={cookTime}
-                  onChange={(e) => setCookTime(e.target.value)}
-                  className="p-3 bg-gray-800 border border-gray-600 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
-                >
-                  <option value="">Cooking Time</option>
-                  <option value="0-15">0 - 15 min</option>
-                  <option value="15-30">15 - 30 min</option>
-                  <option value="30-45">30 - 45 min</option>
-                  <option value="45-60">45 - 60 min</option>
-                  <option value="60+">60+ min</option>
-                </select>
-              </label> */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               {/** Calories */}
               <div className="relative" ref={caloriesDropdownRef}>
                 <div
@@ -239,19 +219,19 @@ function Favorites() {
                 )}
               </div>
             </div>
-          </main>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 text-gray-100">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,200px))] sm:grid-cols-[repeat(auto-fit,minmax(280px,312px))] justify-center gap-5 sm:gap-6">
             {filteredFavorites.map((recipe) => (
               <div
                 key={recipe.id}
                 onClick={() =>
                   recipe.id && navigate(`/home/recipe-details/${recipe.id}`)
                 }
-                className="bg-gray-800 rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300 cursor-pointer flex flex-col relative group"
+                className="border border-gray-800 hover:border-orange-200/40 bg-gray-950 rounded-3xl active:scale-[0.98] overflow-hidden shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer flex flex-col relative group w-full max-w-[280px] sm:max-w-none justify-self-center"
               >
                 <button
-                  className="absolute top-3 right-3 bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-75 hover:scale-105 transition duration-300 text-red-500 lg:opacity-0 lg:group-hover:opacity-100"
+                  className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm p-2 rounded-full hover:bg-opacity-75 hover:scale-105 transition duration-300 text-red-500 lg:opacity-0 lg:group-hover:opacity-100"
                   onClick={(e) => handleRemoveFromFavorites(e, recipe.id)}
                 >
                   <FontAwesomeIcon icon={faHeart} size="xl" />
@@ -259,64 +239,61 @@ function Favorites() {
                 <img
                   src={recipe.image}
                   alt={recipe.title}
-                  className="w-full h-52 object-cover"
+                  className="w-full object-cover aspect-[312/231]"
                 />
-                <div className="p-4">
+                <div className="flex flex-col h-full justify-between p-3 sm:p-4">
                   <h2
                     className={`${
-                      recipe.title.length > 36 ? "text-base" : "text-xl"
+                      recipe.title.length > 36
+                        ? "text-base"
+                        : "text-lg sm:text-xl"
                     } font-semibold mb-2`}
                   >
                     {recipe.title}
                   </h2>
+                  <div>
+                    {isPer100g
+                      ? recipe.nutritionPer100g?.calories && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <FontAwesomeIcon
+                              icon={faFire}
+                              className="text-red-700/80 size-4"
+                            />
+                            <span>
+                              {Math.round(recipe.nutritionPer100g.calories)}{" "}
+                              kcal <span className="text-xs">/ 100g</span>
+                            </span>
+                          </div>
+                        )
+                      : recipe.nutritionPerServing?.calories && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <FontAwesomeIcon
+                              icon={faFire}
+                              className="text-red-700/80 size-4"
+                            />
+                            <span>
+                              {Math.round(recipe.nutritionPerServing.calories)}{" "}
+                              kcal <span className="text-xs">/ serving</span>
+                            </span>
+                          </div>
+                        )}
 
-                  <div className="flex justify-between text-gray-300 mb-2">
-                    <div className="flex items-center gap-2">
+                    <span className="flex text-sm items-center gap-2">
                       <FontAwesomeIcon
-                        icon={faClock}
-                        className="text-green-400 text-lg"
-                      />
-                      <span>{recipe.preparationTime} min</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {recipe.diet?.vegetarian && (
-                        <FontAwesomeIcon
-                          icon={faLeaf}
-                          className="text-green-500"
-                          title="Vegetarian"
-                        />
-                      )}
-                      {recipe.diet?.vegan && (
-                        <FontAwesomeIcon
-                          icon={faSeedling}
-                          className="text-green-500"
-                          title="Vegan"
-                        />
-                      )}
-                      {!recipe.diet?.glutenFree && (
-                        <FontAwesomeIcon
-                          icon={faWheatAlt}
-                          className="text-yellow-500"
-                          title="Contains Gluten"
-                        />
-                      )}
-                      {!recipe.diet?.dairyFree && (
-                        <FontAwesomeIcon
-                          icon={faTint}
-                          className="text-blue-500"
-                          title="Contains Dairy"
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FontAwesomeIcon
-                      icon={faFire}
-                      className="text-red-500 text-lg"
-                    />
-                    <span>
-                      {recipe.nutritionPer100g?.calories || "N/A"} kcal
+                        icon={faCarrot}
+                        className="size-4 text-orange-600/80"
+                      />{" "}
+                      {recipe.ingredients.length} ingredients
                     </span>
+                    {recipe.missedIngredientCount > 0 && (
+                      <span className="flex items-center gap-2">
+                        <FontAwesomeIcon
+                          icon={faBasketShopping}
+                          className="size-4"
+                        />{" "}
+                        {recipe.missedIngredientCount} missing
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
