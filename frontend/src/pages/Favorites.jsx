@@ -5,9 +5,11 @@ import { GrFavorite } from "react-icons/gr";
 import RecipeCollection from "../components/RecipeCollection";
 import { updateFavoritesDatabase } from "../api/favorites";
 import toast from "react-hot-toast";
+import { ImSpinner2 } from "react-icons/im";
 
 function Favorites() {
-  const { favorites, setFavorites } = useContext(RecipeContext);
+  const { favorites, setFavorites, areFavoritesLoaded } =
+    useContext(RecipeContext);
   const navigate = useNavigate();
 
   // Remove from UI immediately, if backend call fails revert to previous state
@@ -30,6 +32,12 @@ function Favorites() {
       setFavorites(previousFavorites);
     }
   };
+
+  if (!areFavoritesLoaded) {
+    return (
+      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+    );
+  }
 
   return (
     <>
