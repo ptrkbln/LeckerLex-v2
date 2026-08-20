@@ -195,7 +195,7 @@ function RecipeCollection({
       </div>
 
       {/* Card width limit matches the source image original resolution (312x231) to avoid upscaling blur */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,200px))] sm:grid-cols-[repeat(auto-fit,minmax(280px,312px))] justify-center gap-5 sm:gap-6">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,220px))] sm:grid-cols-[repeat(auto-fit,minmax(280px,312px))] justify-center gap-5 sm:gap-6">
         {filteredRecipes.map((recipe) => (
           <div
             key={recipe.id}
@@ -258,16 +258,25 @@ function RecipeCollection({
                     className="size-4 text-orange-600/80"
                   />{" "}
                   {recipe.ingredients.length} ingredients
+                  {recipe.missedIngredientCount > 0 && (
+                    <span className="flex items-center gap-2 text-xs bg-gray-800/90 text-orange-300 rounded-full px-2 py-0.5 relative group/missing">
+                      {recipe.missedIngredientCount} missing
+                      {recipe.missedIngredients?.length > 0 && (
+                        <div className="absolute bottom-full mb-1 min-w-max rounded-xl border border-gray-800 bg-gray-950 px-3 py-2 text-gray-300 opacity-0 transition-all group-hover/missing:opacity-100 pointer-events-none">
+                          <p className="mb-1 font-medium text-orange-200">
+                            Missing ingredients:
+                          </p>
+
+                          <div className="flex flex-col gap-0.5 capitalize">
+                            {recipe.missedIngredients.map((ing) => (
+                              <span key={ing.name}>• {ing.name}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </span>
+                  )}
                 </span>
-                {recipe.missedIngredientCount > 0 && (
-                  <span className="flex items-center gap-2">
-                    <FontAwesomeIcon
-                      icon={faBasketShopping}
-                      className="size-4"
-                    />{" "}
-                    {recipe.missedIngredientCount} missing
-                  </span>
-                )}
               </div>
             </div>
           </div>
