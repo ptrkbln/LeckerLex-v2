@@ -1,11 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faFire,
-  faHeart,
-  faCarrot,
-  faBasketShopping,
-} from "@fortawesome/free-solid-svg-icons";
+import { faFire, faHeart, faCarrot } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import {
@@ -22,6 +17,7 @@ function RecipeCollection({
   heading,
   showFavoritesControl,
   handleRemoveFromFavorites,
+  sourceType,
 }) {
   const [isDietDropdownOpen, setIsDietDropdownOpen] = useState(false);
   const dietDropdownRef = useRef(null);
@@ -200,7 +196,10 @@ function RecipeCollection({
           <div
             key={recipe.id}
             onClick={() =>
-              recipe.id && navigate(`/home/recipe-details/${recipe.id}`)
+              recipe.id &&
+              navigate(`/home/recipe-details/${recipe.id}`, {
+                state: { sourceType },
+              })
             }
             className="border border-gray-800 hover:border-orange-200/40 bg-gray-950 rounded-3xl active:scale-[0.98] overflow-hidden shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer flex flex-col relative group w-full max-w-[280px] sm:max-w-none justify-self-center"
           >

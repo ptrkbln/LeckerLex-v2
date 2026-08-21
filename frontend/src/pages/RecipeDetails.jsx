@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { RecipeContext } from "../context/RecipeContext";
 import { AuthContext } from "../context/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,18 +23,28 @@ function RecipeDetails() {
     useContext(RecipeContext);
   const { isLoggedIn } = useContext(AuthContext);
   const navigate = useNavigate();
-  // Find the recipe with the selected ID
-  const selectedRecipe =
-    recipes.find((x) => x.id === Number(id)) ||
-    favorites.find((x) => x.id === Number(id));
   const [recipe, setRecipe] = useState(null);
+  const [completedPrepSteps, setCompletedPrepSteps] = useState([]);
+  const [isPer100g, setIsPer100g] = useState(false);
+  const location = useLocation();
+  const sourceType = location.state?.sourceType;
+  let selectedRecipe;
+  // Get recipe from the page it was opened from to avoid showing unrelated missing ingredients
+  if (sourceType === "favorites") {
+    selectedRecipe = favorites.find((x) => x.id === Number(id));
+  } else if (sourceType === "search") {
+    selectedRecipe = recipes.find((x) => x.id === Number(id));
+  } else {
+    // Fallback when navigation source is not available (eg. direct link, refresh)
+    selectedRecipe =
+      recipes.find((x) => x.id === Number(id)) ||
+      favorites.find((x) => x.id === Number(id));
+  }
   const [missingIngredients, setMissingIngredients] = useState(
     selectedRecipe?.missedIngredients?.map((ingredient) => ingredient.name) ||
       [],
   );
   const [servings, setServings] = useState(selectedRecipe?.servingsAmount || 1);
-  const [completedPrepSteps, setCompletedPrepSteps] = useState([]);
-  const [isPer100g, setIsPer100g] = useState(false);
 
   useEffect(() => {
     if (!recipe && selectedRecipe) {

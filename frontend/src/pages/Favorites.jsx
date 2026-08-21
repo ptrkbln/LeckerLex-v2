@@ -45,6 +45,7 @@ function Favorites() {
         <RecipeCollection
           recipesSource={favorites}
           heading={"Saved Recipes"}
+          sourceType={"favorites"}
           showFavoritesControl
           handleRemoveFromFavorites={handleRemoveFromFavorites}
         />

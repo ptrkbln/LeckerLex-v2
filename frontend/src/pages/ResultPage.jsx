@@ -12,7 +12,11 @@ function ResultPage() {
   if (recipes.length === 0) navigate("/home");
 
   return (
-    <RecipeCollection recipesSource={recipes} heading={"Matching Recipes"} />
+    <RecipeCollection
+      recipesSource={recipes}
+      heading={"Matching Recipes"}
+      sourceType={"search"}
+    />
   );
 }
 
