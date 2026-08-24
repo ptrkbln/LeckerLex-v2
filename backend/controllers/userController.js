@@ -307,6 +307,39 @@ export const updateUsersFavorites = async (req, res, next) => {
   }
 };
 
+export const getUsersOwnRecipes = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    return res.status(200).json({ data: user.ownRecipes });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUsersOwnRecipes = async (req, res, next) => {
+  try {
+    const { ownRecipes } = req.body;
+    if (!Array.isArray(favorites))
+      return res
+        .status(400)
+        .json({ msg: "Created Recipes List should be an array." });
+
+    await User.findByIdAndUpdate(req.user.userId, {
+      $set: { ownRecipes },
+    });
+
+    return res
+      .status(200)
+      .json({ msg: "User's Created Recipes List successfully updated." });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const logoutUser = async (req, res, next) => {
   try {
     res

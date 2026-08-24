@@ -13,6 +13,7 @@ userRouter
   .patch("/update-shoppinglist", authenticate, user.updateUsersShoppingList)
   .get("/shoppinglist", authenticate, user.getUsersShoppingList)
   .patch("/update-favorites", authenticate, user.updateUsersFavorites)
-  .get("/favorites", authenticate, user.getUsersFavorites);
+  .get("/favorites", authenticate, user.getUsersFavorites)
+  .get("/own-recipes", authenticate, user.getUsersOwnRecipes);
 
 export default userRouter;

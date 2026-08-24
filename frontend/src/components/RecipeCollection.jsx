@@ -16,6 +16,8 @@ function RecipeCollection({
   recipesSource,
   heading,
   showFavoritesControl,
+  createRecipeControl,
+  showFilters,
   handleRemoveFromFavorites,
   sourceType,
 }) {
@@ -77,117 +79,122 @@ function RecipeCollection({
 
   return (
     <div className="mx-auto md:max-w-[90%] lg:max-w-[1400px] w-full px-1 sm:px-6 pb-2 min-h-full text-gray-300 self-start">
-      <div className="rounded-3xl w-full mx-auto p-4 flex flex-col md:flex-row justify-between gap-4">
+      <div className="rounded-3xl w-full mx-auto p-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-center text-orange-100">
           {heading}
         </h1>
+        {createRecipeControl}
         {/* Filter section */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          {/** Calories */}
-          <div className="relative" ref={caloriesDropdownRef}>
-            <div
-              className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full  px-5 py-2.5 cursor-pointer select-none"
-              onClick={() => setIsCaloriesDropdownOpen((prev) => !prev)}
-            >
-              <AiOutlineFire
-                className={`${maxCalories < 600 ? "text-orange-400" : "text-orange-400/70"}`}
-              />
-              <span
-                className={`${maxCalories < 600 ? "text-orange-200" : "text-gray-300"}`}
+        {showFilters && (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            {/** Calories */}
+            <div className="relative" ref={caloriesDropdownRef}>
+              <div
+                className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full  px-5 py-2.5 cursor-pointer select-none"
+                onClick={() => setIsCaloriesDropdownOpen((prev) => !prev)}
               >
-                Calories
-              </span>
-              <MdKeyboardArrowDown
-                className={`size-5 ${maxCalories < 600 ? "text-orange-200" : ""}`}
-              />
-            </div>
-            {isCaloriesDropdownOpen && (
-              <div className="absolute min-w-max gap-1 left-1/2 -translate-x-1/2 mt-1 flex flex-col z-10 bg-black border border-gray-600 rounded-3xl py-5 px-5">
-                <div className="grid grid-cols-2 bg-gray-900 rounded-full">
-                  <button
-                    className={`text-sm rounded-full px-6 py-2 text-center ${isPer100g ? "bg-orange-200 text-gray-800" : ""} transition-all`}
-                    onClick={() => setIsPer100g(true)}
-                  >
-                    Per 100g
-                  </button>
-                  <button
-                    className={`text-sm rounded-full px-6 py-2 text-center ${!isPer100g ? "bg-orange-200 text-gray-800" : ""} transition-all`}
-                    onClick={() => setIsPer100g(false)}
-                  >
-                    Per serving
-                  </button>
-                </div>
-
-                <div className="flex justify-between pt-5 pb-1 text-sm">
-                  <span>0 kcal</span>
-                  <span>
-                    <span className="text-orange-100">{maxCalories}</span>
-                    {maxCalories >= 600 && "+"} kcal
-                  </span>
-                </div>
-
-                <input
-                  type="range"
-                  min="0"
-                  max="600"
-                  step="50"
-                  value={maxCalories}
-                  onChange={(e) => setMaxCalories(+e.target.value)}
-                  className="w-full accent-orange-200"
+                <AiOutlineFire
+                  className={`${maxCalories < 600 ? "text-orange-400" : "text-orange-400/70"}`}
+                />
+                <span
+                  className={`${maxCalories < 600 ? "text-orange-200" : "text-gray-300"}`}
+                >
+                  Calories
+                </span>
+                <MdKeyboardArrowDown
+                  className={`size-5 ${maxCalories < 600 ? "text-orange-200" : ""}`}
                 />
               </div>
-            )}
-          </div>
-
-          <div className="relative" ref={dietDropdownRef}>
-            <div
-              className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full px-5 py-2.5 cursor-pointer select-none"
-              onClick={() => setIsDietDropdownOpen((prev) => !prev)}
-            >
-              <LuLeaf
-                className={`${diet.length > 0 ? "text-green-500" : "text-green-500/70"}`}
-              />
-              <span className={`${diet.length > 0 ? "text-orange-200" : ""}`}>
-                Diet
-              </span>
-              <span
-                className={`text-xs flex items-center justify-center rounded-full bg-green-700 text-white size-5 text-center ${diet.length > 0 ? "opacity-100" : "opacity-0"}`}
-              >
-                {diet.length}
-              </span>
-              <MdKeyboardArrowDown
-                className={`size-5 ${diet.length > 0 ? "text-orange-200" : ""}`}
-              />
-            </div>
-            {isDietDropdownOpen && (
-              <div className="absolute min-w-max gap-1 mt-1 left-1/2 -translate-x-1/2 flex flex-col z-10 bg-black border border-gray-600 rounded-3xl py-3 px-2">
-                {DIET_OPTIONS.map((option) => {
-                  const isSelected = diet.includes(option);
-                  return (
+              {isCaloriesDropdownOpen && (
+                <div className="absolute min-w-max gap-1 left-1/2 -translate-x-1/2 mt-1 flex flex-col z-10 bg-black border border-gray-600 rounded-3xl py-5 px-5">
+                  <div className="grid grid-cols-2 bg-gray-900 rounded-full">
                     <button
-                      key={option}
-                      className={`flex items-center gap-3 pl-3 pr-9 py-1.5 rounded-xl ${isSelected ? "text-orange-100" : ""}`}
-                      onClick={() =>
-                        isSelected
-                          ? setDiet((prev) => prev.filter((x) => x !== option))
-                          : setDiet((prev) => [...prev, option])
-                      }
+                      className={`text-sm rounded-full px-6 py-2 text-center ${isPer100g ? "bg-orange-200 text-gray-800" : ""} transition-all`}
+                      onClick={() => setIsPer100g(true)}
                     >
-                      <div>
-                        {isSelected ? (
-                          <RiCheckboxCircleLine className="size-5 text-green-700" />
-                        ) : (
-                          <RiCheckboxBlankCircleLine className="size-5 text-gray-600" />
-                        )}
-                      </div>{" "}
-                      <span className="text-sm capitalize">{option}</span>
+                      Per 100g
                     </button>
-                  );
-                })}
+                    <button
+                      className={`text-sm rounded-full px-6 py-2 text-center ${!isPer100g ? "bg-orange-200 text-gray-800" : ""} transition-all`}
+                      onClick={() => setIsPer100g(false)}
+                    >
+                      Per serving
+                    </button>
+                  </div>
+
+                  <div className="flex justify-between pt-5 pb-1 text-sm">
+                    <span>0 kcal</span>
+                    <span>
+                      <span className="text-orange-100">{maxCalories}</span>
+                      {maxCalories >= 600 && "+"} kcal
+                    </span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="600"
+                    step="50"
+                    value={maxCalories}
+                    onChange={(e) => setMaxCalories(+e.target.value)}
+                    className="w-full accent-orange-200"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="relative" ref={dietDropdownRef}>
+              <div
+                className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full px-5 py-2.5 cursor-pointer select-none"
+                onClick={() => setIsDietDropdownOpen((prev) => !prev)}
+              >
+                <LuLeaf
+                  className={`${diet.length > 0 ? "text-green-500" : "text-green-500/70"}`}
+                />
+                <span className={`${diet.length > 0 ? "text-orange-200" : ""}`}>
+                  Diet
+                </span>
+                <span
+                  className={`text-xs flex items-center justify-center rounded-full bg-green-700 text-white size-5 text-center ${diet.length > 0 ? "opacity-100" : "opacity-0"}`}
+                >
+                  {diet.length}
+                </span>
+                <MdKeyboardArrowDown
+                  className={`size-5 ${diet.length > 0 ? "text-orange-200" : ""}`}
+                />
               </div>
-            )}
+              {isDietDropdownOpen && (
+                <div className="absolute min-w-max gap-1 mt-1 left-1/2 -translate-x-1/2 flex flex-col z-10 bg-black border border-gray-600 rounded-3xl py-3 px-2">
+                  {DIET_OPTIONS.map((option) => {
+                    const isSelected = diet.includes(option);
+                    return (
+                      <button
+                        key={option}
+                        className={`flex items-center gap-3 pl-3 pr-9 py-1.5 rounded-xl ${isSelected ? "text-orange-100" : ""}`}
+                        onClick={() =>
+                          isSelected
+                            ? setDiet((prev) =>
+                                prev.filter((x) => x !== option),
+                              )
+                            : setDiet((prev) => [...prev, option])
+                        }
+                      >
+                        <div>
+                          {isSelected ? (
+                            <RiCheckboxCircleLine className="size-5 text-green-700" />
+                          ) : (
+                            <RiCheckboxBlankCircleLine className="size-5 text-gray-600" />
+                          )}
+                        </div>{" "}
+                        <span className="text-sm capitalize">{option}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Card width limit matches the source image original resolution (312x231) to avoid upscaling blur */}

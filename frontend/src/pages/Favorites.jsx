@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { RecipeContext } from "../context/RecipeContext";
 import { useNavigate } from "react-router-dom";
 import { GrFavorite } from "react-icons/gr";
@@ -6,8 +6,10 @@ import RecipeCollection from "../components/RecipeCollection";
 import { updateFavoritesDatabase } from "../api/favorites";
 import toast from "react-hot-toast";
 import { ImSpinner2 } from "react-icons/im";
+import { LuNotebookPen } from "react-icons/lu";
 
 function Favorites() {
+  const [tab, setTab] = useState("saved");
   const { favorites, setFavorites, areFavoritesLoaded } =
     useContext(RecipeContext);
   const navigate = useNavigate();
@@ -33,20 +35,46 @@ function Favorites() {
     }
   };
 
+  const tabsHeader = (
+    <div className="flex gap-3 md:gap-5 justify-center">
+      <button
+        className={`text-lg sm:text-2xl pb-1.5 font-semibold active:scale-[0.98] transition-all ${tab === "saved" ? "text-orange-200 border-b-2 border-orange-200" : "text-gray-400 hover:text-gray-200"}`}
+        onClick={() => setTab("saved")}
+      >
+        Saved Recipes
+      </button>
+      <button
+        className={`text-lg sm:text-2xl pb-1.5 font-semibold active:scale-[0.98] transition-all ${tab === "own" ? "text-orange-200 border-b-2 border-orange-200" : "text-gray-400 hover:text-gray-200"}`}
+        onClick={() => setTab("own")}
+      >
+        Own Recipes
+      </button>
+    </div>
+  );
+
+  const createRecipeButton = (
+    <div className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full  px-5 py-2.5 cursor-pointer select-none group">
+      <LuNotebookPen className="text-orange-100/60 group-hover:text-orange-100/90 transition" />
+      <span>Create Recipe</span>
+    </div>
+  );
+
   if (!areFavoritesLoaded) {
     return (
       <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
     );
   }
 
-  return (
+  return tab === "saved" ? (
     <>
       {favorites.length > 0 ? (
         <RecipeCollection
           recipesSource={favorites}
-          heading={"Saved Recipes"}
           sourceType={"favorites"}
+          heading={tabsHeader}
           showFavoritesControl
+          createRecipeControl={createRecipeButton}
+          showFilters
           handleRemoveFromFavorites={handleRemoveFromFavorites}
         />
       ) : (
@@ -68,6 +96,8 @@ function Favorites() {
         </div>
       )}
     </>
+  ) : (
+    "hello"
   );
 }
 
