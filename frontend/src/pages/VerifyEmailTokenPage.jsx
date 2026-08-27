@@ -60,7 +60,9 @@ export default function VerifyEmailTokenPage() {
 
   if (isLoading) {
     return (
-      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+      <div className="self-stretch w-full flex items-center justify-center">
+        <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+      </div>
     );
   }
 

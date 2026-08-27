@@ -78,7 +78,7 @@ function RecipeCollection({
   });
 
   return (
-    <div className="mx-auto md:max-w-[90%] lg:max-w-[1400px] w-full px-1 sm:px-6 pb-2 min-h-full text-gray-300 self-start">
+    <div className="mx-auto md:max-w-[90%] lg:max-w-[1400px] w-full px-1 sm:px-6 pb-2 min-h-full text-gray-300 relative">
       <div className="rounded-3xl w-full mx-auto p-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-center text-orange-100">
           {heading}
@@ -199,94 +199,99 @@ function RecipeCollection({
 
       {/* Card width limit matches the source image original resolution (312x231) to avoid upscaling blur */}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,220px))] sm:grid-cols-[repeat(auto-fit,minmax(280px,312px))] justify-center gap-5 sm:gap-6">
-        {filteredRecipes.map((recipe) => (
-          <div
-            key={recipe.id}
-            onClick={() =>
-              recipe.id &&
-              navigate(`/home/recipe-details/${recipe.id}`, {
-                state: { sourceType },
-              })
-            }
-            className="border border-gray-800 hover:border-orange-200/40 bg-gray-950 rounded-3xl active:scale-[0.98] overflow-hidden shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer flex flex-col relative group w-full max-w-[280px] sm:max-w-none justify-self-center"
-          >
-            {showFavoritesControl && (
-              <button
-                className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm p-2 rounded-full hover:bg-opacity-75 hover:scale-105 transition duration-300 text-red-500 lg:opacity-0 lg:group-hover:opacity-100"
-                onClick={(e) => handleRemoveFromFavorites(e, recipe.id)}
-              >
-                <FontAwesomeIcon icon={faHeart} size="xl" />
-              </button>
-            )}
-            <img
-              src={recipe.image}
-              alt={recipe.title}
-              className="w-full object-cover aspect-[312/231]"
-            />
-            <div className="flex flex-col h-full justify-between p-3 sm:p-4">
-              <h2
-                className={`${
-                  recipe.title.length > 36 ? "text-base" : "text-lg sm:text-xl"
-                } font-semibold mb-2`}
-              >
-                {recipe.title}
-              </h2>
-              <div>
-                {isPer100g
-                  ? recipe.nutritionPer100g?.calories && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <FontAwesomeIcon
-                          icon={faFire}
-                          className="text-red-700/80 size-4"
-                        />
-                        <span>
-                          {Math.round(recipe.nutritionPer100g.calories)} kcal{" "}
-                          <span className="text-xs">/ 100g</span>
-                        </span>
-                      </div>
-                    )
-                  : recipe.nutritionPerServing?.calories && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <FontAwesomeIcon
-                          icon={faFire}
-                          className="text-red-700/80 size-4"
-                        />
-                        <span>
-                          {Math.round(recipe.nutritionPerServing.calories)} kcal{" "}
-                          <span className="text-xs">/ serving</span>
-                        </span>
-                      </div>
-                    )}
-
-                <span className="flex text-sm items-center gap-2">
-                  <FontAwesomeIcon
-                    icon={faCarrot}
-                    className="size-4 text-orange-600/80"
-                  />{" "}
-                  {recipe.ingredients.length} ingredients
-                  {recipe.missedIngredientCount > 0 && (
-                    <span className="flex items-center gap-2 text-xs bg-gray-800/90 text-orange-300 rounded-full px-2 py-0.5 relative group/missing">
-                      {recipe.missedIngredientCount} missing
-                      {recipe.missedIngredients?.length > 0 && (
-                        <div className="absolute bottom-full mb-1 min-w-max rounded-xl border border-gray-800 bg-gray-950 px-3 py-2 text-gray-300 opacity-0 transition-all group-hover/missing:opacity-100 pointer-events-none">
-                          <p className="mb-1 font-medium text-orange-200">
-                            Missing ingredients:
-                          </p>
-
-                          <div className="flex flex-col gap-0.5 capitalize">
-                            {recipe.missedIngredients.map((ing) => (
-                              <span key={ing.name}>• {ing.name}</span>
-                            ))}
-                          </div>
+        {filteredRecipes.map((recipe) => {
+          const id = recipe.id || recipe._id;
+          return (
+            <div
+              key={id}
+              onClick={() =>
+                id &&
+                navigate(`/home/recipe-details/${id}`, {
+                  state: { sourceType },
+                })
+              }
+              className="border border-gray-800 hover:border-orange-200/40 bg-gray-950 rounded-3xl active:scale-[0.98] overflow-hidden shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer flex flex-col relative group w-full max-w-[280px] sm:max-w-none justify-self-center"
+            >
+              {showFavoritesControl && (
+                <button
+                  className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm p-2 rounded-full hover:bg-opacity-75 hover:scale-105 transition duration-300 text-red-500 lg:opacity-0 lg:group-hover:opacity-100"
+                  onClick={(e) => handleRemoveFromFavorites(e, recipe.id)}
+                >
+                  <FontAwesomeIcon icon={faHeart} size="xl" />
+                </button>
+              )}
+              <img
+                src={recipe.image}
+                alt={recipe.title}
+                className="w-full object-cover aspect-[312/231]"
+              />
+              <div className="flex flex-col h-full justify-between p-3 sm:p-4">
+                <h2
+                  className={`${
+                    recipe.title.length > 36
+                      ? "text-base"
+                      : "text-lg sm:text-xl"
+                  } font-semibold mb-2`}
+                >
+                  {recipe.title}
+                </h2>
+                <div>
+                  {isPer100g
+                    ? recipe.nutritionPer100g?.calories && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <FontAwesomeIcon
+                            icon={faFire}
+                            className="text-red-700/80 size-4"
+                          />
+                          <span>
+                            {Math.round(recipe.nutritionPer100g.calories)} kcal{" "}
+                            <span className="text-xs">/ 100g</span>
+                          </span>
+                        </div>
+                      )
+                    : recipe.nutritionPerServing?.calories && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <FontAwesomeIcon
+                            icon={faFire}
+                            className="text-red-700/80 size-4"
+                          />
+                          <span>
+                            {Math.round(recipe.nutritionPerServing.calories)}{" "}
+                            kcal <span className="text-xs">/ serving</span>
+                          </span>
                         </div>
                       )}
-                    </span>
-                  )}
-                </span>
+
+                  <span className="flex text-sm items-center gap-2">
+                    <FontAwesomeIcon
+                      icon={faCarrot}
+                      className="size-4 text-orange-600/80"
+                    />{" "}
+                    {recipe.ingredients.length} ingredients
+                    {recipe.missedIngredientCount > 0 && (
+                      <span className="flex items-center gap-2 text-xs bg-gray-800/90 text-orange-300 rounded-full px-2 py-0.5 relative group/missing">
+                        {recipe.missedIngredientCount} missing
+                        {recipe.missedIngredients?.length > 0 && (
+                          <div className="absolute bottom-full mb-1 min-w-max rounded-xl border border-gray-800 bg-gray-950 px-3 py-2 text-gray-300 opacity-0 transition-all group-hover/missing:opacity-100 pointer-events-none">
+                            <p className="mb-1 font-medium text-orange-200">
+                              Missing ingredients:
+                            </p>
+
+                            <div className="flex flex-col gap-0.5 capitalize">
+                              {recipe.missedIngredients.map((ing) => (
+                                <span key={ing.name}>• {ing.name}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </span>
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

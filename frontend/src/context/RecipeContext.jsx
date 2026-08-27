@@ -8,6 +8,7 @@ export default function RecipeContextProvider({ children }) {
   const [shoppingList, setShoppingList] = useState([]); // is this needed??
   const [favorites, setFavorites] = useState([]);
   const [areFavoritesLoaded, setAreFavoritesLoaded] = useState(false);
+  const [ownRecipes, setOwnRecipes] = useState([]);
   const { isLoggedIn, isAuthChecked } = useContext(AuthContext);
 
   useEffect(() => {
@@ -49,6 +50,8 @@ export default function RecipeContextProvider({ children }) {
         setShoppingList,
         favorites,
         setFavorites,
+        ownRecipes,
+        setOwnRecipes,
         areFavoritesLoaded,
       }}
     >

@@ -65,7 +65,9 @@ function RecipeDetails() {
   // Show a loading state until recipe data is resolved
   if (!recipe) {
     return (
-      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+      <div className="self-stretch w-full flex items-center justify-center">
+        <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+      </div>
     );
   }
 

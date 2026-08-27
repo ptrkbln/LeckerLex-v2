@@ -8,7 +8,7 @@ export default function Layout() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow bg-black flex justify-center items-center pb-12 md:p-0">
+      <main className="flex-grow bg-black flex justify-center items-start pb-12 md:p-0">
         <Outlet />
       </main>
       <Footer />

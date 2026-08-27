@@ -51,7 +51,9 @@ export default function MyCulinaryJournal() {
 
   if (isLoading) {
     return (
-      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+      <div className="self-stretch w-full flex items-center justify-center">
+        <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+      </div>
     );
   }
 
@@ -170,7 +172,7 @@ export default function MyCulinaryJournal() {
 
       {showDeleteEntryModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
-          <div className="relative bg-gray-900 rounded-3xl shadow-2xl p-6 mx-2 w-full max-w-sm text-center animate-popIn">
+          <div className="bg-gray-900 rounded-3xl shadow-2xl p-6 mx-2 w-full max-w-sm text-center animate-popIn">
             <p className="text-center text-white/90 mb-1">
               Delete{" "}
               <span className="font-semibold text-orange-200">
