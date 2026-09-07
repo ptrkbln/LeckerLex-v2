@@ -87,9 +87,8 @@ function RecipeCollection({
         {/* Filter section */}
         {showFilters && (
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            {/** Calories */}
             <div className="relative" ref={caloriesDropdownRef}>
-              <div
+              <button
                 className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full  px-5 py-2.5 cursor-pointer select-none"
                 onClick={() => setIsCaloriesDropdownOpen((prev) => !prev)}
               >
@@ -104,7 +103,7 @@ function RecipeCollection({
                 <MdKeyboardArrowDown
                   className={`size-5 ${maxCalories < 600 ? "text-orange-200" : ""}`}
                 />
-              </div>
+              </button>
               {isCaloriesDropdownOpen && (
                 <div className="absolute min-w-max gap-1 left-1/2 -translate-x-1/2 mt-1 flex flex-col z-10 bg-black border border-gray-600 rounded-3xl py-5 px-5">
                   <div className="grid grid-cols-2 bg-gray-900 rounded-full">
@@ -144,7 +143,7 @@ function RecipeCollection({
             </div>
 
             <div className="relative" ref={dietDropdownRef}>
-              <div
+              <button
                 className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full px-5 py-2.5 cursor-pointer select-none"
                 onClick={() => setIsDietDropdownOpen((prev) => !prev)}
               >
@@ -162,7 +161,7 @@ function RecipeCollection({
                 <MdKeyboardArrowDown
                   className={`size-5 ${diet.length > 0 ? "text-orange-200" : ""}`}
                 />
-              </div>
+              </button>
               {isDietDropdownOpen && (
                 <div className="absolute min-w-max gap-1 mt-1 left-1/2 -translate-x-1/2 flex flex-col z-10 bg-black border border-gray-600 rounded-3xl py-3 px-2">
                   {DIET_OPTIONS.map((option) => {

@@ -7,14 +7,19 @@ import { updateFavoritesDatabase } from "../api/favorites";
 import toast from "react-hot-toast";
 import { ImSpinner2 } from "react-icons/im";
 import { LuNotebookPen } from "react-icons/lu";
-
+import { FiPlus } from "react-icons/fi";
+import CreateRecipeForm from "../components/CreateRecipeForm";
 // recipe.id/recipe._id adapt with sourceType
 
 function Favorites() {
   const [tab, setTab] = useState("saved");
+  const [showCreateRecipeModal, setShowCreateRecipeModal] = useState(false);
   const { favorites, setFavorites, areFavoritesLoaded, ownRecipes } =
     useContext(RecipeContext);
   const navigate = useNavigate();
+  const isSavedTabActive = tab === "saved";
+  const recipeList = tab === "saved" ? favorites : ownRecipes;
+  //
 
   // Remove from UI immediately, if backend call fails revert to previous state
   const handleRemoveFromFavorites = async (e, favoriteRecipeId) => {
@@ -63,23 +68,34 @@ function Favorites() {
   );
 
   const createRecipeButton = (
-    <div className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full  px-5 py-2.5 cursor-pointer select-none group">
-      <LuNotebookPen className="text-orange-100/60 group-hover:text-orange-100/90 transition" />
+    <button
+      className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full  px-5 py-2.5 cursor-pointer select-none group"
+      onClick={() => setShowCreateRecipeModal(true)}
+    >
+      <FiPlus className="text-orange-200/70 group-hover:text-orange-200 transition" />
       <span className="text-gray-300">Create Recipe</span>
-    </div>
+    </button>
   );
 
   const emptyState = (
-    <div className="flex flex-col w-full max-w-2xl rounded-3xl justify-center items-center p-10 m-2 border border-gray-800 bg-gray-950 text-center">
-      <GrFavorite className="size-10 sm:size-12 text-orange-200 mb-4 sm:mb-3" />
+    <div className="flex flex-col w-full max-w-xl justify-center p-10 items-center text-center">
+      {isSavedTabActive ? (
+        <GrFavorite className="size-10 sm:size-12 text-orange-200 mb-4 sm:mb-3" />
+      ) : (
+        <LuNotebookPen className="size-10 sm:size-12 text-orange-200 mb-4 sm:mb-3" />
+      )}
       <h2 className="text-xl sm:text-2xl font-bold mb-3 text-gray-300">
-        Your favorites list is empty
+        {isSavedTabActive
+          ? "Your favorites list is empty"
+          : "You haven't created any recipes yet"}
       </h2>
 
       <p className="text-gray-400 max-w-md mb-10">
-        Browse recipes for inspiration and select your favorites.
+        {isSavedTabActive
+          ? "Browse recipes for inspiration and select your favorites."
+          : "Write your own recipes and keep them all in one place."}
       </p>
-      {tab === "saved" ? (
+      {isSavedTabActive ? (
         <button
           onClick={() => navigate("/home")}
           className="px-6 py-2.5 border border-green-600 text-green-600 hover:text-green-400 hover:border-green-400 active:scale-95 rounded-full transition-all"
@@ -100,28 +116,35 @@ function Favorites() {
     );
   }
 
-  const isSavedTabActive = tab === "saved";
-  const recipeList = tab === "saved" ? favorites : ownRecipes;
-
   return (
-    <div className="self-stretch w-full flex flex-col overflow-hidden">
-      {tabsHeader}
+    <>
+      <div className="self-stretch w-full flex flex-col overflow-hidden">
+        {tabsHeader}
 
-      {recipeList.length > 0 ? (
-        <RecipeCollection
-          recipesSource={isSavedTabActive ? favorites : ownRecipes}
-          sourceType={isSavedTabActive ? "favorites" : "ownRecipes"}
-          showFavoritesControl={isSavedTabActive}
-          createRecipeControl={!isSavedTabActive ? createRecipeButton : null}
-          showFilters={isSavedTabActive}
-          handleRemoveFromFavorites={handleRemoveFromFavorites}
-        />
-      ) : (
-        <div className="flex-1 flex items-center justify-center">
-          {emptyState}
+        {recipeList.length > 0 ? (
+          <RecipeCollection
+            recipesSource={isSavedTabActive ? favorites : ownRecipes}
+            sourceType={isSavedTabActive ? "favorites" : "ownRecipes"}
+            showFavoritesControl={isSavedTabActive}
+            createRecipeControl={!isSavedTabActive ? createRecipeButton : null}
+            showFilters={isSavedTabActive}
+            handleRemoveFromFavorites={handleRemoveFromFavorites}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            {emptyState}
+          </div>
+        )}
+      </div>
+
+      {showCreateRecipeModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-20">
+          <div className="bg-gray-950 border border-gray-800 rounded-3xl shadow-2xl p-6 mx-2 w-full max-w-lg text-center animate-popIn">
+            <CreateRecipeForm />
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
