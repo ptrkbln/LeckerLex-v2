@@ -6,7 +6,6 @@ import {
 } from "react-icons/ri";
 import { FiPlus } from "react-icons/fi";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import { FaCameraRetro } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import toast from "react-hot-toast";
 import { InfoTooltip } from "./InfoTooltip";
@@ -15,7 +14,7 @@ import { PiUploadSimpleLight } from "react-icons/pi";
 const DIET_OPTIONS = ["vegetarian", "vegan", "dairy-free", "gluten-free"];
 const inputClasses =
   "w-full pl-4 py-2 border border-gray-600 bg-gray-900 text-gray-200 rounded-3xl focus:outline-none focus:ring-1 focus:ring-emerald-600 placeholder:italic placeholder:text-sm transition";
-const labelClasses = "px-3 text-gray-300";
+const labelClasses = "px-3 font-medium text-gray-300";
 const allowedImageTypes = [
   "image/jpeg",
   "image/png",
@@ -24,6 +23,51 @@ const allowedImageTypes = [
 ];
 
 export default function CreateRecipeForm() {
+  const [recipeName, setRecipeName] = useState("");
+  const [ingredients, setIngredients] = useState([]);
+  const [ingrName, setIngrName] = useState("");
+  const [ingrAmount, setIngrAmount] = useState("");
+  const [ingrUnit, setIngrUnit] = useState("");
+  const [steps, setSteps] = useState([]);
+  const [step, setStep] = useState("");
+  const [prepTime, setPrepTime] = useState("");
+  const [servings, setServings] = useState("");
+  const [servingPortion, setServingPortion] = useState("");
+  const [diet, setDiet] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple form submissions while request is in progress
+  const [isDietDropdownOpen, setIsDietDropdownOpen] = useState(false);
+  const dietDropdownRef = useRef(null);
+  const recipeNameRef = useRef(null);
+  const ingrAmountRef = useRef(null);
+  const stepRef = useRef(null);
+  const prepTimeRef = useRef(null);
+  const servingsRef = useRef(null);
+  const servingPortionRef = useRef(null);
+
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isPer100g, setIsPer100g] = useState(true);
+  const [nutrition, setNutrition] = useState({
+    per100g: {
+      calories: "",
+      fat: "",
+      saturatedFat: "",
+      carbohydrates: "",
+      sugar: "",
+      protein: "",
+      sodium: "",
+    },
+    perServing: {
+      calories: "",
+      fat: "",
+      saturatedFat: "",
+      carbohydrates: "",
+      sugar: "",
+      protein: "",
+      sodium: "",
+    },
+  });
+  const activeNutritionKey = isPer100g ? "per100g" : "perServing";
+
   // Close calories / diet dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -41,15 +85,18 @@ export default function CreateRecipeForm() {
   }, []);
 
   const handleAddIngredient = () => {
-    setErrorMessage("");
     if (!ingrAmount || !ingrName.trim() || !ingrUnit.trim()) {
-      setErrorMessage("Your ingredient is missing some details.");
+      toast.error("Your ingredient is missing some details.");
+      return;
+    }
+    if (Number(ingrAmount) <= 0) {
+      toast.error("Ingredient amount should be greater than 0.");
       return;
     }
     if (
       ingredients.some((ingr) => ingr.name === ingrName.trim().toLowerCase())
     ) {
-      setErrorMessage("You already added this ingredient.");
+      toast.error("You already added this ingredient.");
       return;
     }
 
@@ -78,9 +125,8 @@ export default function CreateRecipeForm() {
   };
 
   const handleAddStep = () => {
-    setErrorMessage("");
     if (!step.trim()) {
-      setErrorMessage("Add some instructions first.");
+      toast.error("Add some instructions first.");
       return;
     }
     if (
@@ -89,7 +135,7 @@ export default function CreateRecipeForm() {
           existingStep.toLowerCase() === step.trim().toLowerCase(),
       )
     ) {
-      setErrorMessage("You already added this step.");
+      toast.error("You already added this step.");
       return;
     }
 
@@ -117,47 +163,76 @@ export default function CreateRecipeForm() {
     const file = e.target.files[0];
     if (!file) return;
     if (!allowedImageTypes.includes(file.type)) {
-      setErrorMessage("Only JPG, PNG, WEBP and AVIF images allowed.");
+      toast.error("Only JPG, PNG, WEBP and AVIF images allowed.");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setErrorMessage("Image must be under 5 MB.");
+      toast.error("Image should be under 5 MB.");
       return;
     }
     setSelectedImage(file);
-    setErrorMessage("");
+  };
+
+  const handleNutritionChange = (nutrient, value) => {
+    setNutrition((prev) => ({
+      ...prev,
+      [activeNutritionKey]: { ...prev[activeNutritionKey], [nutrient]: value },
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setErrorMessage("");
+    //setIsSubmitting(true);
+    if (!recipeName.trim()) {
+      toast.error("Add a recipe name first.");
+      recipeNameRef.current?.focus();
+      return;
+    }
     if (ingredients.length === 0) {
-      setErrorMessage("Add some ingredients first.");
+      toast.error("Add some ingredients first.");
+      ingrAmountRef.current?.focus();
       return;
     }
-    if (steps.lenght === 0) {
-      setErrorMessage("Add some instructions first.");
+    if (
+      servings &&
+      (!Number.isInteger(Number(servings)) || Number(servings) <= 0)
+    ) {
+      toast.error("Servings should be a whole number greater than 0.");
+      servingsRef.current?.focus();
       return;
     }
-    // form
-  };
+    if (steps.length === 0) {
+      toast.error("Add some instructions first.");
+      stepRef.current?.focus();
+      return;
+    }
+    if (prepTime && Number(prepTime) <= 0) {
+      toast.error("Total time should be at least 1 minute.");
+      prepTimeRef.current?.focus();
+      return;
+    }
+    if (servingPortion && Number(servingPortion) <= 0) {
+      toast.error("Serving size should be greater than 0.");
+      servingPortionRef.current?.focus();
+      return;
+    }
 
-  const [recipeName, setRecipeName] = useState("");
-  const [ingredients, setIngredients] = useState([]);
-  const [ingrName, setIngrName] = useState("");
-  const [ingrAmount, setIngrAmount] = useState("");
-  const [ingrUnit, setIngrUnit] = useState("");
-  const [steps, setSteps] = useState([]);
-  const [step, setStep] = useState("");
-  const [prepTime, setPrepTime] = useState("");
-  const [servings, setServings] = useState("");
-  const [diet, setDiet] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple form submissions while request is in progress
-  const [isDietDropdownOpen, setIsDietDropdownOpen] = useState(false);
-  const dietDropdownRef = useRef(null);
-  const [selectedImage, setSelectedImage] = useState(null);
+    const hasInvalidNutrition = (section) =>
+      Object.values(nutrition[section]).some(
+        (value) => value !== "" && Number(value) < 0,
+      );
+
+    if (hasInvalidNutrition("per100g")) {
+      setIsPer100g(true);
+      toast.error("Nutrition values shouldn't be negative.");
+      return;
+    }
+    if (hasInvalidNutrition("perServing")) {
+      setIsPer100g(false);
+      toast.error("Nutrition values shouldn't be negative.");
+      return;
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-7">
@@ -169,9 +244,9 @@ export default function CreateRecipeForm() {
           </label>
           <input
             id="recipe-name"
+            ref={recipeNameRef}
             type="text"
-            placeholder="eg. Mushroom pasta"
-            className={inputClasses}
+            className={`${inputClasses}`}
             value={recipeName}
             onChange={(e) => setRecipeName(e.target.value)}
           />
@@ -219,6 +294,7 @@ export default function CreateRecipeForm() {
           <div className="flex w-full gap-2">
             <input
               type="number"
+              ref={ingrAmountRef}
               placeholder="Amount"
               className={`${inputClasses} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
               value={ingrAmount}
@@ -252,6 +328,20 @@ export default function CreateRecipeForm() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Servings */}
+      <div className="flex items-center gap-2 w-full justify-end -my-4">
+        <span className="text-gray-300 text-sm">for</span>{" "}
+        <input
+          type="number"
+          ref={servingsRef}
+          className={`${inputClasses} w-[70px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+          value={servings}
+          onChange={(e) => setServings(e.target.value)}
+        />{" "}
+        <span className="text-gray-300 text-sm">servings</span>{" "}
+        <span className="text-sm text-gray-500">(optional)</span>
       </div>
 
       {/* Preparation step */}
@@ -295,6 +385,7 @@ export default function CreateRecipeForm() {
         <div className="flex w-full gap-2 pt-0.5">
           <input
             type="text"
+            ref={stepRef}
             placeholder="eg. Chop vegetables"
             className={inputClasses}
             value={step}
@@ -311,43 +402,46 @@ export default function CreateRecipeForm() {
         </div>
       </div>
 
+      <div className="border-t border-gray-800"></div>
+
       <div className="flex w-full flex-col sm:flex-row gap-7">
-        {/* Preparation time */}
-        <div className="flex flex-col gap-1 w-1/2">
+        {/* Preparation/total time */}
+        <div className="flex flex-col gap-1 sm:w-1/2">
           <div className={`${labelClasses} flex justify-between w-full`}>
             <span className="self-start flex items-center gap-1">
-              Preparation time{" "}
+              Total time{" "}
               <span className="text-sm text-gray-500">(optional)</span>
             </span>
           </div>
           <div className="flex items-center gap-2">
             <input
               type="number"
-              placeholder="Amount"
-              className={`${inputClasses} w-full max-w-[104px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+              ref={prepTimeRef}
+              className={`${inputClasses} w-[70px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
               value={prepTime}
               onChange={(e) => setPrepTime(e.target.value)}
             />
-            <span className="text-gray-400 text-sm">minutes</span>
+            <span className="text-gray-400 text-sm">min</span>
           </div>
         </div>
 
-        {/* Servings */}
-        <div className="flex flex-col gap-1 w-1/2">
+        {/* Serving size */}
+        <div className="flex flex-col gap-1 sm:w-1/2">
           <div className={`${labelClasses} flex justify-between w-full`}>
             <span className="self-start flex items-center gap-1">
-              Servings
+              Serving size
               <span className="text-sm text-gray-500">(optional)</span>
             </span>
           </div>
           <div className="flex items-center gap-2">
             <input
               type="number"
-              placeholder="Amount"
-              className={`${inputClasses} w-full max-w-[104px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-              value={servings}
-              onChange={(e) => setServings(e.target.value)}
+              ref={servingPortionRef}
+              className={`${inputClasses} w-full max-w-[70px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+              value={servingPortion}
+              onChange={(e) => setServingPortion(e.target.value)}
             />
+            <span className="text-gray-400 text-sm">g</span>
           </div>
         </div>
       </div>
@@ -356,7 +450,7 @@ export default function CreateRecipeForm() {
       <div>
         <div className={`${labelClasses} flex justify-between w-full`}>
           <span className="self-start">
-            Diet <span className="text-sm text-gray-500">(optional)</span>
+            Diet type <span className="text-sm text-gray-500">(optional)</span>
           </span>
           {diet.length > 0 && (
             <span className="text-sm self-end italic">
@@ -420,7 +514,7 @@ export default function CreateRecipeForm() {
           )}
         </div>
       </div>
-
+      {/* Recipe image */}
       <div className="flex flex-col gap-1">
         <div className={`${labelClasses} flex justify-between w-full`}>
           <span className="self-start">
@@ -429,12 +523,22 @@ export default function CreateRecipeForm() {
           </span>
         </div>
         {selectedImage && (
-          <img
-            width="140px"
-            src={URL.createObjectURL(selectedImage)}
-            alt="Preview of uploaded image"
-            className="rounded-lg shadow-lg py-0.5"
-          />
+          <div className="relative w-fit">
+            <img
+              width="140px"
+              src={URL.createObjectURL(selectedImage)}
+              alt="Preview of uploaded image"
+              className="rounded-lg shadow-lg py-0.5"
+            />
+            <button
+              type="button"
+              className="absolute p-1 right-1 top-1 rounded-full text-xl bg-opacity-70 
+              hover:scale-110 transition bg-gray-600 active:scale-95 text-white"
+              onClick={() => setSelectedImage(null)}
+            >
+              <IoMdClose />
+            </button>
+          </div>
         )}
         <label
           htmlFor="imageInput"
@@ -451,27 +555,142 @@ export default function CreateRecipeForm() {
         </label>
       </div>
 
+      <div className="border-t border-gray-800"></div>
+
+      {/* Nutrition */}
       <div className="flex flex-col gap-2">
-        {/* Error messages */}
-        <div className="min-h-[20px] flex justify-center items-center">
-          {errorMessage && (
-            <p className="text-rose-400 text-center text-sm">{errorMessage}</p>
-          )}
+        <div
+          className={`${labelClasses} flex flex-col sm:flex-row gap-2 justify-between w-full`}
+        >
+          <span className="self-start">
+            Nutrition <span className="text-sm text-gray-500">(optional)</span>
+          </span>
+          <div className="grid grid-cols-2 bg-gray-900 rounded-full max-w-[250px]">
+            <button
+              type="button"
+              className={`text-sm rounded-full px-4 py-2 text-center ${isPer100g ? "bg-orange-200/80 text-gray-800" : "text-gray-400"} transition`}
+              onClick={() => setIsPer100g(true)}
+            >
+              Per 100g
+            </button>
+            <button
+              type="button"
+              className={`text-sm rounded-full px-4 py-2 text-center ${!isPer100g ? "bg-orange-200/80 text-gray-800" : "text-gray-400"} transition`}
+              onClick={() => setIsPer100g(false)}
+            >
+              Per serving
+            </button>
+          </div>
         </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full max-w-md mx-auto flex justify-center items-center px-4 py-2 text-md border border-green-600 text-green-600 rounded-3xl shadow-lg hover:border-green-400 hover:text-green-400 active:scale-95 transition"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <ImSpinner2 className="animate-spin size-6" />
-          ) : (
-            "Create Recipe"
-          )}
-        </button>
+        <div className="flex flex-col items-start gap-0.5">
+          <span className="text-sm px-3 text-gray-300">Calories</span>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              className={`${inputClasses} w-full max-w-[110px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+              value={nutrition[activeNutritionKey].calories}
+              onChange={(e) =>
+                handleNutritionChange("calories", e.target.value)
+              }
+            />
+            <span className="text-sm text-gray-400">kcal</span>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-6">
+          <div className="flex flex-col items-start gap-0.5">
+            <span className="text-sm px-3 text-gray-300">Fat</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                className={`${inputClasses} w-full max-w-[110px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={nutrition[activeNutritionKey].fat}
+                onChange={(e) => handleNutritionChange("fat", e.target.value)}
+              />
+              <span className="text-sm text-gray-400">g</span>
+            </div>
+          </div>
+          <div className="flex flex-col items-start gap-0.5">
+            <span className="text-sm px-3 text-gray-300">Saturated fat</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                className={`${inputClasses} w-full max-w-[110px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={nutrition[activeNutritionKey].saturatedFat}
+                onChange={(e) =>
+                  handleNutritionChange("saturatedFat", e.target.value)
+                }
+              />
+              <span className="text-sm text-gray-400">g</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-6">
+          <div className="flex flex-col items-start gap-0.5">
+            <span className="text-sm px-3 text-gray-300">Carbohydrates</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                className={`${inputClasses} w-full max-w-[110px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={nutrition[activeNutritionKey].carbohydrates}
+                onChange={(e) =>
+                  handleNutritionChange("carbohydrates", e.target.value)
+                }
+              />
+              <span className="text-sm text-gray-400">g</span>
+            </div>
+          </div>
+          <div className="flex flex-col items-start gap-0.5">
+            <span className="text-sm px-3 text-gray-300">Sugar</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                className={`${inputClasses} w-full max-w-[110px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                value={nutrition[activeNutritionKey].sugar}
+                onChange={(e) => handleNutritionChange("sugar", e.target.value)}
+              />
+              <span className="text-sm text-gray-400">g</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col items-start gap-0.5">
+          <span className="text-sm px-3 text-gray-300">Protein</span>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              className={`${inputClasses} w-full max-w-[110px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+              value={nutrition[activeNutritionKey].protein}
+              onChange={(e) => handleNutritionChange("protein", e.target.value)}
+            />
+            <span className="text-sm text-gray-400">g</span>
+          </div>
+        </div>
+        <div className="flex flex-col items-start gap-0.5">
+          <span className="text-sm px-3 text-gray-300">Salt</span>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              className={`${inputClasses} w-full max-w-[110px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+              value={nutrition[activeNutritionKey].sodium}
+              onChange={(e) => handleNutritionChange("sodium", e.target.value)}
+            />
+            <span className="text-sm text-gray-400">g</span>
+          </div>
+        </div>
       </div>
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        className="mx-auto flex items-center justify-center px-8 py-2.5 min-w-[168px] border border-green-600 text-green-500 rounded-full hover:border-green-400 hover:text-green-400 active:scale-[0.98] transition"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? (
+          <ImSpinner2 className="animate-spin size-6" />
+        ) : (
+          "Create Recipe"
+        )}
+      </button>
     </form>
   );
 }
