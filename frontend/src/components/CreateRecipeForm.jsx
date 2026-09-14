@@ -43,7 +43,6 @@ export default function CreateRecipeForm() {
   const prepTimeRef = useRef(null);
   const servingsRef = useRef(null);
   const servingPortionRef = useRef(null);
-
   const [selectedImage, setSelectedImage] = useState(null);
   const [isPer100g, setIsPer100g] = useState(true);
   const [nutrition, setNutrition] = useState({
@@ -159,7 +158,7 @@ export default function CreateRecipeForm() {
     setDiet((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (!allowedImageTypes.includes(file.type)) {
@@ -231,6 +230,30 @@ export default function CreateRecipeForm() {
       setIsPer100g(false);
       toast.error("Nutrition values shouldn't be negative.");
       return;
+    }
+
+    setIsSubmitting(true);
+    const formData = new FormData();
+    formData.append("title", recipeName);
+    formData.append("ingredients", JSON.stringify(ingredients));
+    formData.append("preparationSteps", JSON.stringify(steps));
+    if (servings) formData.append("servingsAmount", servings);
+    if (prepTime) formData.append("preparationTime", prepTime);
+    if (servingPortion) formData.append("servingPortion", servingPortion);
+    if (diet.length > 0) formData.append("diet", JSON.stringify(diet));
+    if (selectedImage) formData.append("imageUrl", selectedImage);
+    if (Object.values(nutrition.per100g).some((value) => value !== ""))
+      formData.append("nutritionPer100g", JSON.stringify(nutrition.per100g));
+    if (Object.values(nutrition.perServing).some((value) => value !== ""))
+      formData.append(
+        "nutritionPerServing",
+        JSON.stringify(nutrition.perServing),
+      );
+
+    try {
+    } catch (error) {
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
