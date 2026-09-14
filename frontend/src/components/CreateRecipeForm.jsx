@@ -23,27 +23,27 @@ const allowedImageTypes = [
 ];
 
 export default function CreateRecipeForm() {
-  const [recipeName, setRecipeName] = useState("");
+  const [title, setTitle] = useState("");
   const [ingredients, setIngredients] = useState([]);
   const [ingrName, setIngrName] = useState("");
   const [ingrAmount, setIngrAmount] = useState("");
   const [ingrUnit, setIngrUnit] = useState("");
-  const [steps, setSteps] = useState([]);
+  const [preparationSteps, setPreparationSteps] = useState([]);
   const [step, setStep] = useState("");
-  const [prepTime, setPrepTime] = useState("");
-  const [servings, setServings] = useState("");
+  const [preparationTime, setPreparationTime] = useState("");
+  const [servingsAmount, setServingsAmount] = useState("");
   const [servingPortion, setServingPortion] = useState("");
   const [diet, setDiet] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple form submissions while request is in progress
   const [isDietDropdownOpen, setIsDietDropdownOpen] = useState(false);
   const dietDropdownRef = useRef(null);
-  const recipeNameRef = useRef(null);
+  const titleRef = useRef(null);
   const ingrAmountRef = useRef(null);
   const stepRef = useRef(null);
-  const prepTimeRef = useRef(null);
-  const servingsRef = useRef(null);
+  const preparationTimeRef = useRef(null);
+  const servingsAmountRef = useRef(null);
   const servingPortionRef = useRef(null);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [image, setImage] = useState(null);
   const [isPer100g, setIsPer100g] = useState(true);
   const [nutrition, setNutrition] = useState({
     per100g: {
@@ -101,7 +101,7 @@ export default function CreateRecipeForm() {
 
     const newIngredient = {
       name: ingrName.trim().toLowerCase(),
-      amount: ingrAmount,
+      amount: +ingrAmount,
       unit: ingrUnit.trim().toLowerCase(),
     };
 
@@ -129,7 +129,7 @@ export default function CreateRecipeForm() {
       return;
     }
     if (
-      steps.some(
+      preparationSteps.some(
         (existingStep) =>
           existingStep.toLowerCase() === step.trim().toLowerCase(),
       )
@@ -138,13 +138,13 @@ export default function CreateRecipeForm() {
       return;
     }
 
-    setSteps((prev) => [...prev, step.trim()]);
+    setPreparationSteps((prev) => [...prev, step.trim()]);
 
     setStep("");
   };
 
   const handleRemoveStep = (index) => {
-    setSteps((prev) => prev.filter((_, i) => i !== index));
+    setPreparationSteps((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleStepKeyDown = (e) => {
@@ -169,7 +169,7 @@ export default function CreateRecipeForm() {
       toast.error("Image should be under 5 MB.");
       return;
     }
-    setSelectedImage(file);
+    setImage(file);
   };
 
   const handleNutritionChange = (nutrient, value) => {
@@ -182,9 +182,9 @@ export default function CreateRecipeForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     //setIsSubmitting(true);
-    if (!recipeName.trim()) {
+    if (!title.trim()) {
       toast.error("Add a recipe name first.");
-      recipeNameRef.current?.focus();
+      titleRef.current?.focus();
       return;
     }
     if (ingredients.length === 0) {
@@ -193,21 +193,21 @@ export default function CreateRecipeForm() {
       return;
     }
     if (
-      servings &&
-      (!Number.isInteger(Number(servings)) || Number(servings) <= 0)
+      servingsAmount &&
+      (!Number.isInteger(Number(servingsAmount)) || Number(servingsAmount) <= 0)
     ) {
       toast.error("Servings should be a whole number greater than 0.");
-      servingsRef.current?.focus();
+      servingsAmountRef.current?.focus();
       return;
     }
-    if (steps.length === 0) {
+    if (preparationSteps.length === 0) {
       toast.error("Add some instructions first.");
       stepRef.current?.focus();
       return;
     }
-    if (prepTime && Number(prepTime) <= 0) {
+    if (preparationTime && Number(preparationTime) <= 0) {
       toast.error("Total time should be at least 1 minute.");
-      prepTimeRef.current?.focus();
+      preparationTimeRef.current?.focus();
       return;
     }
     if (servingPortion && Number(servingPortion) <= 0) {
@@ -234,14 +234,27 @@ export default function CreateRecipeForm() {
 
     setIsSubmitting(true);
     const formData = new FormData();
-    formData.append("title", recipeName);
+    formData.append("title", title);
     formData.append("ingredients", JSON.stringify(ingredients));
-    formData.append("preparationSteps", JSON.stringify(steps));
-    if (servings) formData.append("servingsAmount", servings);
-    if (prepTime) formData.append("preparationTime", prepTime);
-    if (servingPortion) formData.append("servingPortion", servingPortion);
-    if (diet.length > 0) formData.append("diet", JSON.stringify(diet));
-    if (selectedImage) formData.append("imageUrl", selectedImage);
+    formData.append("preparationSteps", JSON.stringify(preparationSteps));
+    if (servingsAmount) formData.append("servingsAmount", servingsAmount);
+    if (preparationTime) formData.append("preparationTime", preparationTime);
+    if (servingPortion)
+      formData.append(
+        "servingPortion",
+        JSON.stringify({ amount: servingPortion, unit: "g" }),
+      );
+    if (diet.length > 0)
+      formData.append(
+        "diet",
+        JSON.stringify({
+          vegetarian: diet.includes("vegetarian"),
+          vegan: diet.includes("vegan"),
+          glutenFree: diet.includes("gluten-free"),
+          dairyFree: diet.includes("dairy-free"),
+        }),
+      );
+    if (image) formData.append("imageUrl", image);
     if (Object.values(nutrition.per100g).some((value) => value !== ""))
       formData.append("nutritionPer100g", JSON.stringify(nutrition.per100g));
     if (Object.values(nutrition.perServing).some((value) => value !== ""))
@@ -250,11 +263,11 @@ export default function CreateRecipeForm() {
         JSON.stringify(nutrition.perServing),
       );
 
-    try {
+    /*     try {
     } catch (error) {
     } finally {
       setIsSubmitting(false);
-    }
+    } */
   };
 
   return (
@@ -267,11 +280,11 @@ export default function CreateRecipeForm() {
           </label>
           <input
             id="recipe-name"
-            ref={recipeNameRef}
+            ref={titleRef}
             type="text"
             className={`${inputClasses}`}
-            value={recipeName}
-            onChange={(e) => setRecipeName(e.target.value)}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
         </div>
       </div>
@@ -358,10 +371,10 @@ export default function CreateRecipeForm() {
         <span className="text-gray-300 text-sm">for</span>{" "}
         <input
           type="number"
-          ref={servingsRef}
+          ref={servingsAmountRef}
           className={`${inputClasses} w-[70px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-          value={servings}
-          onChange={(e) => setServings(e.target.value)}
+          value={servingsAmount}
+          onChange={(e) => setServingsAmount(e.target.value)}
         />{" "}
         <span className="text-gray-300 text-sm">servings</span>{" "}
         <span className="text-sm text-gray-500">(optional)</span>
@@ -380,13 +393,13 @@ export default function CreateRecipeForm() {
             </InfoTooltip>
             Preparation steps
           </span>
-          {steps.length > 0 && (
+          {preparationSteps.length > 0 && (
             <span className="text-sm self-end italic">
-              {steps.length} step{steps.length > 1 && "s"}
+              {preparationSteps.length} step{preparationSteps.length > 1 && "s"}
             </span>
           )}
         </div>
-        {steps.map((step, index) => {
+        {preparationSteps.map((step, index) => {
           return (
             <div
               key={index}
@@ -439,10 +452,10 @@ export default function CreateRecipeForm() {
           <div className="flex items-center gap-2">
             <input
               type="number"
-              ref={prepTimeRef}
+              ref={preparationTimeRef}
               className={`${inputClasses} w-[70px] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-              value={prepTime}
-              onChange={(e) => setPrepTime(e.target.value)}
+              value={preparationTime}
+              onChange={(e) => setPreparationTime(e.target.value)}
             />
             <span className="text-gray-400 text-sm">min</span>
           </div>
@@ -545,11 +558,11 @@ export default function CreateRecipeForm() {
             <span className="text-sm text-gray-500">(optional)</span>
           </span>
         </div>
-        {selectedImage && (
+        {image && (
           <div className="relative w-fit">
             <img
               width="140px"
-              src={URL.createObjectURL(selectedImage)}
+              src={URL.createObjectURL(image)}
               alt="Preview of uploaded image"
               className="rounded-lg shadow-lg py-0.5"
             />
@@ -557,7 +570,7 @@ export default function CreateRecipeForm() {
               type="button"
               className="absolute p-1 right-1 top-1 rounded-full text-xl bg-opacity-70 
               hover:scale-110 transition bg-gray-600 active:scale-95 text-white"
-              onClick={() => setSelectedImage(null)}
+              onClick={() => setImage(null)}
             >
               <IoMdClose />
             </button>

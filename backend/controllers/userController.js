@@ -205,7 +205,7 @@ export const updateUsersShoppingList = async (req, res, next) => {
       )
     ) {
       return res.status(400).json({
-        msg: "Shopping list items must be objects with item property as a string and completed property as a boolean.",
+        msg: "Shopping list items should be objects with item property as a string and completed property as a boolean.",
       });
     }
 
@@ -292,7 +292,7 @@ export const updateUsersFavorites = async (req, res, next) => {
       )
     ) {
       return res.status(400).json({
-        msg: "Shopping list items must be objects with item property as a string and completed property as a boolean.",
+        msg: "Shopping list items should be objects with item property as a string and completed property as a boolean.",
       });
     }
 
@@ -366,15 +366,19 @@ export const createOwnRecipe = [
       // Parse values that are arrays/objects
       let parsedIngredients;
       let parsedPreparationSteps;
+      let parsedServingPortion;
       let parsedDiet;
       let parsedNutritionPer100g;
       let parsedNutritionPerServing;
       // FormData sends arrays/objects as JSON strings.
-      // Catch JSON.parse error if invalid/non-JSON data is sent and return 400 instead of letting it become a 500 server error.      try {
+      // Catch JSON.parse error if invalid/non-JSON data is sent and return 400 instead of letting it become a 500 server error.
       try {
         parsedIngredients = ingredients ? JSON.parse(ingredients) : undefined;
         parsedPreparationSteps = preparationSteps
           ? JSON.parse(preparationSteps)
+          : undefined;
+        parsedServingPortion = servingPortion
+          ? JSON.parse(servingPortion)
           : undefined;
         parsedDiet = diet ? JSON.parse(diet) : undefined;
         parsedNutritionPer100g = nutritionPer100g
@@ -385,10 +389,27 @@ export const createOwnRecipe = [
           : undefined;
       } catch (error) {
         return res.status(400).json({
-          msg: "Invalid data format. Ingredients, preparation steps, and diet must be valid JSON arrays, while nutrition must be a valid JSON object.",
+          msg: "Invalid data format. Ingredients and preparation steps should be valid JSON arrays; serving portion, diet, and nutrition should be valid JSON objects.",
         });
       }
-
+      // Validation for object-type properties
+      if (
+        parsedServingPortion &&
+        (typeof parsedServingPortion !== "object" ||
+          Array.isArray(parsedServingPortion))
+      ) {
+        return res.status(400).json({
+          msg: "Serving portion should be an object.",
+        });
+      }
+      if (
+        parsedDiet &&
+        (typeof parsedDiet !== "object" || Array.isArray(parsedDiet))
+      ) {
+        return res.status(400).json({
+          msg: "Diet should be an object.",
+        });
+      }
       if (
         parsedNutritionPer100g &&
         (typeof parsedNutritionPer100g !== "object" ||
@@ -415,8 +436,11 @@ export const createOwnRecipe = [
       const formattedPreparationTime = preparationTime
         ? Number(preparationTime)
         : undefined;
-      const formattedServingPortion = servingPortion
-        ? Number(servingPortion)
+      const formattedServingPortion = parsedServingPortion
+        ? {
+            amount: Number(parsedServingPortion.amount),
+            unit: parsedServingPortion.unit,
+          }
         : undefined;
       const formattedNutritionPer100g = parsedNutritionPer100g
         ? {
@@ -472,7 +496,7 @@ export const createOwnRecipe = [
       // Format validation
       if (typeof title !== "string")
         return res.status(400).json({
-          msg: "Title should be a string",
+          msg: "Title should be a string.",
         });
       if (!Array.isArray(parsedIngredients))
         return res.status(400).json({
@@ -480,7 +504,7 @@ export const createOwnRecipe = [
         });
       if (!Array.isArray(parsedPreparationSteps))
         return res.status(400).json({
-          msg: "Preparation steps should be an array",
+          msg: "Preparation steps should be an array.",
         });
       if (
         formattedServingsAmount !== undefined &&
@@ -501,17 +525,26 @@ export const createOwnRecipe = [
         });
       }
       if (
-        formattedServingPortion !== undefined &&
-        (Number.isNaN(formattedServingPortion) || formattedServingPortion <= 0)
+        formattedServingPortion &&
+        (Number.isNaN(formattedServingPortion.amount) ||
+          formattedServingPortion.amount <= 0 ||
+          typeof formattedServingPortion.unit !== "string")
       ) {
         return res.status(400).json({
-          msg: "Serving portion should be a positive number.",
+          msg: "Serving portion should contain a positive amount and a string-type unit.",
         });
       }
-      if (parsedDiet && !Array.isArray(parsedDiet))
+      if (
+        parsedDiet &&
+        (typeof parsedDiet.vegetarian !== "boolean" ||
+          typeof parsedDiet.vegan !== "boolean" ||
+          typeof parsedDiet.glutenFree !== "boolean" ||
+          typeof parsedDiet.dairyFree !== "boolean")
+      ) {
         return res.status(400).json({
-          msg: "Diet should be an array.",
+          msg: "Diet properties should be boolean values.",
         });
+      }
       if (
         formattedNutritionPer100g &&
         Object.values(formattedNutritionPer100g).some(
