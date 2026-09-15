@@ -13,7 +13,7 @@ import { PiUploadSimpleLight } from "react-icons/pi";
 
 const DIET_OPTIONS = ["vegetarian", "vegan", "dairy-free", "gluten-free"];
 const inputClasses =
-  "w-full pl-4 py-2 border border-gray-600 bg-gray-900 text-gray-200 rounded-3xl focus:outline-none focus:ring-1 focus:ring-emerald-600 placeholder:italic placeholder:text-sm transition";
+  "w-full px-4 py-2 border border-gray-600 bg-gray-900 text-gray-200 rounded-3xl focus:outline-none focus:ring-1 focus:ring-emerald-600 placeholder:italic placeholder:text-sm transition";
 const labelClasses = "px-3 font-medium text-gray-300";
 const allowedImageTypes = [
   "image/jpeg",
@@ -22,7 +22,7 @@ const allowedImageTypes = [
   "image/avif",
 ];
 
-export default function CreateRecipeForm() {
+export default function CreateRecipeForm({ setShowCreateRecipeModal }) {
   const [title, setTitle] = useState("");
   const [ingredients, setIngredients] = useState([]);
   const [ingrName, setIngrName] = useState("");
@@ -67,7 +67,7 @@ export default function CreateRecipeForm() {
   });
   const activeNutritionKey = isPer100g ? "per100g" : "perServing";
 
-  // Close calories / diet dropdown when clicking outside
+  // Close diet dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -158,7 +158,7 @@ export default function CreateRecipeForm() {
     setDiet((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleImageUpload = async (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (!allowedImageTypes.includes(file.type)) {
@@ -181,7 +181,6 @@ export default function CreateRecipeForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    //setIsSubmitting(true);
     if (!title.trim()) {
       toast.error("Add a recipe name first.");
       titleRef.current?.focus();
@@ -233,6 +232,7 @@ export default function CreateRecipeForm() {
     }
 
     setIsSubmitting(true);
+    // Build multipart form data, stringifying arrays/objects for the backend
     const formData = new FormData();
     formData.append("title", title);
     formData.append("ingredients", JSON.stringify(ingredients));
@@ -263,11 +263,26 @@ export default function CreateRecipeForm() {
         JSON.stringify(nutrition.perServing),
       );
 
-    /*     try {
-    } catch (error) {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/users/own-recipes`,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        },
+      );
+      if (!response.ok) {
+        toast.error("Something went wrong while saving your recipe.");
+        return;
+      }
+      toast.success("Recipe successfully saved.");
+      setShowCreateRecipeModal(false);
+    } catch {
+      toast.error("Could not connect to the server.");
     } finally {
       setIsSubmitting(false);
-    } */
+    }
   };
 
   return (
@@ -318,6 +333,7 @@ export default function CreateRecipeForm() {
                 {ingredient.amount} {ingredient.unit} {ingredient.name}
               </span>
               <button
+                type="button"
                 className="rounded-full text-lg md:text-xl bg-opacity-30 active:scale-95 transition-all duration-300 ease-in-out text-gray-400 hover:text-gray-200"
                 onClick={() => handleRemoveIngredient(index)}
               >

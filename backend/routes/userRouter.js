@@ -14,6 +14,7 @@ userRouter
   .get("/shoppinglist", authenticate, user.getUsersShoppingList)
   .patch("/update-favorites", authenticate, user.updateUsersFavorites)
   .get("/favorites", authenticate, user.getUsersFavorites)
-  .get("/own-recipes", authenticate, user.getUsersOwnRecipes);
+  .get("/own-recipes", authenticate, user.getUsersOwnRecipes)
+  .post("/own-recipes", authenticate, user.createOwnRecipe);
 
 export default userRouter;

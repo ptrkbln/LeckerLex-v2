@@ -387,7 +387,7 @@ export const createOwnRecipe = [
         parsedNutritionPerServing = nutritionPerServing
           ? JSON.parse(nutritionPerServing)
           : undefined;
-      } catch (error) {
+      } catch {
         return res.status(400).json({
           msg: "Invalid data format. Ingredients and preparation steps should be valid JSON arrays; serving portion, diet, and nutrition should be valid JSON objects.",
         });

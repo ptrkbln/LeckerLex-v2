@@ -142,7 +142,9 @@ function Favorites() {
         <div className="fixed inset-0 overflow-y-auto bg-black bg-opacity-70 z-20">
           <div className="min-h-full flex justify-center items-start py-10">
             <div className="relative group/close bg-gray-950 border border-gray-800 rounded-3xl shadow-2xl p-6 mx-2 w-full max-w-lg text-center animate-popIn">
-              <CreateRecipeForm />
+              <CreateRecipeForm
+                setShowCreateRecipeModal={setShowCreateRecipeModal}
+              />
               <button
                 className="absolute p-1 right-4 top-3 rounded-full text-xl bg-opacity-30 
               lg:opacity-0 lg:group-hover/close:opacity-100 lg:hover:bg-opacity-50 hover:scale-110 transition-all 
