@@ -20,7 +20,6 @@ function Favorites() {
   const navigate = useNavigate();
   const isSavedTabActive = tab === "saved";
   const recipeList = tab === "saved" ? favorites : ownRecipes;
-  //
 
   // Remove from UI immediately, if backend call fails revert to previous state
   const handleRemoveFromFavorites = async (e, favoriteRecipeId) => {
