@@ -3,7 +3,7 @@ import { RecipeContext } from "../context/RecipeContext";
 import { useNavigate } from "react-router-dom";
 import { GrFavorite } from "react-icons/gr";
 import RecipeCollection from "../components/RecipeCollection";
-import { updateFavoritesDatabase } from "../api/favorites";
+import { updateSavedRecipesDatabase } from "../api/favorites";
 import toast from "react-hot-toast";
 import { ImSpinner2 } from "react-icons/im";
 import { LuNotebookPen } from "react-icons/lu";
@@ -16,33 +16,33 @@ function Favorites() {
   const [showCreateRecipeModal, setShowCreateRecipeModal] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState(null);
   const {
-    favorites,
-    setFavorites,
-    areFavoritesLoaded,
+    savedRecipes,
+    setSavedRecipes,
+    areSavedRecipesLoaded,
     ownRecipes,
     setOwnRecipes,
   } = useContext(RecipeContext);
   const navigate = useNavigate();
   const isSavedTabActive = tab === "saved";
-  const recipeList = tab === "saved" ? favorites : ownRecipes;
+  const recipeList = tab === "saved" ? savedRecipes : ownRecipes;
 
   // Remove from UI immediately, if backend call fails revert to previous state
-  const handleRemoveFromFavorites = async (e, favoriteRecipeId) => {
+  const handleRemoveFromSavedRecipes = async (e, savedRecipeId) => {
     e.stopPropagation();
-    const previousFavorites = favorites;
+    const previousSavedRecipes = savedRecipes;
 
-    const updatedFavorites = favorites.filter(
-      (item) => item.id !== favoriteRecipeId,
+    const updatedSavedRecipes = savedRecipes.filter(
+      (item) => item.id !== savedRecipeId,
     );
 
-    setFavorites(updatedFavorites);
+    setSavedRecipes(updatedSavedRecipes);
 
     try {
-      await updateFavoritesDatabase(updatedFavorites);
+      await updateSavedRecipesDatabase(previousSavedRecipes);
     } catch {
-      setFavorites(previousFavorites);
+      setSavedRecipes(previousSavedRecipes);
       toast.error(
-        "Something went wrong while removing the recipe from your favorites.",
+        "Something went wrong while removing the recipe from your saved list.",
       );
     }
   };
@@ -122,7 +122,7 @@ function Favorites() {
       )}
       <h2 className="text-xl sm:text-2xl font-bold mb-3 text-gray-300">
         {isSavedTabActive
-          ? "Your favorites list is empty"
+          ? "Your saved recipes list is empty"
           : "You haven't created any recipes yet"}
       </h2>
 
@@ -144,7 +144,7 @@ function Favorites() {
     </div>
   );
 
-  if (!areFavoritesLoaded) {
+  if (!areSavedRecipesLoaded) {
     return (
       <div className="self-stretch w-full flex items-center justify-center">
         <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
@@ -159,12 +159,12 @@ function Favorites() {
 
         {recipeList.length > 0 ? (
           <RecipeCollection
-            recipesSource={isSavedTabActive ? favorites : ownRecipes}
-            sourceType={isSavedTabActive ? "favorites" : "ownRecipes"}
+            recipesSource={isSavedTabActive ? savedRecipes : ownRecipes}
+            sourceType={isSavedTabActive ? "savedRecipes" : "ownRecipes"}
             createRecipeControl={!isSavedTabActive ? createRecipeButton : null}
             showFilters={isSavedTabActive}
-            handleRemoveFromFavorites={
-              isSavedTabActive ? handleRemoveFromFavorites : null
+            handleRemoveFromSavedRecipes={
+              isSavedTabActive ? handleRemoveFromSavedRecipes : null
             }
             setRecipeToDelete={setRecipeToDelete}
           />

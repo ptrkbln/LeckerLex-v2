@@ -19,7 +19,7 @@ function RecipeCollection({
   heading,
   createRecipeControl,
   showFilters,
-  handleRemoveFromFavorites,
+  handleRemoveFromSavedRecipes,
   sourceType,
   setRecipeToDelete,
 }) {
@@ -214,10 +214,10 @@ function RecipeCollection({
                 }
                 className="border border-gray-800 hover:border-orange-200/40 bg-gray-950 rounded-3xl overflow-hidden shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer flex flex-col relative group group/close w-full max-w-[280px] sm:max-w-none justify-self-center"
               >
-                {sourceType === "favorites" && (
+                {sourceType === "saved" && (
                   <button
                     className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm p-2 rounded-full hover:bg-opacity-75 hover:scale-105 transition duration-300 text-red-500 lg:opacity-0 lg:group-hover:opacity-100"
-                    onClick={(e) => handleRemoveFromFavorites(e, recipe.id)}
+                    onClick={(e) => handleRemoveFromSavedRecipes(e, recipe.id)}
                   >
                     <FontAwesomeIcon icon={faHeart} size="xl" />
                   </button>

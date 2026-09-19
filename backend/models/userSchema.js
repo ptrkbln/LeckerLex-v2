@@ -43,7 +43,7 @@ const userSchema = new Schema(
         ref: "Journal",
       },
     ],
-    favorites: {
+    savedRecipes: {
       type: [
         {
           id: Number,

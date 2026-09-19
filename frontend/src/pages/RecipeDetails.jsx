@@ -13,15 +13,20 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FaMinus, FaPlus, FaCheck } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { updateFavoritesDatabase } from "../api/favorites";
+import { updateSavedRecipesDatabase } from "../api/favorites";
 import { addToShoppingListDatabase } from "../api/shoppingList";
 import CulinaryJournalForm from "../components/CulinaryJournalForm";
 import { PiChefHat } from "react-icons/pi";
 
 function RecipeDetails() {
   const { id } = useParams();
-  const { recipes, favorites, setFavorites, ownRecipes, areFavoritesLoaded } =
-    useContext(RecipeContext);
+  const {
+    recipes,
+    savedRecipes,
+    setSavedRecipes,
+    ownRecipes,
+    areSavedRecipesLoaded,
+  } = useContext(RecipeContext);
   const { isLoggedIn } = useContext(AuthContext);
   const navigate = useNavigate();
   const [recipe, setRecipe] = useState(null);
@@ -31,8 +36,8 @@ function RecipeDetails() {
   const sourceType = location.state?.sourceType;
   let selectedRecipe;
   // Get recipe from the page it was opened from to avoid showing unrelated missing ingredients
-  if (sourceType === "favorites") {
-    selectedRecipe = favorites.find((x) => x.id === Number(id));
+  if (sourceType === "savedRecipes") {
+    selectedRecipe = savedRecipes.find((x) => x.id === Number(id));
   } else if (sourceType === "search") {
     selectedRecipe = recipes.find((x) => x.id === Number(id));
   } else if (sourceType === "ownRecipes") {
@@ -41,7 +46,7 @@ function RecipeDetails() {
     // Fallback when navigation source is not available (eg. direct link, refresh)
     selectedRecipe =
       recipes.find((x) => x.id === Number(id)) ||
-      favorites.find((x) => x.id === Number(id)) ||
+      savedRecipes.find((x) => x.id === Number(id)) ||
       ownRecipes.find((x) => x._id === id);
   }
   const [missingIngredients, setMissingIngredients] = useState(
@@ -52,13 +57,13 @@ function RecipeDetails() {
 
   useEffect(() => {
     if (!recipe && selectedRecipe) {
-      // Keep displaying the current recipe after it is removed from favorites
+      // Keep displaying the current recipe after it is removed from saved recipes
       setRecipe(selectedRecipe);
-    } else if (!recipe && !selectedRecipe && areFavoritesLoaded) {
-      // Redirect only after favorites have finished loading and no recipe matches route ID
+    } else if (!recipe && !selectedRecipe && areSavedRecipesLoaded) {
+      // Redirect only after saved recipes have finished loading and no recipe matches route ID
       navigate("/home", { replace: true });
     }
-  }, [recipe, selectedRecipe, navigate, areFavoritesLoaded]);
+  }, [recipe, selectedRecipe, navigate, areSavedRecipesLoaded]);
 
   useEffect(() => {
     if (recipe) {
@@ -85,9 +90,9 @@ function RecipeDetails() {
     ? recipe.nutritionPer100g
     : recipe.nutritionPerServing;
 
-  const handleToggleFavorite = async () => {
+  const handleToggleSavedRecipe = async () => {
     // Save the current state in case database update fails
-    const previousFavorites = favorites;
+    const previousSavedRecipes = savedRecipes;
 
     const currentRecipe = {
       id: recipe.id,
@@ -103,20 +108,20 @@ function RecipeDetails() {
       diet: recipe.diet,
     };
 
-    // Add or remove current recipe from favorites state
-    const wasAlreadyFavorite = favorites.some((item) => item.id === recipe.id);
-    const updatedFavorites = wasAlreadyFavorite
-      ? favorites.filter((item) => item.id !== recipe.id)
-      : [...favorites, currentRecipe];
+    // Add or remove current recipe from savedRecipes state
+    const wasAlreadySaved = savedRecipes.some((item) => item.id === recipe.id);
+    const updatedSavedRecipes = wasAlreadySaved
+      ? savedRecipes.filter((item) => item.id !== recipe.id)
+      : [...savedRecipes, currentRecipe];
 
-    setFavorites(updatedFavorites);
+    setSavedRecipes(updatedSavedRecipes);
 
     try {
-      await updateFavoritesDatabase(updatedFavorites);
-      if (!wasAlreadyFavorite) toast.success("Added to favorites.");
+      await updateSavedRecipesDatabase(updatedSavedRecipes);
+      if (!wasAlreadySaved) toast.success("Added to saved recipes.");
     } catch {
       toast.error("Something went wrong while saving to your favorites.");
-      setFavorites(previousFavorites);
+      setSavedRecipes(previousSavedRecipes);
     }
   };
 
@@ -254,8 +259,8 @@ function RecipeDetails() {
           {/** Recipe Header */}
           <div className="bg-gray-900 flex flex-col rounded-3xl overflow-hidden relative">
             <button
-              onClick={handleToggleFavorite}
-              className={`absolute flex justify-center items-center top-1 right-1 bg-gray-800 p-2.5 rounded-full active:scale-95 hover:bg-gray-700 transition-all duration-300 hover:scale-105 ${favorites.some((item) => item.id === recipe.id) ? "text-red-800 sm:text-red-900 sm:hover:text-red-800" : "text-gray-400 sm:text-gray-900"}`}
+              onClick={handleToggleSavedRecipe}
+              className={`absolute flex justify-center items-center top-1 right-1 bg-gray-800 p-2.5 rounded-full active:scale-95 hover:bg-gray-700 transition-all duration-300 hover:scale-105 ${savedRecipes.some((item) => item.id === recipe.id) ? "text-red-800 sm:text-red-900 sm:hover:text-red-800" : "text-gray-400 sm:text-gray-900"}`}
             >
               <FontAwesomeIcon icon={faHeart} className="size-6 sm:size-7" />
             </button>

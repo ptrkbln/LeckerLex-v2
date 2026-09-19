@@ -12,8 +12,8 @@ userRouter
   .get("/verify-user", user.authenticateUser)
   .patch("/update-shoppinglist", authenticate, user.updateUsersShoppingList)
   .get("/shoppinglist", authenticate, user.getUsersShoppingList)
-  .patch("/update-favorites", authenticate, user.updateUsersFavorites)
-  .get("/favorites", authenticate, user.getUsersFavorites)
+  .patch("/saved-recipes", authenticate, user.updateUsersSavedRecipes)
+  .get("/saved-recipes", authenticate, user.getUsersSavedRecipes)
   .get("/own-recipes", authenticate, user.getUsersOwnRecipes)
   .post("/own-recipes", authenticate, user.createOwnRecipe)
   .delete("/own-recipes/:id", authenticate, user.deleteOwnRecipe);

@@ -262,34 +262,32 @@ export const getUsersShoppingList = async (req, res, next) => {
   }
 };
 
-export const getUsersFavorites = async (req, res, next) => {
+export const getUsersSavedRecipes = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({ msg: "User not found." });
     }
 
-    return res.status(200).json({ data: user.favorites });
+    return res.status(200).json({ data: user.savedRecipes });
   } catch (error) {
     next(error);
   }
 };
 
-export const updateUsersFavorites = async (req, res, next) => {
+export const updateUsersSavedRecipes = async (req, res, next) => {
   try {
-    const { favorites } = req.body;
-    if (!Array.isArray(favorites))
-      return res
-        .status(400)
-        .json({ msg: "Favorites List should be an array." });
+    const { savedRecipes } = req.body;
+    if (!Array.isArray(savedRecipes))
+      return res.status(400).json({ msg: "Saved recipes should be an array." });
 
     await User.findByIdAndUpdate(req.user.userId, {
-      $set: { favorites },
+      $set: { savedRecipes },
     });
 
     return res
       .status(200)
-      .json({ msg: "User's favorites successfully updated." });
+      .json({ msg: "User's saved recipes successfully updated." });
   } catch (error) {
     next(error);
   }
@@ -307,26 +305,6 @@ export const getUsersOwnRecipes = async (req, res, next) => {
     next(error);
   }
 };
-
-/* export const updateUsersOwnRecipes = async (req, res, next) => {
-  try {
-    const { ownRecipes } = req.body;
-    if (!Array.isArray(favorites))
-      return res
-        .status(400)
-        .json({ msg: "Created Recipes List should be an array." });
-
-    await User.findByIdAndUpdate(req.user.userId, {
-      $set: { ownRecipes },
-    });
-
-    return res
-      .status(200)
-      .json({ msg: "User's Created Recipes List successfully updated." });
-  } catch (error) {
-    next(error);
-  }
-}; */
 
 export const createOwnRecipe = [
   upload.single("imageUrl"),
