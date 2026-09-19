@@ -279,7 +279,7 @@ function RecipeDetails() {
                 </h2>
                 <div className="flex gap-3 sm:gap-6">
                   {recipe.preparationTime && (
-                    <span className="flex text-sm sm:text-base items-center gap-2">
+                    <span className="flex text-sm sm:text-base items-center gap-2 bg-gray-800/60 rounded-full px-3 py-1">
                       <FontAwesomeIcon
                         icon={faClock}
                         className="size-4 sm:size-5"
@@ -287,7 +287,7 @@ function RecipeDetails() {
                       {recipe.preparationTime} min
                     </span>
                   )}
-                  <span className="flex text-sm sm:text-base items-center gap-2">
+                  <span className="flex text-sm sm:text-base items-center gap-2 bg-gray-800/60 rounded-full px-3 py-1">
                     <FontAwesomeIcon
                       icon={faCarrot}
                       className="size-4 sm:size-5"
@@ -295,7 +295,7 @@ function RecipeDetails() {
                     {recipe.ingredients.length} ingredients
                   </span>
                   {recipe.missedIngredientCount && (
-                    <span className="flex text-sm sm:text-base items-center gap-2">
+                    <span className="flex text-sm sm:text-base items-center gap-2 bg-gray-800/60 rounded-full px-3 py-1">
                       <FontAwesomeIcon
                         icon={faBasketShopping}
                         className="size-4 sm:size-5"
@@ -405,7 +405,7 @@ function RecipeDetails() {
           </div>
 
           {/** Preparation */}
-          <div className="bg-gray-900 rounded-3xl p-6">
+          <div className="bg-gray-900/80 rounded-3xl p-6">
             <h3 className="text-xl font-semibold mb-6">Preparation Steps</h3>
             <ol>
               {recipe.preparationSteps.map((step, index) => {

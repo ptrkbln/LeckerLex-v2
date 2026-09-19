@@ -96,7 +96,7 @@ export default function CulinaryJournalForm({ recipeName, recipeId }) {
           <div className="flex flex-col items-center text-gray-400 hover:text-gray-300 transition-all">
             <label
               htmlFor="imageInput"
-              className="w-full max-w-md border border-gray-600 rounded-3xl p-3 text-center cursor-pointer hover:border-gray-400 transition-all flex items-center justify-center active:scale-95 gap-2"
+              className="w-full max-w- border border-gray-600 rounded-3xl p-3 text-center cursor-pointer hover:border-gray-400 transition-all flex items-center justify-center active:scale-95 gap-2"
             >
               <FaCameraRetro className="size-5" />
               Upload your dish

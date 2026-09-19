@@ -9,14 +9,19 @@ import { ImSpinner2 } from "react-icons/im";
 import { LuNotebookPen } from "react-icons/lu";
 import { FiPlus } from "react-icons/fi";
 import CreateRecipeForm from "../components/CreateRecipeForm";
-import { IoMdClose } from "react-icons/io";
-// recipe.id/recipe._id adapt with sourceType
+import { XButton } from "../components/XButton";
 
 function Favorites() {
   const [tab, setTab] = useState("saved");
   const [showCreateRecipeModal, setShowCreateRecipeModal] = useState(false);
-  const { favorites, setFavorites, areFavoritesLoaded, ownRecipes } =
-    useContext(RecipeContext);
+  const [recipeToDelete, setRecipeToDelete] = useState(null);
+  const {
+    favorites,
+    setFavorites,
+    areFavoritesLoaded,
+    ownRecipes,
+    setOwnRecipes,
+  } = useContext(RecipeContext);
   const navigate = useNavigate();
   const isSavedTabActive = tab === "saved";
   const recipeList = tab === "saved" ? favorites : ownRecipes;
@@ -35,10 +40,41 @@ function Favorites() {
     try {
       await updateFavoritesDatabase(updatedFavorites);
     } catch {
+      setFavorites(previousFavorites);
       toast.error(
         "Something went wrong while removing the recipe from your favorites.",
       );
-      setFavorites(previousFavorites);
+    }
+  };
+
+  // Remove from UI immediately, if backend call fails revert to previous state
+  const handleDeleteOwnRecipe = async (e, ownRecipeId) => {
+    e.stopPropagation();
+    const previousOwnRecipes = ownRecipes;
+
+    const updatedOwnRecipes = ownRecipes.filter(
+      (item) => item._id !== ownRecipeId,
+    );
+
+    setRecipeToDelete(null);
+    setOwnRecipes(updatedOwnRecipes);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/users/own-recipes/${ownRecipeId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        setOwnRecipes(previousOwnRecipes);
+        toast.error("Something went wrong while deleting your recipe.");
+      }
+    } catch {
+      setOwnRecipes(previousOwnRecipes);
+      toast.error("Something went wrong while deleting your recipe.");
     }
   };
 
@@ -125,10 +161,12 @@ function Favorites() {
           <RecipeCollection
             recipesSource={isSavedTabActive ? favorites : ownRecipes}
             sourceType={isSavedTabActive ? "favorites" : "ownRecipes"}
-            showFavoritesControl={isSavedTabActive}
             createRecipeControl={!isSavedTabActive ? createRecipeButton : null}
             showFilters={isSavedTabActive}
-            handleRemoveFromFavorites={handleRemoveFromFavorites}
+            handleRemoveFromFavorites={
+              isSavedTabActive ? handleRemoveFromFavorites : null
+            }
+            setRecipeToDelete={setRecipeToDelete}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center">
@@ -137,6 +175,36 @@ function Favorites() {
         )}
       </div>
 
+      {recipeToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-20">
+          <div className="bg-gray-950 border border-gray-800 rounded-3xl shadow-2xl p-6 mx-4 w-full max-w-sm text-center animate-popIn">
+            <p className="text-gray-200 mb-6">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-orange-200">
+                {recipeToDelete.title}
+              </span>
+              ?
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                className="px-5 py-2 rounded-full text-sm text-rose-400 border border-rose-400/50 hover:border-rose-400/75 hover:bg-rose-400/10 active:scale-[0.98] transition-all"
+                onClick={(e) => handleDeleteOwnRecipe(e, recipeToDelete._id)}
+              >
+                Delete
+              </button>
+
+              <button
+                className="px-5 py-2 rounded-full text-sm text-gray-300 border border-gray-700 hover:border-gray-500 hover:bg-gray-500/10 active:scale-[0.98] transition-all"
+                onClick={() => setRecipeToDelete(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showCreateRecipeModal && (
         <div className="fixed inset-0 overflow-y-auto bg-black bg-opacity-70 z-20">
           <div className="min-h-full flex justify-center items-start py-10">
@@ -144,14 +212,7 @@ function Favorites() {
               <CreateRecipeForm
                 setShowCreateRecipeModal={setShowCreateRecipeModal}
               />
-              <button
-                className="absolute p-1 right-4 top-3 rounded-full text-xl bg-opacity-30 
-              lg:opacity-0 lg:group-hover/close:opacity-100 lg:hover:bg-opacity-50 hover:scale-110 transition-all 
-              bg-gray-600 active:scale-95 text-gray-200 z-10"
-                onClick={() => setShowCreateRecipeModal(false)}
-              >
-                <IoMdClose />
-              </button>
+              <XButton onClick={() => setShowCreateRecipeModal(false)} />
             </div>
           </div>
         </div>

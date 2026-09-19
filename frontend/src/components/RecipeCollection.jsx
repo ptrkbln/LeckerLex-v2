@@ -10,17 +10,18 @@ import {
 import { LuLeaf } from "react-icons/lu";
 import { AiOutlineFire } from "react-icons/ai";
 import { PiChefHat } from "react-icons/pi";
+import { XButton } from "./XButton";
 
 const DIET_OPTIONS = ["vegetarian", "vegan", "dairy-free", "gluten-free"];
 
 function RecipeCollection({
   recipesSource,
   heading,
-  showFavoritesControl,
   createRecipeControl,
   showFilters,
   handleRemoveFromFavorites,
   sourceType,
+  setRecipeToDelete,
 }) {
   const [isDietDropdownOpen, setIsDietDropdownOpen] = useState(false);
   const dietDropdownRef = useRef(null);
@@ -211,15 +212,23 @@ function RecipeCollection({
                     state: { sourceType },
                   })
                 }
-                className="border border-gray-800 hover:border-orange-200/40 bg-gray-950 rounded-3xl active:scale-[0.98] overflow-hidden shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer flex flex-col relative group w-full max-w-[280px] sm:max-w-none justify-self-center"
+                className="border border-gray-800 hover:border-orange-200/40 bg-gray-950 rounded-3xl overflow-hidden shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer flex flex-col relative group group/close w-full max-w-[280px] sm:max-w-none justify-self-center"
               >
-                {showFavoritesControl && (
+                {sourceType === "favorites" && (
                   <button
                     className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm p-2 rounded-full hover:bg-opacity-75 hover:scale-105 transition duration-300 text-red-500 lg:opacity-0 lg:group-hover:opacity-100"
                     onClick={(e) => handleRemoveFromFavorites(e, recipe.id)}
                   >
                     <FontAwesomeIcon icon={faHeart} size="xl" />
                   </button>
+                )}
+                {sourceType === "ownRecipes" && (
+                  <XButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRecipeToDelete(recipe);
+                    }}
+                  />
                 )}
 
                 {recipe.image ? (

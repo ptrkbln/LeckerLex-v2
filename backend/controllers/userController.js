@@ -283,19 +283,6 @@ export const updateUsersFavorites = async (req, res, next) => {
         .status(400)
         .json({ msg: "Favorites List should be an array." });
 
-    if (
-      !shoppingList.every(
-        (item) =>
-          item &&
-          typeof item.ingredient === "string" &&
-          typeof item.completed === "boolean",
-      )
-    ) {
-      return res.status(400).json({
-        msg: "Shopping list items should be objects with item property as a string and completed property as a boolean.",
-      });
-    }
-
     await User.findByIdAndUpdate(req.user.userId, {
       $set: { favorites },
     });
@@ -596,6 +583,45 @@ export const createOwnRecipe = [
     }
   },
 ];
+
+export const deleteOwnRecipe = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    const recipe = user.ownRecipes.id(id);
+    if (!recipe) {
+      return res.status(404).json({ msg: "Recipe not found." });
+    }
+
+    const imageUrl = recipe.image;
+    // Cloudinary requires image's public_id (not the URL) to delete it
+    // public_id (<folder/public_id>) comes from
+    // url (https://res.cloudinary.com/<cloud_name>/image/upload/<version>/folder/<public_id>.<format>)
+    let imagePublicId = null;
+    if (imageUrl) {
+      const imageUrlParts = imageUrl.split("/upload/").at(-1).split("/");
+      if (imageUrlParts.length > 1) {
+        imageUrlParts.shift(); // remove the <version>
+        const publicId = imageUrlParts.join("/").split(".")[0];
+        imagePublicId = publicId;
+      }
+    }
+    if (imagePublicId) {
+      await cloudinary.uploader.destroy(imagePublicId);
+    }
+
+    await recipe.deleteOne();
+    await user.save();
+    res.status(200).json({ msg: "Recipe deleted successfully." });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const logoutUser = async (req, res, next) => {
   try {
