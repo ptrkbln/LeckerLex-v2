@@ -22,18 +22,34 @@ const allowedImageTypes = [
   "image/avif",
 ];
 
-export default function CreateRecipeForm({ setShowCreateRecipeModal }) {
-  const [title, setTitle] = useState("");
-  const [ingredients, setIngredients] = useState([]);
+export default function CreateRecipeForm({
+  setShowCreateRecipeModal,
+  recipeToEdit,
+}) {
+  const [title, setTitle] = useState(recipeToEdit?.title || "");
+  const [ingredients, setIngredients] = useState(
+    recipeToEdit?.ingredients || [],
+  );
   const [ingrName, setIngrName] = useState("");
   const [ingrAmount, setIngrAmount] = useState("");
   const [ingrUnit, setIngrUnit] = useState("");
-  const [preparationSteps, setPreparationSteps] = useState([]);
+  const [preparationSteps, setPreparationSteps] = useState(
+    recipeToEdit?.preparationSteps || [],
+  );
   const [step, setStep] = useState("");
-  const [preparationTime, setPreparationTime] = useState("");
-  const [servingsAmount, setServingsAmount] = useState("");
-  const [servingPortion, setServingPortion] = useState("");
-  const [diet, setDiet] = useState([]);
+  const [preparationTime, setPreparationTime] = useState(
+    recipeToEdit?.preparationTime || "",
+  );
+  const [servingsAmount, setServingsAmount] = useState(
+    recipeToEdit?.servingsAmount || "",
+  );
+  const [servingPortion, setServingPortion] = useState(
+    recipeToEdit?.servingPortion || "",
+  );
+  const [diet, setDiet] = useState(
+    recipeToEdit?.diet ? fromObjectToArrayDiet(recipeToEdit.diet) : [],
+  );
+  const [image, setImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple form submissions while request is in progress
   const [isDietDropdownOpen, setIsDietDropdownOpen] = useState(false);
   const dietDropdownRef = useRef(null);
@@ -43,30 +59,41 @@ export default function CreateRecipeForm({ setShowCreateRecipeModal }) {
   const preparationTimeRef = useRef(null);
   const servingsAmountRef = useRef(null);
   const servingPortionRef = useRef(null);
-  const [image, setImage] = useState(null);
   const [isPer100g, setIsPer100g] = useState(true);
   const [nutrition, setNutrition] = useState({
     per100g: {
-      calories: "",
-      fat: "",
-      saturatedFat: "",
-      carbohydrates: "",
-      sugar: "",
-      protein: "",
-      sodium: "",
+      calories: recipeToEdit?.nutritionPer100g?.calories ?? "",
+      fat: recipeToEdit?.nutritionPer100g?.fat ?? "",
+      saturatedFat: recipeToEdit?.nutritionPer100g?.saturatedFat ?? "",
+      carbohydrates: recipeToEdit?.nutritionPer100g?.carbohydrates ?? "",
+      sugar: recipeToEdit?.nutritionPer100g?.sugar ?? "",
+      protein: recipeToEdit?.nutritionPer100g?.protein ?? "",
+      sodium: recipeToEdit?.nutritionPer100g?.sodium ?? "",
     },
     perServing: {
-      calories: "",
-      fat: "",
-      saturatedFat: "",
-      carbohydrates: "",
-      sugar: "",
-      protein: "",
-      sodium: "",
+      calories: recipeToEdit?.nutritionPerServing?.calories ?? "",
+      fat: recipeToEdit?.nutritionPerServing?.fat ?? "",
+      saturatedFat: recipeToEdit?.nutritionPerServing?.saturatedFat ?? "",
+      carbohydrates: recipeToEdit?.nutritionPerServing?.carbohydrates ?? "",
+      sugar: recipeToEdit?.nutritionPerServing?.sugar ?? "",
+      protein: recipeToEdit?.nutritionPerServing?.protein ?? "",
+      sodium: recipeToEdit?.nutritionPerServing?.sodium ?? "",
     },
   });
   const activeNutritionKey = isPer100g ? "per100g" : "perServing";
 
+  // Helper function for appropriate formatting of diet state (object -> array)
+  function fromObjectToArrayDiet(dietObj) {
+    let diet = [];
+    Object.entries(dietObj).forEach(([key, value]) => {
+      if (value === true) diet.push(key);
+    });
+    const indexGluten = diet.indexOf("glutenFree");
+    if (indexGluten !== -1) diet.splice(indexGluten, 1, "gluten-free");
+    const indexDairy = diet.indexOf("dairyFree");
+    if (indexDairy !== -1) diet.splice(indexDairy, 1, "dairy-free");
+    return diet;
+  }
   // Close diet dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
