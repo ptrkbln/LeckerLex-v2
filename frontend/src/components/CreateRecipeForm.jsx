@@ -10,7 +10,6 @@ import { IoMdClose } from "react-icons/io";
 import toast from "react-hot-toast";
 import { InfoTooltip } from "./InfoTooltip";
 import { PiUploadSimpleLight } from "react-icons/pi";
-
 const DIET_OPTIONS = ["vegetarian", "vegan", "dairy-free", "gluten-free"];
 const inputClasses =
   "w-full px-4 py-2 border border-gray-600 bg-gray-900 text-gray-200 rounded-3xl focus:outline-none focus:ring-1 focus:ring-emerald-600 placeholder:italic placeholder:text-sm transition";
@@ -50,6 +49,9 @@ export default function CreateRecipeForm({
     recipeToEdit?.diet ? fromObjectToArrayDiet(recipeToEdit.diet) : [],
   );
   const [image, setImage] = useState(null);
+  const [existingImage, setExistingImage] = useState(
+    recipeToEdit?.image || null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple form submissions while request is in progress
   const [isDietDropdownOpen, setIsDietDropdownOpen] = useState(false);
   const dietDropdownRef = useRef(null);
@@ -81,6 +83,7 @@ export default function CreateRecipeForm({
     },
   });
   const activeNutritionKey = isPer100g ? "per100g" : "perServing";
+  const isUserEditing = !!recipeToEdit;
 
   // Helper function for appropriate formatting of diet state (object -> array)
   function fromObjectToArrayDiet(dietObj) {
@@ -187,6 +190,7 @@ export default function CreateRecipeForm({
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
+    console.log("SELECTED FILE:", file);
     if (!file) return;
     if (!allowedImageTypes.includes(file.type)) {
       toast.error("Only JPG, PNG, WEBP and AVIF images allowed.");
@@ -196,6 +200,7 @@ export default function CreateRecipeForm({
       toast.error("Image should be under 5 MB.");
       return;
     }
+    setExistingImage(null);
     setImage(file);
   };
 
@@ -282,6 +287,7 @@ export default function CreateRecipeForm({
         }),
       );
     if (image) formData.append("imageUrl", image);
+    if (isUserEditing) formData.append("existingImage", existingImage || ""); // Empty string tells backend the existing image was removed by user
     if (Object.values(nutrition.per100g).some((value) => value !== ""))
       formData.append("nutritionPer100g", JSON.stringify(nutrition.per100g));
     if (Object.values(nutrition.perServing).some((value) => value !== ""))
@@ -291,19 +297,26 @@ export default function CreateRecipeForm({
       );
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/users/own-recipes`,
-        {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        },
-      );
+      const route = isUserEditing
+        ? `${import.meta.env.VITE_BACKEND_URL}/users/own-recipes/${recipeToEdit._id}`
+        : `${import.meta.env.VITE_BACKEND_URL}/users/own-recipes`;
+      const method = isUserEditing ? "PATCH" : "POST";
+      const successMsg = isUserEditing
+        ? "Recipe successfully updated."
+        : "Recipe successfully saved.";
+      const errorMsg = isUserEditing
+        ? "Something went wrong while updating your recipe."
+        : "Something went wrong while saving your recipe.";
+      const response = await fetch(route, {
+        method,
+        body: formData,
+        credentials: "include",
+      });
       if (!response.ok) {
-        toast.error("Something went wrong while saving your recipe.");
+        toast.error(errorMsg);
         return;
       }
-      toast.success("Recipe successfully saved.");
+      toast.success(successMsg);
       setShowCreateRecipeModal(false);
     } catch {
       toast.error("Could not connect to the server.");
@@ -619,15 +632,33 @@ export default function CreateRecipeForm({
             </button>
           </div>
         )}
+        {existingImage && (
+          <div className="relative w-fit">
+            <img
+              width="140px"
+              src={existingImage}
+              alt="Preview of uploaded image"
+              className="rounded-lg shadow-lg py-0.5"
+            />
+            <button
+              type="button"
+              className="absolute p-1 right-1 top-1 rounded-full text-xl bg-opacity-70 
+              hover:scale-110 transition bg-gray-600 active:scale-95 text-white"
+              onClick={() => setExistingImage(null)}
+            >
+              <IoMdClose />
+            </button>
+          </div>
+        )}
         <label
-          htmlFor="imageInput"
+          htmlFor="recipeImageInput"
           className="flex items-center border w-fit gap-1.5 text-gray-300 border-gray-600 bg-gray-900 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full px-5 py-2 cursor-pointer"
         >
           <span className="text-sm">Upload</span>
           <PiUploadSimpleLight className="size-4" />
           <input
             type="file"
-            id="imageInput"
+            id="recipeImageInput"
             className="hidden"
             onChange={handleImageUpload}
           />
@@ -766,6 +797,8 @@ export default function CreateRecipeForm({
       >
         {isSubmitting ? (
           <ImSpinner2 className="animate-spin size-6" />
+        ) : isUserEditing ? (
+          "Update Recipe"
         ) : (
           "Create Recipe"
         )}

@@ -16,6 +16,7 @@ userRouter
   .get("/saved-recipes", authenticate, user.getUsersSavedRecipes)
   .get("/own-recipes", authenticate, user.getUsersOwnRecipes)
   .post("/own-recipes", authenticate, user.createOwnRecipe)
+  .patch("/own-recipes/:id", authenticate, user.updateOwnRecipe)
   .delete("/own-recipes/:id", authenticate, user.deleteOwnRecipe);
 
 export default userRouter;
