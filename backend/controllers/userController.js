@@ -346,7 +346,7 @@ export const createOwnRecipe = [
       }
 
       user.ownRecipes.push({
-        recipeData,
+        ...recipeData,
         image,
       });
 
@@ -402,9 +402,7 @@ export const updateOwnRecipe = [
         return res.status(400).json({ msg: recipeData.error });
       }
 
-      recipe.set({
-        recipeData,
-      });
+      recipe.set(recipeData);
 
       const image = req.file?.path;
       const imageUrl = recipe.image;

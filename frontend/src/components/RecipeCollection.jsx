@@ -203,6 +203,7 @@ function RecipeCollection({
         {(sourceType === "ownRecipes" ? recipesSource : filteredRecipes).map(
           (recipe) => {
             const id = recipe.id || recipe._id;
+            console.log(recipe);
             return (
               <div
                 key={id}

@@ -19,6 +19,7 @@ function Favorites() {
     savedRecipes,
     setSavedRecipes,
     areSavedRecipesLoaded,
+    areOwnRecipesLoaded,
     ownRecipes,
     setOwnRecipes,
   } = useContext(RecipeContext);
@@ -144,7 +145,7 @@ function Favorites() {
     </div>
   );
 
-  if (!areSavedRecipesLoaded) {
+  if (!areSavedRecipesLoaded || !areOwnRecipesLoaded) {
     return (
       <div className="self-stretch w-full flex items-center justify-center">
         <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />

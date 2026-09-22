@@ -29,6 +29,7 @@ function RecipeDetails() {
     setSavedRecipes,
     ownRecipes,
     areSavedRecipesLoaded,
+    areOwnRecipesLoaded,
   } = useContext(RecipeContext);
   const { isLoggedIn } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -63,11 +64,22 @@ function RecipeDetails() {
     if (!recipe && selectedRecipe) {
       // Keep displaying the current recipe after it is removed from saved recipes
       setRecipe(selectedRecipe);
-    } else if (!recipe && !selectedRecipe && areSavedRecipesLoaded) {
+    } else if (
+      !recipe &&
+      !selectedRecipe &&
+      areSavedRecipesLoaded &&
+      areOwnRecipesLoaded
+    ) {
       // Redirect only after saved recipes have finished loading and no recipe matches route ID
       navigate("/home", { replace: true });
     }
-  }, [recipe, selectedRecipe, navigate, areSavedRecipesLoaded]);
+  }, [
+    recipe,
+    selectedRecipe,
+    navigate,
+    areSavedRecipesLoaded,
+    areOwnRecipesLoaded,
+  ]);
 
   useEffect(() => {
     if (recipe) {
