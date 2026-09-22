@@ -61,7 +61,10 @@ function RecipeDetails() {
   const [servings, setServings] = useState(selectedRecipe?.servingsAmount || 1);
 
   useEffect(() => {
-    if (!recipe && selectedRecipe) {
+    if (sourceType === "ownRecipes" && selectedRecipe) {
+      // Update/Sync the displayed current recipe after editing it through the recipe form
+      setRecipe(selectedRecipe);
+    } else if (!recipe && selectedRecipe) {
       // Keep displaying the current recipe after it is removed from saved recipes
       setRecipe(selectedRecipe);
     } else if (
@@ -79,6 +82,7 @@ function RecipeDetails() {
     navigate,
     areSavedRecipesLoaded,
     areOwnRecipesLoaded,
+    sourceType,
   ]);
 
   useEffect(() => {

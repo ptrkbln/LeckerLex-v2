@@ -351,7 +351,9 @@ export const createOwnRecipe = [
       });
 
       await user.save();
-      res.status(201).json({ msg: "Recipe successfully created." });
+      res
+        .status(201)
+        .json({ msg: "Recipe successfully created.", data: user.ownRecipes });
     } catch (error) {
       next(error);
     }
@@ -427,7 +429,9 @@ export const updateOwnRecipe = [
       // 4.) no new image + existing image kept in frontend -> do nothing (keep current image in DB)
 
       await user.save();
-      res.status(200).json({ msg: "Recipe successfully updated." });
+      res
+        .status(200)
+        .json({ msg: "Recipe successfully updated.", data: user.ownRecipes });
     } catch (error) {
       next(error);
     }

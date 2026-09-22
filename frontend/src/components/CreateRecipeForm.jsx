@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
+import { RecipeContext } from "../context/RecipeContext";
 import { ImSpinner2 } from "react-icons/im";
 import {
   RiCheckboxBlankCircleLine,
@@ -25,6 +26,7 @@ export default function CreateRecipeForm({
   setShowCreateRecipeModal,
   recipeToEdit,
 }) {
+  const { setOwnRecipes } = useContext(RecipeContext);
   const [title, setTitle] = useState(recipeToEdit?.title || "");
   const [ingredients, setIngredients] = useState(
     recipeToEdit?.ingredients || [],
@@ -316,6 +318,8 @@ export default function CreateRecipeForm({
         toast.error(errorMsg);
         return;
       }
+      const updatedOwnRecipes = await response.json();
+      setOwnRecipes(updatedOwnRecipes.data);
       toast.success(successMsg);
       setShowCreateRecipeModal(false);
     } catch {
