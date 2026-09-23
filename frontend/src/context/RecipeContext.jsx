@@ -5,38 +5,61 @@ export const RecipeContext = createContext();
 
 export default function RecipeContextProvider({ children }) {
   const [recipes, setRecipes] = useState([]);
-  const [shoppingList, setShoppingList] = useState([]); // is this needed??
-  const [favorites, setFavorites] = useState([]);
-  const [areFavoritesLoaded, setAreFavoritesLoaded] = useState(false);
+  const [shoppingList, setShoppingList] = useState([]);
+  const [savedRecipes, setSavedRecipes] = useState([]);
+  const [areSavedRecipesLoaded, setAreSavedRecipesLoaded] = useState(false);
+  const [ownRecipes, setOwnRecipes] = useState([]);
+  const [areOwnRecipesLoaded, setAreOwnRecipesLoaded] = useState(false);
   const { isLoggedIn, isAuthChecked } = useContext(AuthContext);
 
   useEffect(() => {
     if (!isAuthChecked) return;
 
-    const fetchFavorites = async () => {
-      setAreFavoritesLoaded(false);
+    const fetchSavedRecipes = async () => {
+      setAreSavedRecipesLoaded(false);
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/users/favorites`,
+          `${import.meta.env.VITE_BACKEND_URL}/users/saved-recipes`,
           { credentials: "include" },
         );
 
         if (!response.ok) return;
-        const favorites = await response.json();
+        const savedRecipes = await response.json();
 
-        setFavorites(favorites.data);
+        setSavedRecipes(savedRecipes.data);
       } catch (error) {
         console.log(error);
       } finally {
-        setAreFavoritesLoaded(true);
+        setAreSavedRecipesLoaded(true);
+      }
+    };
+
+    const fetchOwnRecipes = async () => {
+      setAreOwnRecipesLoaded(false);
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/users/own-recipes`,
+          { credentials: "include" },
+        );
+
+        if (!response.ok) return;
+        const ownRecipes = await response.json();
+        setOwnRecipes(ownRecipes.data);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setAreOwnRecipesLoaded(true);
       }
     };
 
     if (isLoggedIn) {
-      fetchFavorites();
+      fetchSavedRecipes();
+      fetchOwnRecipes();
     } else {
-      setFavorites([]);
-      setAreFavoritesLoaded(true);
+      setSavedRecipes([]);
+      setOwnRecipes([]);
+      setAreSavedRecipesLoaded(true);
+      setAreOwnRecipesLoaded(true);
     }
   }, [isLoggedIn, isAuthChecked]);
 
@@ -47,9 +70,12 @@ export default function RecipeContextProvider({ children }) {
         setRecipes,
         shoppingList,
         setShoppingList,
-        favorites,
-        setFavorites,
-        areFavoritesLoaded,
+        savedRecipes,
+        setSavedRecipes,
+        ownRecipes,
+        setOwnRecipes,
+        areSavedRecipesLoaded,
+        areOwnRecipesLoaded,
       }}
     >
       {children}

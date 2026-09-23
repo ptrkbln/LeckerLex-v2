@@ -1,403 +1,232 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState } from "react";
 import { RecipeContext } from "../context/RecipeContext";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faShoppingCart,
-  faTint,
-  faWheatAlt,
-  faClock,
-  faLeaf,
-  faSeedling,
-  faFire,
-  faHeart,
-} from "@fortawesome/free-solid-svg-icons";
-import { IoMdClose } from "react-icons/io";
-import CulinaryJournalForm from "../components/CulinaryJournalForm";
-import { updateFavoritesDatabase } from "../api/favorites";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { GrFavorite } from "react-icons/gr";
+import RecipeCollection from "../components/RecipeCollection";
+import { updateSavedRecipesDatabase } from "../api/favorites";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { ImSpinner2 } from "react-icons/im";
+import { LuNotebookPen } from "react-icons/lu";
+import { FiPlus } from "react-icons/fi";
+import CreateRecipeForm from "../components/CreateRecipeForm";
+import { XButton } from "../components/XButton";
 
 function Favorites() {
-  const { favorites, setFavorites, setShoppingList } =
-    useContext(RecipeContext);
-  const [hasInitialized, setHasInitialized] = useState(false);
-  const [cookTime, setCookTime] = useState("");
-  const [calories, setCalories] = useState("");
-  const [nutrition, setNutrition] = useState("");
-  const [selectedRecipeId, setSelectedRecipeId] = useState(null);
-  const [servings, setServings] = useState(1);
-  const [missingIngredients, setMissingIngredients] = useState({});
-  const [pendingShoppingListUpdate, setPendingShoppingListUpdate] =
-    useState(null);
-  const [showShoppingListModal, setShowShoppingListModal] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "saved-recipes"; // Get active tab from URL to preserve it across navigation (eg. when navigating back from RecipeDetails)
+  const [showCreateRecipeModal, setShowCreateRecipeModal] = useState(false);
+  const [recipeToDelete, setRecipeToDelete] = useState(null);
+  const {
+    savedRecipes,
+    setSavedRecipes,
+    areSavedRecipesLoaded,
+    areOwnRecipesLoaded,
+    ownRecipes,
+    setOwnRecipes,
+  } = useContext(RecipeContext);
   const navigate = useNavigate();
+  const recipeList = activeTab === "saved-recipes" ? savedRecipes : ownRecipes;
 
-  const toggleDetails = (id) => {
-    setSelectedRecipeId((prevId) => (prevId === id ? null : id));
-  };
+  // Remove from UI immediately, if backend call fails revert to previous state
+  const handleRemoveFromSavedRecipes = async (e, savedRecipeId) => {
+    e.stopPropagation();
+    const previousSavedRecipes = savedRecipes;
 
-  const handleIncreaseServings = () => {
-    setServings((prev) => Math.round((prev + 0.5) * 10) / 10);
-  };
+    const updatedSavedRecipes = savedRecipes.filter(
+      (item) => item.id !== savedRecipeId,
+    );
 
-  const handleDecreaseServings = () => {
-    setServings((prev) => Math.max(0.5, Math.round((prev - 0.5) * 10) / 10));
-  };
+    setSavedRecipes(updatedSavedRecipes);
 
-  // Diese Funktion verwaltet das Hinzufügen / Entfernen von Zutaten zur missingIngredients-Liste, basierend auf dem recipeId. Sie aktualisiert auch die Menge der fehlenden Zutaten abhängig von servings.
-  const toggleMissingIngredient = (recipeId, ingredient) => {
-    setMissingIngredients((prev) => {
-      const updated = { ...prev };
-      if (!updated[recipeId]) {
-        updated[recipeId] = [];
-      }
-      const existingIndex = updated[recipeId].findIndex(
-        (item) => item.name === ingredient.name,
+    try {
+      await updateSavedRecipesDatabase(updatedSavedRecipes);
+    } catch {
+      setSavedRecipes(previousSavedRecipes);
+      toast.error(
+        "Something went wrong while removing the recipe from your saved list.",
       );
-      if (existingIndex > -1) {
-        updated[recipeId].splice(existingIndex, 1);
-      } else {
-        updated[recipeId].push({
-          name: ingredient.name,
-          amount: Number.isInteger(ingredient.amount * servings)
-            ? ingredient.amount * servings // Ganze Zahl ohne Dezimalstellen
-            : (ingredient.amount * servings).toFixed(1), // Eine Nachkommastelle bei Dezimalzahlen
-          unit: ingredient.unit,
-        });
-      }
-      setFavorites((prevFavorites) =>
-        prevFavorites.map((fav) =>
-          fav.id === recipeId
-            ? { ...fav, missingIngredients: updated[recipeId] }
-            : fav,
-        ),
-      );
-      return updated;
-    });
-  };
-
-  useEffect(() => {
-    setMissingIngredients((prev) => {
-      const updatedMissing = { ...prev };
-      Object.keys(updatedMissing).forEach((recipeId) => {
-        updatedMissing[recipeId] = updatedMissing[recipeId].map(
-          (ingredient) => {
-            const originalIngredient = favorites
-              .find((r) => r.id === parseInt(recipeId))
-              ?.ingredients.find((ing) => ing.name === ingredient.name);
-            return originalIngredient
-              ? {
-                  ...ingredient,
-                  /* amount: (originalIngredient.amount * servings).toFixed(1) */
-                  amount: Number.isInteger(ingredient.amount * servings)
-                    ? ingredient.amount * servings // Ganze Zahl ohne Dezimalstellen
-                    : (ingredient.amount * servings).toFixed(1), // Eine Nachkommastelle bei Dezimalzahlen
-                }
-              : ingredient;
-          },
-        );
-      });
-      return updatedMissing;
-    });
-  }, [servings]);
-
-  useEffect(() => {
-    if (selectedRecipeId) {
-      const storedMissing =
-        favorites.find((fav) => fav.id === selectedRecipeId)
-          ?.missingIngredients || [];
-
-      setMissingIngredients((prev) => ({
-        ...prev,
-        [selectedRecipeId]: storedMissing,
-      }));
     }
-  }, [selectedRecipeId, favorites]);
+  };
 
-  const addMissingToShoppingList = async () => {
-    if (!selectedRecipeId || !missingIngredients[selectedRecipeId]) return;
-    const missingNames = missingIngredients[selectedRecipeId]
+  // Remove from UI immediately, if backend call fails revert to previous state
+  const handleDeleteOwnRecipe = async (e, ownRecipeId) => {
+    e.stopPropagation();
+    const previousOwnRecipes = ownRecipes;
 
-      .filter((ingredient) => ingredient.name.trim()) // Sicherstellen, dass nur gültige Zutaten enthalten sind
-      .map((ingredient) => ingredient.name.trim().toLowerCase());
+    const updatedOwnRecipes = ownRecipes.filter(
+      (item) => item._id !== ownRecipeId,
+    );
 
-    if (missingNames.length === 0) return; // Falls keine Zutaten fehlen, nichts tun (abbrechen)
+    setRecipeToDelete(null);
+    setOwnRecipes(updatedOwnRecipes);
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/users/update-shoppinglist`,
+        `${import.meta.env.VITE_BACKEND_URL}/users/own-recipes/${ownRecipeId}`,
         {
-          method: "PATCH",
-          body: JSON.stringify({
-            shoppingList: missingNames,
-            action: "add",
-          }),
-          headers: { "Content-Type": "application/json" },
+          method: "DELETE",
           credentials: "include",
         },
       );
-      if (response.ok) {
-        console.log("Shopping list updated successfully");
 
-        setMissingIngredients((prev) => {
-          const updated = { ...prev };
-
-          delete updated[selectedRecipeId]; // Löscht die Zutaten für das aktuelle Rezept
-          return updated;
-        });
-
-        // Speichert die Änderungen auch in Favoriten
-        setFavorites((prevFavorites) =>
-          prevFavorites.map((fav) =>
-            fav.id === selectedRecipeId
-              ? { ...fav, missingIngredients: [] }
-              : fav,
-          ),
-        );
-        setShowShoppingListModal(true);
-        setTimeout(() => setShowShoppingListModal(false), 3000);
-      } else {
-        console.log("Failed to update shopping list.");
+      if (!response.ok) {
+        setOwnRecipes(previousOwnRecipes);
+        toast.error("Something went wrong while deleting your recipe.");
       }
-    } catch (error) {
-      console.log("Error while updating shopping list:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (!hasInitialized) {
-      setHasInitialized(true);
-      return;
-    }
-    if (pendingShoppingListUpdate) {
-      setShoppingList((prevList) => {
-        const updatedList = new Set([
-          ...prevList,
-          ...pendingShoppingListUpdate,
-        ]);
-
-        return [...updatedList];
-      });
-      setPendingShoppingListUpdate(null);
-    }
-  }, [pendingShoppingListUpdate, setShoppingList, hasInitialized]);
-
-  const servingsText = `for ${servings} ${
-    servings === 1 || servings === 0.5 ? "serving" : "servings"
-  }`;
-
-  const handleRemoveFromFavorites = async (e, favoriteRecipeId) => {
-    e.stopPropagation();
-    const previousFavorites = favorites;
-
-    const updatedFavorites = favorites.filter(
-      (item) => item.id !== favoriteRecipeId,
-    );
-
-    setFavorites(updatedFavorites);
-
-    try {
-      await updateFavoritesDatabase(updatedFavorites);
     } catch {
-      toast.error(
-        "Something went wrong while removing the recipe from your favorites.",
-      );
-      setFavorites(previousFavorites);
+      setOwnRecipes(previousOwnRecipes);
+      toast.error("Something went wrong while deleting your recipe.");
     }
   };
 
-  // --- Filtering Logic ---
-  const filterRecipe = (recipe) => {
-    // Filter by Cooking Time (using recipe.preparationTime)
-    if (cookTime) {
-      if (cookTime.includes("-")) {
-        const [min, max] = cookTime.split("-").map(Number);
-        if (recipe.preparationTime < min || recipe.preparationTime > max)
-          return false;
-      } else if (cookTime.endsWith("+")) {
-        const min = Number(cookTime.replace("+", ""));
-        if (recipe.preparationTime < min) return false;
-      }
-    }
-    // Filter by Calories (using recipe.nutrition.calories)
-    if (calories) {
-      if (calories.includes("-")) {
-        const [min, max] = calories.split("-").map(Number);
-        if (
-          !recipe.nutrition ||
-          recipe.nutrition.calories < min ||
-          recipe.nutrition.calories > max
-        )
-          return false;
-      } else if (calories.endsWith("+")) {
-        const min = Number(calories.replace("+", ""));
-        if (!recipe.nutrition || recipe.nutrition.calories < min) return false;
-      }
-    }
-    // Filter by Nutrition preferences (diet)
-    if (nutrition) {
-      if (nutrition === "vegetarian" && !recipe.diet?.vegetarian) return false;
-      if (nutrition === "vegan" && !recipe.diet?.vegan) return false;
-      if (nutrition === "gluten-free" && !recipe.diet?.glutenFree) return false;
-      if (nutrition === "dairy-free" && !recipe.diet?.dairyFree) return false;
-    }
-    return true;
-  };
+  const tabsHeader = (
+    <div className="flex gap-1 justify-center border-b border-gray-800">
+      <button
+        className={`text-base sm:text-lg font-semibold px-4 sm:px-6 py-3 border-b-2 transition-all active:scale-[0.98] ${
+          activeTab === "saved-recipes"
+            ? "text-orange-200 border-orange-200"
+            : "text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-700"
+        }`}
+        onClick={() => setSearchParams({ tab: "saved-recipes" })}
+      >
+        Saved Recipes
+      </button>
+      <button
+        className={`text-base sm:text-lg font-semibold px-4 sm:px-6 py-3 border-b-2 transition-all active:scale-[0.98] ${
+          activeTab === "own-recipes"
+            ? "text-orange-200 border-orange-200"
+            : "text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-700"
+        }`}
+        onClick={() => setSearchParams({ tab: "own-recipes" })}
+      >
+        Own Recipes
+      </button>
+    </div>
+  );
 
-  // Only show filtered recipes in the grid view.
-  const filteredFavorites = favorites.filter(filterRecipe);
+  const createRecipeButton = (
+    <button
+      className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full  px-5 py-2.5 cursor-pointer select-none group"
+      onClick={() => setShowCreateRecipeModal(true)}
+    >
+      <FiPlus className="text-orange-200/70 group-hover:text-orange-200 transition" />
+      <span className="text-gray-300">Create Recipe</span>
+    </button>
+  );
 
-  if (favorites.length < 1) {
-    return (
-      <div className="flex flex-col justify-center items-center p-10 m-2 text-gray-50">
-        <p className="text-2xl pb-10 ">No recipes added yet... 😔</p>
+  const emptyState = (
+    <div className="flex flex-col w-full max-w-xl justify-center p-10 items-center text-center">
+      {activeTab === "saved-recipes" ? (
+        <GrFavorite className="size-10 sm:size-12 text-orange-200 mb-4 sm:mb-3" />
+      ) : (
+        <LuNotebookPen className="size-10 sm:size-12 text-orange-200 mb-4 sm:mb-3" />
+      )}
+      <h2 className="text-xl sm:text-2xl font-bold mb-3 text-gray-300">
+        {activeTab === "saved-recipes"
+          ? "Your saved recipes list is empty"
+          : "You haven't created any recipes yet"}
+      </h2>
+
+      <p className="text-gray-400 max-w-md mb-10">
+        {activeTab === "saved-recipes"
+          ? "Browse recipes for inspiration and select your favorites."
+          : "Write your own recipes and keep them all in one place."}
+      </p>
+      {activeTab === "saved-recipes" ? (
         <button
-          onClick={() => (window.location.href = "/home")}
-          className="px-4 py-2 bg-green-500 hover:bg-green-600 transition-colors rounded-full shadow text-md"
+          onClick={() => navigate("/home")}
+          className="px-6 py-2.5 border border-green-600 text-green-600 hover:text-green-400 hover:border-green-400 active:scale-95 rounded-full transition-all"
         >
-          Back to Home
+          Explore Recipes
         </button>
+      ) : (
+        createRecipeButton
+      )}
+    </div>
+  );
+
+  if (!areSavedRecipesLoaded || !areOwnRecipesLoaded) {
+    return (
+      <div className="self-stretch w-full flex items-center justify-center">
+        <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-screen md:max-w-screen-xl md:px-6 pb-12 min-h-full">
-      {!selectedRecipeId && (
-        <main className="shadow-lg rounded-3xl w-full max-w-3xl mx-auto p-6 mb-2">
-          <h1 className="text-3xl font-bold mb-8 text-center text-orange-100">
-            Your Top Picks
-          </h1>
-          {/* Filter section */}
-          <div className="flex flex-wrap justify-center gap-6">
-            {/** Cooking Time */}
-            <label className="flex flex-col items-center">
-              <select
-                value={cookTime}
-                onChange={(e) => setCookTime(e.target.value)}
-                className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
-              >
-                <option value="">Cooking Time</option>
-                <option value="0-15">0 - 15 min</option>
-                <option value="15-30">15 - 30 min</option>
-                <option value="30-45">30 - 45 min</option>
-                <option value="45-60">45 - 60 min</option>
-                <option value="60+">60+ min</option>
-              </select>
-            </label>
-            {/** Calories */}
-            <label className="flex flex-col items-center">
-              <select
-                value={calories}
-                onChange={(e) => setCalories(e.target.value)}
-                className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
-              >
-                <option value="">kcal per 100g</option>
-                <option value="0-100">0 - 100 kcal</option>
-                <option value="100-200">100 - 200 kcal</option>
-                <option value="200-300">200 - 300 kcal</option>
-                <option value="300-400">300 - 400 kcal</option>
-                <option value="400+">400+ kcal</option>
-              </select>
-            </label>
-            {/** Nutrition */}
-            <label className="flex flex-col items-center">
-              <select
-                value={nutrition}
-                onChange={(e) => setNutrition(e.target.value)}
-                className="p-3 bg-gray-800 border border-gray-700 rounded-full text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors w-36 text-center"
-              >
-                <option value="">Diet</option>
-                <option value="vegetarian">Vegetarian</option>
-                <option value="vegan">Vegan</option>
-                <option value="gluten-free">Gluten-free</option>
-                <option value="dairy-free">Dairy-free</option>
-              </select>
-            </label>
-          </div>
-        </main>
-      )}
+    <>
+      <div className="self-stretch w-full flex flex-col overflow-hidden">
+        {tabsHeader}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 text-gray-100">
-        {filteredFavorites.map((recipe) => (
-          <div
-            key={recipe.id}
-            onClick={() =>
-              recipe.id && navigate(`/home/recipe-details/${recipe.id}`)
+        {recipeList.length > 0 ? (
+          <RecipeCollection
+            recipesSource={
+              activeTab === "saved-recipes" ? savedRecipes : ownRecipes
             }
-            className="bg-gray-800 rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300 cursor-pointer flex flex-col relative group"
-          >
-            <button
-              className="absolute top-3 right-3 bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-75 hover:scale-105 transition duration-300 text-red-500 lg:opacity-0 lg:group-hover:opacity-100"
-              onClick={(e) => handleRemoveFromFavorites(e, recipe.id)}
-            >
-              <FontAwesomeIcon icon={faHeart} size="xl" />
-            </button>
-            <img
-              src={recipe.image}
-              alt={recipe.title}
-              className="w-full h-52 object-cover"
-            />
-            <div className="p-4">
-              <h2
-                className={`${
-                  recipe.title.length > 36 ? "text-base" : "text-xl"
-                } font-semibold mb-2`}
-              >
-                {recipe.title}
-              </h2>
+            sourceType={
+              activeTab === "saved-recipes" ? "savedRecipes" : "ownRecipes"
+            }
+            createRecipeControl={
+              activeTab === "own-recipes" ? createRecipeButton : null
+            }
+            showFilters={activeTab === "saved-recipes"}
+            handleRemoveFromSavedRecipes={
+              activeTab === "saved-recipes"
+                ? handleRemoveFromSavedRecipes
+                : null
+            }
+            setRecipeToDelete={setRecipeToDelete}
+          />
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            {emptyState}
+          </div>
+        )}
+      </div>
 
-              <div className="flex justify-between text-gray-300 mb-2">
-                <div className="flex items-center gap-2">
-                  <FontAwesomeIcon
-                    icon={faClock}
-                    className="text-green-400 text-lg"
-                  />
-                  <span>{recipe.preparationTime} min</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {recipe.diet?.vegetarian && (
-                    <FontAwesomeIcon
-                      icon={faLeaf}
-                      className="text-green-500"
-                      title="Vegetarian"
-                    />
-                  )}
-                  {recipe.diet?.vegan && (
-                    <FontAwesomeIcon
-                      icon={faSeedling}
-                      className="text-green-500"
-                      title="Vegan"
-                    />
-                  )}
-                  {!recipe.diet?.glutenFree && (
-                    <FontAwesomeIcon
-                      icon={faWheatAlt}
-                      className="text-yellow-500"
-                      title="Contains Gluten"
-                    />
-                  )}
-                  {!recipe.diet?.dairyFree && (
-                    <FontAwesomeIcon
-                      icon={faTint}
-                      className="text-blue-500"
-                      title="Contains Dairy"
-                    />
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <FontAwesomeIcon
-                  icon={faFire}
-                  className="text-red-500 text-lg"
-                />
-                <span>{recipe.nutritionPer100g?.calories || "N/A"} kcal</span>
-              </div>
+      {recipeToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-20">
+          <div className="bg-gray-950 border border-gray-800 rounded-3xl shadow-2xl p-6 mx-4 w-full max-w-sm text-center animate-popIn">
+            <p className="text-gray-200 mb-6">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-orange-200">
+                {recipeToDelete.title}
+              </span>
+              ?
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                className="px-5 py-2 rounded-full text-sm text-rose-400 border border-rose-400/50 hover:border-rose-400/75 hover:bg-rose-400/10 active:scale-[0.98] transition-all"
+                onClick={(e) => handleDeleteOwnRecipe(e, recipeToDelete._id)}
+              >
+                Delete
+              </button>
+
+              <button
+                className="px-5 py-2 rounded-full text-sm text-gray-300 border border-gray-700 hover:border-gray-500 hover:bg-gray-500/10 active:scale-[0.98] transition-all"
+                onClick={() => setRecipeToDelete(null)}
+              >
+                Cancel
+              </button>
             </div>
           </div>
-        ))}
-      </div>
-    </div>
+        </div>
+      )}
+
+      {showCreateRecipeModal && (
+        <div className="fixed inset-0 overflow-y-auto bg-black bg-opacity-70 z-20">
+          <div className="min-h-full flex justify-center items-start py-10">
+            <div className="relative group/close bg-gray-950 border border-gray-800 rounded-3xl shadow-2xl p-6 mx-2 w-full max-w-lg text-center animate-popIn">
+              <CreateRecipeForm
+                setShowCreateRecipeModal={setShowCreateRecipeModal}
+              />
+              <XButton onClick={() => setShowCreateRecipeModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
