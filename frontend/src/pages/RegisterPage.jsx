@@ -31,7 +31,9 @@ export default function RegisterPage() {
   // Prevent page flicker while auth status is loading
   if (loading || isLoggedIn) {
     return (
-      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100 " />
+      <div className="self-stretch w-full flex items-center justify-center">
+        <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+      </div>
     );
   }
 
@@ -121,141 +123,138 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex-grow">
-      {/* Main Content */}
-      <div className="flex justify-center">
-        {/* Sign-in Form */}
-        <div className="max-w-md w-full bg-gray-900 p-8 rounded-3xl">
-          <form onSubmit={handleSubmit}>
-            <h2 className="text-2xl font-bold text-white/90 text-center mb-14">
-              Create an account
-            </h2>
-            {/* Username */}
-            <div className="mb-6">
-              <label htmlFor="username" className="sr-only">
-                Username
-              </label>
-              <div className="relative">
-                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Username"
-                  className={inputClasses}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-            </div>
-            {/* Email */}
-            <div className="mb-6">
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
-              <div className="relative">
-                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className={inputClasses}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
-            {/* Password */}
-            <div className="mb-6">
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <div className="relative">
-                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  placeholder="Password"
-                  className={inputClasses}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <div
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <FaEye className="text-gray-400" />
-                  ) : (
-                    <FaEyeSlash className="text-gray-400" />
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="mb-2">
-              <label htmlFor="confirm_password" className="sr-only">
-                Confirm password
-              </label>
-              <div className="relative">
-                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm password"
-                  className={inputClasses}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-                <div
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <FaEye className="text-gray-400" />
-                  ) : (
-                    <FaEyeSlash className="text-gray-400" />
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="min-h-[40px] flex justify-center items-center">
-              {errorMessage && (
-                <p className="text-rose-400 text-center text-sm">
-                  {errorMessage}
-                </p>
-              )}
-            </div>
-            {/* Terms & Conditions */}
-            <div className="flex items-center justify-center mt-1">
+    <div className="self-stretch w-full flex items-center justify-center">
+      {/* Sign-in Form */}
+      <div className="max-w-md w-full bg-gray-900 p-8 rounded-3xl">
+        <form onSubmit={handleSubmit}>
+          <h2 className="text-2xl font-bold text-white/90 text-center mb-14">
+            Create an account
+          </h2>
+          {/* Username */}
+          <div className="mb-6">
+            <label htmlFor="username" className="sr-only">
+              Username
+            </label>
+            <div className="relative">
+              <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
-                type="checkbox"
-                id="terms"
-                className="w-4 h-4 border-gray-600 rounded"
-                checked={isChecked}
-                onChange={(e) => setIsChecked(e.target.checked)}
+                type="text"
+                placeholder="Username"
+                className={inputClasses}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
-              <label
-                htmlFor="terms"
-                className="ml-2.5 text-sm text-gray-300 tracking-wide"
-              >
-                I agree to the{" "}
-                <a href="/terms" className="text-green-500 hover:underline">
-                  Terms & Conditions
-                </a>
-              </label>
             </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full flex justify-center items-center px-4 py-2 mt-3 text-md bg-green-500 text-white rounded-3xl shadow-lg hover:bg-green-700 transition duration-300"
-              disabled={isSubmitting}
+          </div>
+          {/* Email */}
+          <div className="mb-6">
+            <label htmlFor="email" className="sr-only">
+              Email
+            </label>
+            <div className="relative">
+              <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="email"
+                placeholder="Email"
+                className={inputClasses}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+          </div>
+          {/* Password */}
+          <div className="mb-6">
+            <label htmlFor="password" className="sr-only">
+              Password
+            </label>
+            <div className="relative">
+              <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="Password"
+                className={inputClasses}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <div
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <FaEye className="text-gray-400" />
+                ) : (
+                  <FaEyeSlash className="text-gray-400" />
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="mb-2">
+            <label htmlFor="confirm_password" className="sr-only">
+              Confirm password
+            </label>
+            <div className="relative">
+              <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm password"
+                className={inputClasses}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+              <div
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? (
+                  <FaEye className="text-gray-400" />
+                ) : (
+                  <FaEyeSlash className="text-gray-400" />
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="min-h-[40px] flex justify-center items-center">
+            {errorMessage && (
+              <p className="text-rose-400 text-center text-sm">
+                {errorMessage}
+              </p>
+            )}
+          </div>
+          {/* Terms & Conditions */}
+          <div className="flex items-center justify-center mt-1">
+            <input
+              type="checkbox"
+              id="terms"
+              className="w-4 h-4 border-gray-600 rounded"
+              checked={isChecked}
+              onChange={(e) => setIsChecked(e.target.checked)}
+            />
+            <label
+              htmlFor="terms"
+              className="ml-2.5 text-sm text-gray-300 tracking-wide"
             >
-              {isSubmitting ? (
-                <ImSpinner2 className="animate-spin size-6" />
-              ) : (
-                "Get started"
-              )}
-            </button>
-          </form>
-        </div>
+              I agree to the{" "}
+              <a href="/terms" className="text-green-500 hover:underline">
+                Terms & Conditions
+              </a>
+            </label>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full flex justify-center items-center px-4 py-2 mt-3 text-md bg-green-500 text-white rounded-3xl shadow-lg hover:bg-green-700 transition duration-300"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ImSpinner2 className="animate-spin size-6" />
+            ) : (
+              "Get started"
+            )}
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -3,6 +3,10 @@ import nodemailer from "nodemailer";
 import { generateToken } from "../middleware/jwt.js";
 import jwt from "jsonwebtoken";
 import { verifyToken } from "../middleware/jwt.js";
+import upload from "../config/cloudinary.js";
+import cloudinary from "cloudinary";
+import { validateOwnRecipeData } from "../utils/validateOwnRecipeData.js";
+import { extractImagePublicId } from "../utils/extractImagePublicId.js";
 
 // Setup to send emails from the app using nodemailer
 const transporter = nodemailer.createTransport({
@@ -203,7 +207,7 @@ export const updateUsersShoppingList = async (req, res, next) => {
       )
     ) {
       return res.status(400).json({
-        msg: "Shopping list items must be objects with item property as a string and completed property as a boolean.",
+        msg: "Shopping list items should be objects with item property as a string and completed property as a boolean.",
       });
     }
 
@@ -260,48 +264,203 @@ export const getUsersShoppingList = async (req, res, next) => {
   }
 };
 
-export const getUsersFavorites = async (req, res, next) => {
+export const getUsersSavedRecipes = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({ msg: "User not found." });
     }
 
-    return res.status(200).json({ data: user.favorites });
+    return res.status(200).json({ data: user.savedRecipes });
   } catch (error) {
     next(error);
   }
 };
 
-export const updateUsersFavorites = async (req, res, next) => {
+export const updateUsersSavedRecipes = async (req, res, next) => {
   try {
-    const { favorites } = req.body;
-    if (!Array.isArray(favorites))
-      return res
-        .status(400)
-        .json({ msg: "Favorites List should be an array." });
-
-    /* VALIDATION
-  if (
-      !shoppingList.every(
-        (item) =>
-          item &&
-          typeof item.ingredient === "string" &&
-          typeof item.completed === "boolean",
-      )
-    ) {
-      return res.status(400).json({
-        msg: "Shopping list items must be objects with item property as a string and completed property as a boolean.",
-      });
-    } */
+    const { savedRecipes } = req.body;
+    if (!Array.isArray(savedRecipes))
+      return res.status(400).json({ msg: "Saved recipes should be an array." });
 
     await User.findByIdAndUpdate(req.user.userId, {
-      $set: { favorites },
+      $set: { savedRecipes },
     });
 
     return res
       .status(200)
-      .json({ msg: "User's favorites successfully updated." });
+      .json({ msg: "User's saved recipes successfully updated." });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUsersOwnRecipes = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    return res.status(200).json({ data: user.ownRecipes });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createOwnRecipe = [
+  upload.single("imageUrl"),
+  async (req, res, next) => {
+    try {
+      const {
+        title,
+        ingredients,
+        preparationSteps,
+        servingsAmount,
+        preparationTime,
+        servingPortion,
+        diet,
+        nutritionPer100g,
+        nutritionPerServing,
+      } = req.body;
+      const image = req.file?.path;
+
+      const user = await User.findById(req.user.userId);
+      if (!user) {
+        return res.status(404).json({ msg: "User not found." });
+      }
+
+      const recipeData = validateOwnRecipeData({
+        title,
+        ingredients,
+        preparationSteps,
+        servingsAmount,
+        preparationTime,
+        servingPortion,
+        diet,
+        nutritionPer100g,
+        nutritionPerServing,
+      });
+      if (recipeData.error) {
+        return res.status(400).json({ msg: recipeData.error });
+      }
+
+      user.ownRecipes.push({
+        ...recipeData,
+        image,
+      });
+
+      await user.save();
+      res
+        .status(201)
+        .json({ msg: "Recipe successfully created.", data: user.ownRecipes });
+    } catch (error) {
+      next(error);
+    }
+  },
+];
+
+export const updateOwnRecipe = [
+  upload.single("imageUrl"),
+  async (req, res, next) => {
+    try {
+      const {
+        title,
+        ingredients,
+        preparationSteps,
+        servingsAmount,
+        preparationTime,
+        servingPortion,
+        diet,
+        nutritionPer100g,
+        nutritionPerServing,
+        existingImage,
+      } = req.body;
+
+      const user = await User.findById(req.user.userId);
+      if (!user) {
+        return res.status(404).json({ msg: "User not found." });
+      }
+
+      const { id } = req.params;
+      const recipe = user.ownRecipes.id(id);
+      if (!recipe) {
+        return res.status(404).json({ msg: "Recipe not found." });
+      }
+
+      const recipeData = validateOwnRecipeData({
+        title,
+        ingredients,
+        preparationSteps,
+        servingsAmount,
+        preparationTime,
+        servingPortion,
+        diet,
+        nutritionPer100g,
+        nutritionPerServing,
+      });
+
+      if (recipeData.error) {
+        return res.status(400).json({ msg: recipeData.error });
+      }
+
+      recipe.set(recipeData);
+
+      const image = req.file?.path;
+      const imageUrl = recipe.image;
+      const imagePublicId = extractImagePublicId(imageUrl);
+
+      // 4 image update scenarios:
+      // 1.) no new image uploaded + existing image removed in frontend + image exists in DB -> delete old image in Cloudinary and remove image from recipe
+      if (!image && !existingImage && imageUrl) {
+        if (imagePublicId) {
+          await cloudinary.uploader.destroy(imagePublicId);
+        }
+        recipe.set({ image: undefined });
+      }
+      // 2.) new image uploaded + image exists in DB -> delete old image in Cloudinary and replace it with new image
+      // 3.) new image uploaded + no image in DB -> set new image to recipe
+      if (image) {
+        if (imagePublicId) {
+          await cloudinary.uploader.destroy(imagePublicId);
+        }
+        recipe.set({ image });
+      }
+      // 4.) no new image + existing image kept in frontend -> do nothing (keep current image in DB)
+
+      await user.save();
+      res
+        .status(200)
+        .json({ msg: "Recipe successfully updated.", data: user.ownRecipes });
+    } catch (error) {
+      next(error);
+    }
+  },
+];
+
+export const deleteOwnRecipe = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    const recipe = user.ownRecipes.id(id);
+    if (!recipe) {
+      return res.status(404).json({ msg: "Recipe not found." });
+    }
+
+    const imageUrl = recipe.image;
+    const imagePublicId = extractImagePublicId(imageUrl);
+    if (imagePublicId) {
+      await cloudinary.uploader.destroy(imagePublicId);
+    }
+
+    await recipe.deleteOne();
+    await user.save();
+    res.status(200).json({ msg: "Recipe deleted successfully." });
   } catch (error) {
     next(error);
   }

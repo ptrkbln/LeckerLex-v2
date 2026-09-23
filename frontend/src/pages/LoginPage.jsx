@@ -39,7 +39,9 @@ export default function LoginComponent() {
   // Prevent page flicker while auth status is loading/processing
   if (loading || isLoggedIn) {
     return (
-      <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100 " />
+      <div className="self-stretch w-full flex items-center justify-center">
+        <ImSpinner2 className="animate-spin size-8 sm:size-10 text-orange-100" />
+      </div>
     );
   }
 
@@ -103,92 +105,89 @@ export default function LoginComponent() {
   };
 
   return (
-    <div className="flex-grow">
-      {/* Main Content */}
-      <div className="flex justify-center">
-        {/* Sign-in Form */}
-        <div className="max-w-md w-full bg-gray-900 p-8 rounded-3xl">
-          <form onSubmit={handleSignIn}>
-            <h2 className="text-2xl font-bold text-white/90 text-center mb-14">
-              Sign In
-            </h2>
-            <div className="mb-6">
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
-              <div className="relative">
-                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
-                />
+    <div className="self-stretch w-full flex items-center justify-center">
+      {/* Sign-in Form */}
+      <div className="max-w-md w-full bg-gray-900 p-8 rounded-3xl">
+        <form onSubmit={handleSignIn}>
+          <h2 className="text-2xl font-bold text-white/90 text-center mb-14">
+            Sign In
+          </h2>
+          <div className="mb-6">
+            <label htmlFor="email" className="sr-only">
+              Email
+            </label>
+            <div className="relative">
+              <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+              />
+            </div>
+          </div>
+          <div className="mb-3.5">
+            <label htmlFor="password" className="sr-only">
+              Password
+            </label>
+            <div className="relative">
+              <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+              />
+              <div
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <FaEyeSlash className="text-gray-400" />
+                ) : (
+                  <FaEye className="text-gray-400" />
+                )}
               </div>
             </div>
-            <div className="mb-3.5">
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <div className="relative">
-                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-3xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
-                />
-                <div
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <FaEyeSlash className="text-gray-400" />
-                  ) : (
-                    <FaEye className="text-gray-400" />
-                  )}
-                </div>
-              </div>
-            </div>
-            {errorMessage && (
-              <p className="text-rose-400 text-center absolute left-1/2 -translate-x-1/2 text-sm w-full">
-                {errorMessage}
-              </p>
+          </div>
+          {errorMessage && (
+            <p className="text-rose-400 text-center absolute left-1/2 -translate-x-1/2 text-sm w-full">
+              {errorMessage}
+            </p>
+          )}
+          <button
+            type="submit"
+            className="w-full flex justify-center items-center px-4 py-2 mt-12 text-md bg-green-500 text-white rounded-3xl shadow-lg hover:bg-green-700 transition duration-300"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ImSpinner2 className="animate-spin size-6" />
+            ) : (
+              "Sign In"
             )}
+          </button>
+        </form>
+        <div className="text-center mt-6 text-sm text-gray-300">
+          <div className="text-center mt-4 text-sm text-gray-300">
+            No profile?{" "}
             <button
-              type="submit"
-              className="w-full flex justify-center items-center px-4 py-2 mt-12 text-md bg-green-500 text-white rounded-3xl shadow-lg hover:bg-green-700 transition duration-300"
-              disabled={isSubmitting}
+              className="text-blue-400 font-medium hover:underline"
+              onClick={() => navigate("/home/register")}
             >
-              {isSubmitting ? (
-                <ImSpinner2 className="animate-spin size-6" />
-              ) : (
-                "Sign In"
-              )}
+              Register here
             </button>
-          </form>
-          <div className="text-center mt-6 text-sm text-gray-300">
-            <div className="text-center mt-4 text-sm text-gray-300">
-              No profile?{" "}
-              <button
-                className="text-blue-400 font-medium hover:underline"
-                onClick={() => navigate("/home/register")}
-              >
-                Register here
-              </button>
-            </div>
-            <div className="text-center mt-3 text-sm">
-              <button
-                className="text-blue-400 hover:scale-105"
-                onClick={handleContinueAsGuest}
-              >
-                Continue as Guest
-              </button>
-            </div>
+          </div>
+          <div className="text-center mt-3 text-sm">
+            <button
+              className="text-blue-400 hover:scale-105"
+              onClick={handleContinueAsGuest}
+            >
+              Continue as Guest
+            </button>
           </div>
         </div>
       </div>

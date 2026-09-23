@@ -43,7 +43,7 @@ const userSchema = new Schema(
         ref: "Journal",
       },
     ],
-    favorites: {
+    savedRecipes: {
       type: [
         {
           id: Number,
@@ -83,6 +83,50 @@ const userSchema = new Schema(
             vegan: Boolean,
             glutenFree: Boolean,
             dairyFree: Boolean,
+          },
+        },
+      ],
+      default: [],
+    },
+    ownRecipes: {
+      type: [
+        {
+          title: String,
+          image: String,
+          servingsAmount: Number,
+          servingPortion: { amount: Number, unit: String },
+          ingredients: [
+            {
+              name: String,
+              amount: Number,
+              unit: String,
+            },
+          ],
+          nutritionPer100g: {
+            calories: Number,
+            carbohydrates: Number,
+            fat: Number,
+            protein: Number,
+            saturatedFat: Number,
+            sodium: Number,
+            sugar: Number,
+          },
+          nutritionPerServing: {
+            calories: Number,
+            carbohydrates: Number,
+            fat: Number,
+            protein: Number,
+            saturatedFat: Number,
+            sodium: Number,
+            sugar: Number,
+          },
+          preparationSteps: [String],
+          preparationTime: Number,
+          diet: {
+            vegetarian: { type: Boolean, default: false },
+            vegan: { type: Boolean, default: false },
+            glutenFree: { type: Boolean, default: false },
+            dairyFree: { type: Boolean, default: false },
           },
         },
       ],

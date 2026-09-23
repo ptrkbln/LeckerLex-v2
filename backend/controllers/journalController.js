@@ -2,6 +2,7 @@ import { Journal } from "../models/journalSchema.js";
 import { User } from "../models/userSchema.js";
 import upload from "../config/cloudinary.js";
 import cloudinary from "cloudinary";
+import { extractImagePublicId } from "../utils/extractImagePublicId.js";
 
 export const createJournalEntry = [
   upload.single("imageUrl"), // multer middleware to handle image upload to cloudinary
@@ -59,18 +60,7 @@ export const deleteJournalEntry = async (req, res, next) => {
         .json({ msg: "Not authorized to delete this journal entry!" });
 
     const imageUrl = journalEntry.imageUrl;
-    let imagePublicId = null;
-    // Cloudinary requires image's public_id (not the URL) to delete it
-    // public_id (<folder/public_id>) comes from
-    // url (https://res.cloudinary.com/<cloud_name>/image/upload/<version>/folder/<public_id>.<format>)
-    if (imageUrl) {
-      const imageUrlParts = imageUrl.split("/upload/").at(-1).split("/");
-      if (imageUrlParts.length > 1) {
-        imageUrlParts.shift(); // remove the <version>
-        const publicId = imageUrlParts.join("/").split(".")[0];
-        imagePublicId = publicId;
-      }
-    }
+    const imagePublicId = extractImagePublicId(imageUrl);
     if (imagePublicId) {
       await cloudinary.uploader.destroy(imagePublicId);
     }
