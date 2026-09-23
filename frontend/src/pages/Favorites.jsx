@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { RecipeContext } from "../context/RecipeContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { GrFavorite } from "react-icons/gr";
 import RecipeCollection from "../components/RecipeCollection";
 import { updateSavedRecipesDatabase } from "../api/favorites";
@@ -12,7 +12,8 @@ import CreateRecipeForm from "../components/CreateRecipeForm";
 import { XButton } from "../components/XButton";
 
 function Favorites() {
-  const [tab, setTab] = useState("saved");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "saved-recipes"; // Get active tab from URL to preserve it across navigation (eg. when navigating back from RecipeDetails)
   const [showCreateRecipeModal, setShowCreateRecipeModal] = useState(false);
   const [recipeToDelete, setRecipeToDelete] = useState(null);
   const {
@@ -24,8 +25,7 @@ function Favorites() {
     setOwnRecipes,
   } = useContext(RecipeContext);
   const navigate = useNavigate();
-  const isSavedTabActive = tab === "saved";
-  const recipeList = tab === "saved" ? savedRecipes : ownRecipes;
+  const recipeList = activeTab === "saved-recipes" ? savedRecipes : ownRecipes;
 
   // Remove from UI immediately, if backend call fails revert to previous state
   const handleRemoveFromSavedRecipes = async (e, savedRecipeId) => {
@@ -39,7 +39,7 @@ function Favorites() {
     setSavedRecipes(updatedSavedRecipes);
 
     try {
-      await updateSavedRecipesDatabase(previousSavedRecipes);
+      await updateSavedRecipesDatabase(updatedSavedRecipes);
     } catch {
       setSavedRecipes(previousSavedRecipes);
       toast.error(
@@ -83,21 +83,21 @@ function Favorites() {
     <div className="flex gap-1 justify-center border-b border-gray-800">
       <button
         className={`text-base sm:text-lg font-semibold px-4 sm:px-6 py-3 border-b-2 transition-all active:scale-[0.98] ${
-          tab === "saved"
+          activeTab === "saved-recipes"
             ? "text-orange-200 border-orange-200"
             : "text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-700"
         }`}
-        onClick={() => setTab("saved")}
+        onClick={() => setSearchParams({ tab: "saved-recipes" })}
       >
         Saved Recipes
       </button>
       <button
         className={`text-base sm:text-lg font-semibold px-4 sm:px-6 py-3 border-b-2 transition-all active:scale-[0.98] ${
-          tab === "own"
+          activeTab === "own-recipes"
             ? "text-orange-200 border-orange-200"
             : "text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-700"
         }`}
-        onClick={() => setTab("own")}
+        onClick={() => setSearchParams({ tab: "own-recipes" })}
       >
         Own Recipes
       </button>
@@ -116,23 +116,23 @@ function Favorites() {
 
   const emptyState = (
     <div className="flex flex-col w-full max-w-xl justify-center p-10 items-center text-center">
-      {isSavedTabActive ? (
+      {activeTab === "saved-recipes" ? (
         <GrFavorite className="size-10 sm:size-12 text-orange-200 mb-4 sm:mb-3" />
       ) : (
         <LuNotebookPen className="size-10 sm:size-12 text-orange-200 mb-4 sm:mb-3" />
       )}
       <h2 className="text-xl sm:text-2xl font-bold mb-3 text-gray-300">
-        {isSavedTabActive
+        {activeTab === "saved-recipes"
           ? "Your saved recipes list is empty"
           : "You haven't created any recipes yet"}
       </h2>
 
       <p className="text-gray-400 max-w-md mb-10">
-        {isSavedTabActive
+        {activeTab === "saved-recipes"
           ? "Browse recipes for inspiration and select your favorites."
           : "Write your own recipes and keep them all in one place."}
       </p>
-      {isSavedTabActive ? (
+      {activeTab === "saved-recipes" ? (
         <button
           onClick={() => navigate("/home")}
           className="px-6 py-2.5 border border-green-600 text-green-600 hover:text-green-400 hover:border-green-400 active:scale-95 rounded-full transition-all"
@@ -160,12 +160,20 @@ function Favorites() {
 
         {recipeList.length > 0 ? (
           <RecipeCollection
-            recipesSource={isSavedTabActive ? savedRecipes : ownRecipes}
-            sourceType={isSavedTabActive ? "savedRecipes" : "ownRecipes"}
-            createRecipeControl={!isSavedTabActive ? createRecipeButton : null}
-            showFilters={isSavedTabActive}
+            recipesSource={
+              activeTab === "saved-recipes" ? savedRecipes : ownRecipes
+            }
+            sourceType={
+              activeTab === "saved-recipes" ? "savedRecipes" : "ownRecipes"
+            }
+            createRecipeControl={
+              activeTab === "own-recipes" ? createRecipeButton : null
+            }
+            showFilters={activeTab === "saved-recipes"}
             handleRemoveFromSavedRecipes={
-              isSavedTabActive ? handleRemoveFromSavedRecipes : null
+              activeTab === "saved-recipes"
+                ? handleRemoveFromSavedRecipes
+                : null
             }
             setRecipeToDelete={setRecipeToDelete}
           />
