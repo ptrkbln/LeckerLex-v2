@@ -80,15 +80,15 @@ function RecipeCollection({
   });
 
   return (
-    <div className="mx-auto md:max-w-[90%] lg:max-w-[1400px] w-full px-1 sm:px-6 pb-2 min-h-full text-gray-300 relative">
-      <div className="rounded-3xl w-full mx-auto p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div className="mx-auto max-w-[1350px] w-full px-1 sm:px-3 md:px-5 pb-2 min-h-full text-gray-300 relative">
+      <div className="rounded-3xl w-full mx-auto p-4 flex flex-col md:flex-row items-center justify-between">
         <h1 className="text-3xl font-bold text-center text-orange-100">
           {heading}
         </h1>
         {createRecipeControl}
         {/* Filter section */}
         {showFilters && (
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex flex-col min-[451px]:flex-row items-center justify-center gap-3">
             <div className="relative" ref={caloriesDropdownRef}>
               <button
                 className="flex items-center border gap-2 border-gray-600 hover:border-gray-400 active:scale-[0.98] transition-all rounded-full  px-5 py-2.5 cursor-pointer select-none"
@@ -198,8 +198,7 @@ function RecipeCollection({
         )}
       </div>
 
-      {/* Card width limit matches the source image original resolution (312x231) to avoid upscaling blur */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,220px))] sm:grid-cols-[repeat(auto-fit,minmax(280px,312px))] justify-center gap-5 sm:gap-6">
+      <div className="grid grid-cols-1 min-[450px]:grid-cols-2 min-[740px]:grid-cols-3 min-[1070px]:grid-cols-4 gap-x-1 gap-y-2 sm:gap-x-2 sm:gap-y-4">
         {(sourceType === "ownRecipes" ? recipesSource : filteredRecipes).map(
           (recipe) => {
             const id = recipe.id || recipe._id;
@@ -213,7 +212,7 @@ function RecipeCollection({
                     state: { sourceType },
                   })
                 }
-                className="border border-gray-800 hover:border-orange-200/40 bg-gray-950 rounded-3xl overflow-hidden shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer flex flex-col relative group group/close w-full max-w-[280px] sm:max-w-none justify-self-center"
+                className="border border-gray-800 hover:border-orange-200/40 bg-gray-950 rounded-2xl overflow-hidden shadow-lg hover:scale-[1.03] transition-all duration-300 cursor-pointer flex flex-col relative group group/close w-full max-w-[320px] justify-self-center"
               >
                 {sourceType === "savedRecipes" && (
                   <button
@@ -248,8 +247,8 @@ function RecipeCollection({
                   <h2
                     className={`${
                       recipe.title.length > 36
-                        ? "text-base"
-                        : "text-lg sm:text-xl"
+                        ? "min-[1100px]:text-lg"
+                        : "min-[500px]:text-lg min-[1100px]:text-xl"
                     } font-semibold mb-2`}
                   >
                     {recipe.title}
