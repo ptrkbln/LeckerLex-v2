@@ -21,6 +21,7 @@ const userSchema = new Schema(
       required: [true, "Email field is missing."],
       unique: true,
       trim: true,
+      lowercase: true,
       match: [
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
         "Please enter a valid email address.",
@@ -29,12 +30,6 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: [true, "Password field is missing."],
-      minlength: [6, "Password must be at least 6 characters long."],
-      trim: true,
-      match: [
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#\-=_+])[A-Za-z\d@$!%*?&^#\-=_+]{6,}$/,
-        "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&^#-=_+).",
-      ],
     },
     journal: [
       // TODO reviews model (1-n)
@@ -165,16 +160,6 @@ userSchema.pre("save", async function (next) {
   } catch (error) {
     next(error);
   }
-  /* if (!this.isModified("password")) {
-    return next(); // Skip hashing if the password field hasn't been modified
-  }
-  try {
-    const saltRounds = 12;
-    const hash = await bcrypt.hash(this.password, saltRounds);
-    this.password = hash;
-  } catch (error) {
-    next(error);
-  } */
 });
 
 // Custom method to validate the user's password during login

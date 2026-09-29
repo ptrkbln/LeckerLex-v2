@@ -40,7 +40,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const nameRegex = /^[a-zA-Z0-9_]{3,15}$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#\-=_+])[A-Za-z\d@$!%*?&^#\-=_+]{6,}$/;
     const invalidPasswordCharsRegex = /[^A-Za-z0-9@$!%*?&^#\-=_+]/;
@@ -107,6 +107,10 @@ export default function RegisterPage() {
       if (!response.ok) {
         if (response.status === 409) {
           toast.error("This email address is already in use.");
+        } else if (response.status === 502) {
+          toast.error(
+            "We couldn't send your verification email. Please try again later.",
+          );
         } else {
           toast.error(
             "We couldn't create your account right now. Try again later.",
@@ -116,7 +120,7 @@ export default function RegisterPage() {
       }
       navigate("/home/verify-email", { replace: true });
     } catch {
-      setErrorMessage(toast.error("Connection failed."));
+      toast.error("Connection failed.");
     } finally {
       setIsSubmitting(false);
     }

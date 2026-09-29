@@ -25,7 +25,16 @@ export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    const userAlreadyExists = await User.findOne({ email });
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#\-=_+])[A-Za-z\d@$!%*?&^#\-=_+]{6,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        msg: "Password must contain 6+ characters, uppercase, lowercase, number, and special character.",
+      });
+    }
+
+    const lowerCaseEmail = email.trim().toLowerCase();
+    const userAlreadyExists = await User.findOne({ email: lowerCaseEmail });
     if (userAlreadyExists) {
       return res.status(409).json({
         msg: "This email address is already in use.",
@@ -33,13 +42,11 @@ export const registerUser = async (req, res, next) => {
     }
 
     // Create new user and generate verification token
-    const newUser = new User({ name, email, password });
+    const newUser = new User({ name, email: lowerCaseEmail, password });
     const token = generateToken({ userId: newUser._id }); // Payload with user ID
     newUser.validationToken = token; // Store validation token in user's validationToken field
     await newUser.save();
 
-    // Set up email options
-    // TODO adapt to our new app name
     const mailOptions = {
       from: "LeckerLex",
       to: newUser.email,
@@ -92,8 +99,16 @@ export const registerUser = async (req, res, next) => {
     `,
     };
 
-    // Send the verification email
-    await transporter.sendMail(mailOptions);
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch {
+      // Remove the user if the verification email could not be sent
+      await User.findByIdAndDelete(newUser._id);
+      const emailError = new Error("Verification email could not be sent.");
+      emailError.status = 502;
+      throw emailError;
+    }
+
     return res.status(201).json({
       msg: "User created & verification email sent.",
     });
@@ -156,7 +171,8 @@ export const authenticateUser = async (req, res, next) => {
 export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const lowerCaseEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: lowerCaseEmail });
 
     if (!user)
       return res
