@@ -1,9 +1,15 @@
 import { useContext } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { FaUser, FaHeart, FaSignOutAlt, FaCartArrowDown } from "react-icons/fa";
+import {
+  FaUser,
+  FaHeart,
+  FaSignInAlt,
+  FaSignOutAlt,
+  FaCartArrowDown,
+} from "react-icons/fa";
 import { BsJournalAlbum } from "react-icons/bs";
-import toast from "react-hot-toast";
+import { useLogout } from "../hooks/useLogout";
 
 const HoverEffect = () => (
   <>
@@ -13,32 +19,8 @@ const HoverEffect = () => (
 );
 
 function Navbar() {
-  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/users/logout`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
-
-      if (!response.ok) {
-        toast.error("Something went wrong while logging you out.");
-        return;
-      }
-      navigate("/");
-      // Delay auth state update so navigation to landing page happens before ProtectedRoute redirects to login
-      setTimeout(() => {
-        setIsLoggedIn(false);
-      }, 0);
-    } catch {
-      toast.error("Connection failed.");
-    }
-  };
+  const { isLoggedIn } = useContext(AuthContext);
+  const handleLogout = useLogout();
 
   return (
     <nav className="hidden md:flex items-center justify-between p-8 mr-6 ml-6 bg-transparent z-50">
@@ -53,7 +35,7 @@ function Navbar() {
       </div>
       {/* Increase horizontal gap between navlinks */}
       <div className="flex items-center space-x-5 lg:space-x-8">
-        {isLoggedIn && (
+        {/*         {isLoggedIn && (
           <NavLink
             to="/home/profile"
             className="relative group text-orange-100 text-md w-max flex items-center"
@@ -62,7 +44,7 @@ function Navbar() {
             Profile
             <HoverEffect />
           </NavLink>
-        )}
+        )} */}
 
         <NavLink
           to="/home/favorites"
@@ -104,7 +86,7 @@ function Navbar() {
             to="/home/login"
             className="relative group text-orange-100 text-md w-max flex items-center"
           >
-            <FaUser className="mr-2" />
+            <FaSignInAlt className="mr-2" />
             Login
             <HoverEffect />
           </NavLink>

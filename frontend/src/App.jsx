@@ -27,7 +27,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/home" element={<Layout />}>
               <Route index element={<HomePage />} />
-              <Route path="profile" element={<ProfileWelcomePage />} />
+              {/* <Route path="profile" element={<ProfileWelcomePage />} /> */}
               <Route path="login" element={<LoginPage />} /> {/* Login-Seite */}
               <Route path="register" element={<RegisterPage />} />{" "}
               {/* Register-Seite */}
