@@ -6,15 +6,21 @@ import {
   FaFacebook,
   FaWhatsapp,
   FaCartArrowDown,
+  FaSignInAlt,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import { BsJournalAlbum } from "react-icons/bs";
 import { NavLink, useLocation } from "react-router-dom";
+import { useContext } from "react";
+import { useLogout } from "../hooks/useLogout";
+import { AuthContext } from "../context/AuthContext";
 
 function Footer() {
+  const { isLoggedIn } = useContext(AuthContext);
+  const handleLogout = useLogout();
   const location = useLocation();
   const currentPath = location.pathname;
 
-  // function to determine if a path is active
   const isPathActive = (path) => {
     if (path === "/home") {
       return currentPath === "/home";
@@ -93,7 +99,7 @@ function Footer() {
 
       <nav className="bg-green-50 rounded-lg shadow-md mx-auto fixed bottom-0 w-full md:hidden z-30 p-1 pb-2">
         <ul className="flex justify-around p-2 text-sm font-medium text-gray-700">
-          <li className="hover:text-green-500">
+          <li>
             <NavLink
               to="/home"
               className={`hover:underline ${
@@ -103,7 +109,7 @@ function Footer() {
               <FaSearch size={20} />
             </NavLink>
           </li>
-          <li className="hover:text-green-500">
+          <li>
             <NavLink
               to="shopping-list"
               className={`hover:underline ${
@@ -113,7 +119,7 @@ function Footer() {
               <FaCartArrowDown size={20} />
             </NavLink>
           </li>
-          <li className="hover:text-red-500">
+          <li>
             <NavLink
               to="favorites"
               className={`hover:underline ${
@@ -123,7 +129,7 @@ function Footer() {
               <FaHeart size={20} />
             </NavLink>
           </li>
-          <li className="hover:text-green-500">
+          <li>
             <NavLink
               to="journal"
               className={`hover:underline ${
@@ -133,15 +139,29 @@ function Footer() {
               <BsJournalAlbum size={20} />
             </NavLink>
           </li>
-          <li className="hover:text-green-500">
-            <NavLink
+          <li>
+            {/* <NavLink
               to="profile"
               className={`hover:underline ${
                 isPathActive("/home/profile") ? "text-green-500" : ""
               }`}
             >
               <FaUser size={20} />
-            </NavLink>
+            </NavLink> */}
+            {isLoggedIn ? (
+              <button onClick={handleLogout}>
+                <FaSignOutAlt size={20} />
+              </button>
+            ) : (
+              <NavLink
+                to="login"
+                className={`hover:underline ${
+                  isPathActive("/home/login") ? "text-green-500" : ""
+                }`}
+              >
+                <FaSignInAlt size={20} />
+              </NavLink>
+            )}
           </li>
         </ul>
       </nav>
